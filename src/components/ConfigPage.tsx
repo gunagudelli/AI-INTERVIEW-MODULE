@@ -40,17 +40,18 @@ const ConfigPage: React.FC = () => {
 
   const testConnection = async () => {
     try {
-      const testUrl = config.environment === 'local' ? config.localUrl : config.liveUrl;
+      // Always test live URL only
+      const testUrl = config.liveUrl;
       const response = await fetch(`${testUrl}/api/health`);
       
       if (response.ok) {
         const data = await response.json();
-        alert(`✅ Connection successful!\nStatus: ${data.status}\nEnvironment: ${config.environment.toUpperCase()}`);
+        alert(`✅ Live Connection successful!\nURL: ${testUrl}\nStatus: ${data.status}\nServer is alive! 🚀`);
       } else {
-        alert(`❌ Connection failed!\nStatus: ${response.status}`);
+        alert(`❌ Live Connection failed!\nURL: ${testUrl}\nStatus: ${response.status}\nServer may be down`);
       }
     } catch (error) {
-      alert(`❌ Connection error!\n${error}`);
+      alert(`❌ Live Connection error!\nURL: ${config.liveUrl}\nError: ${error}\nServer is not responding`);
     }
   };
 
