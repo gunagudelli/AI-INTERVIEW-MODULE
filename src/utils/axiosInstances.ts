@@ -26,8 +26,8 @@ import { store } from "../store";
 import { refreshAccessToken } from "./tokenRefresh";
 import {
   getCustomerAccessToken,
-  removeCustomerAccessToken,
-  removeRefreshToken,
+  // removeCustomerAccessToken,
+  // removeRefreshToken,
   getAdminAccessToken,
   removeAdminAccessToken,
   removeAdminRefreshToken,

@@ -6,7 +6,7 @@ import {
   ChevronDown, ChevronUp, X, AlertCircle, Briefcase,
   MapPin, SlidersHorizontal, ArrowLeft, RefreshCw,
   Building2, Clock, Users, FileText, Activity, UserCheck,
-  Mail, Zap, Database, Layers, Star, GitMerge,
+  Mail, Zap, Database, Layers, Star,
 } from 'lucide-react';
 
 const BASE = process.env.REACT_APP_RECRUITER_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3000';

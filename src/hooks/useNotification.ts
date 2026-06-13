@@ -12,6 +12,10 @@ interface ToastNotification {
 export const useNotification = () => {
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
+  const removeNotification = useCallback((id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+
   const showNotification = useCallback((type: NotificationType, message: string, duration: number = 3000) => {
     const id = Date.now().toString();
     const toast: ToastNotification = { id, type, message, duration };
@@ -25,11 +29,7 @@ export const useNotification = () => {
     }
 
     return id;
-  }, []);
-
-  const removeNotification = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  }, []);
+  }, [removeNotification]);
 
   const success = useCallback((message: string, duration?: number) => {
     return showNotification('success', message, duration);

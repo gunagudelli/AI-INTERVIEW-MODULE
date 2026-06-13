@@ -38,6 +38,8 @@ import { MultiLevelSelection, ProctoredInterview } from "./AIMockInterview";
 import InterviewPage from "./AIMockInterview/interview";
 
 import LoginAdmin from "./AIMockInterview/admin/LoginAdmin";
+import ConfigPage from "./components/ConfigPage";
+import ConfigButton from "./components/ConfigButton";
 
 // Simple centered loader component
 const LoadingSpinner = React.memo(() => {
@@ -195,6 +197,7 @@ const App: React.FC = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <div className="App">
+        <ConfigButton />
         <Routes>
           {/* ===================================================== */}
           {/* ✅ PUBLIC ROUTES (No Auth Needed) */}
@@ -268,6 +271,7 @@ const App: React.FC = () => {
           <Route path="/multi-interview" element={<ProctoredInterview />} />
           <Route path="/assessment" element={<InterviewPage />} />
           <Route path="/interview" element={<InterviewPage />} />
+          <Route path="/config" element={<ConfigPage />} />
         </Routes>
       </div>
     </Suspense>
