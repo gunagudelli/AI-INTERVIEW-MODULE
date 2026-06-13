@@ -1,0 +1,15 @@
+{
+    "applinks":{
+        "details":[
+            {
+                "appIDs":"6738732000.com.oxyrice.customer",
+                "paths":[
+                    {
+                        "/":"/Rice Products/*",
+                        "/Rice Products/*/":"/Rice Products/*"
+                    }
+                ]
+            }
+        ]
+    }
+}

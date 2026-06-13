@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+</head>
+<body>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    const redirectionRules = {
+      page: {
+        'home': '/',
+        'dashboard': '/main/dashboard/products',
+        'admin': '/admin',
+        'partner': '/partnerlogin',
+        'studyabroad': '/studyabroad',
+        'freeaibook': '/freeaibook',
+        'genoxy': '/genoxy',
+        'bharath-aistore': '/bharath-aistore'
+      },
+      service: {
+        'ai-blockchain': '/aiblockchainanditservices',
+        'ca-cs': '/caandcsservices',
+        'gold-silver': '/goldandsilveranddiamonds',
+        'loans': '/loansinvestments',
+        'realestate': '/realestate',
+        'nyayagpt': '/nyayagpt',
+        'rice2robo': '/rice2roboecommers'
+      },
+      auth: {
+        'whatsapp-login': '/whatsapplogin',
+        'whatsapp-register': '/whatsappregister',
+        'admin-login': '/admin',
+        'partner-login': '/partnerlogin'
+      }
+    };
+    
+    const itemId = urlParams.get('itemId');
+    if (itemId) {
+      window.location.href = `/main/itemsdisplay/${itemId}`;
+    }
+    
+    for (const [paramName, routes] of Object.entries(redirectionRules)) {
+      const paramValue = urlParams.get(paramName);
+      if (paramValue && routes[paramValue]) {
+        window.location.href = routes[paramValue];
+      }
+    }
+    
+    const search = urlParams.get('search');
+    if (search) {
+      window.location.href = `/main/search-main?q=${encodeURIComponent(search)}`;
+    }
+    
+    const userType = urlParams.get('userType');
+    if (userType === 'admin') window.location.href = '/admin';
+    if (userType === 'partner') window.location.href = '/partnerlogin';
+  </script>
+</body>
+</html>
