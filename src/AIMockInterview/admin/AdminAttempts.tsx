@@ -62,6 +62,12 @@ export const AdminAttempts: React.FC = () => {
 
   return (
     <div className="p-6">
+      <style>{`
+        @keyframes at-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+        .at-card{animation:at-in .2s ease both;transition:box-shadow .15s,border-color .15s}
+        .at-card:hover{box-shadow:0 4px 16px rgba(79,70,229,.07)!important;border-color:#c7d2fe!important}
+        .at-row{transition:background .1s}
+      `}</style>
       {/* Toast */}
       {toast && (
         <div className="fixed top-4 right-4 z-50 bg-[#232f3e] text-white text-sm px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
@@ -78,7 +84,7 @@ export const AdminAttempts: React.FC = () => {
       </div>
 
       {/* Limit Control */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
+      <div className="at-card bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
         <div className="flex items-start gap-3 mb-4">
           <div className="w-8 h-8 rounded bg-[#fff3cd] flex items-center justify-center flex-shrink-0">
             <svg className="w-4 h-4 text-[#856404]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,7 +139,7 @@ export const AdminAttempts: React.FC = () => {
                 const remaining = maxAttempts - used;
                 const canAttempt = remaining > 0;
                 return (
-                  <tr key={c.userId} className={`border-b border-gray-100 hover:bg-[#fffbf2] transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'}`}>
+                  <tr key={c.userId} className={`at-row border-b border-gray-100 hover:bg-[#fffbf2] transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-[#232f3e] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">

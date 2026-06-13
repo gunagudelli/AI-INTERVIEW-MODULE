@@ -7,6 +7,25 @@ import { AdvancedFilter } from './AdvancedFilter';
 
 type SortField = 'name' | 'bestScore' | 'createdAt';
 
+const scoreStyle = (s: string) => {
+  const n = parseFloat(s || '0');
+  if (n >= 60) return { background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' };
+  if (n >= 40) return { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' };
+  return { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' };
+};
+
+const resultStyle = (r: string) => {
+  if (r === 'Selected') return { background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' };
+  if (r === 'Not Selected') return { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' };
+  return { background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' };
+};
+
+const CSS = `
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+  .cl-row { transition: background .1s }
+  .cl-row:hover { background: #f8fafc !important }
+`;
+
 export const CandidatesList: React.FC = () => {
   const navigate = useNavigate();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -43,179 +62,168 @@ export const CandidatesList: React.FC = () => {
     return r;
   }, [candidates, search, sortField, sortOrder]);
 
-  const scoreBg = (s: string) => {
-    const n = parseFloat(s || '0');
-    if (n >= 60) return 'bg-[#d4edda] text-[#155724]';
-    if (n >= 40) return 'bg-[#fff3cd] text-[#856404]';
-    return 'bg-[#f8d7da] text-[#721c24]';
-  };
-
-  const resultBg = (r: string) => {
-    if (r === 'Selected') return 'bg-[#d4edda] text-[#155724] border-[#c3e6cb]';
-    if (r === 'Not Selected') return 'bg-[#f8d7da] text-[#721c24] border-[#f5c6cb]';
-    return 'bg-[#e2e3e5] text-[#383d41] border-[#d6d8db]';
-  };
-
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorState message={error} onRetry={fetchCandidates} />;
 
+  const total = candidates.length;
+  const selected = candidates.filter(c => c.summary?.bestResult === 'Selected').length;
+  const notSelected = candidates.filter(c => c.summary?.bestResult === 'Not Selected').length;
+
   return (
-    <div className="p-6">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Candidates</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage and review all interview candidates
-        </p>
+    <div style={{ padding: '20px 24px', fontFamily: "'Inter','Segoe UI',sans-serif", color: '#111827' }}>
+      <style>{CSS}</style>
+
+      {/* Header */}
+      <div style={{ marginBottom: 18 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 3px' }}>Candidates</h1>
+        <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>All interview candidates</p>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 16 }}>
         {[
-          { label: 'Total Candidates', value: candidates.length, color: 'text-gray-900' },
-          { label: 'Showing', value: list.length, color: 'text-[#0066c0]' },
-          { label: 'Selected', value: candidates.filter(c => c.summary?.bestResult === 'Selected').length, color: 'text-[#007600]' },
-          { label: 'Not Selected', value: candidates.filter(c => c.summary?.bestResult === 'Not Selected').length, color: 'text-[#c40000]' },
+          { label: 'Total', value: total, color: '#111827' },
+          { label: 'Showing', value: list.length, color: '#2563eb' },
+          { label: 'Selected', value: selected, color: '#16a34a' },
+          { label: 'Not Selected', value: notSelected, color: '#dc2626' },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-lg border border-gray-200 px-4 py-3 shadow-sm">
-            <p className="text-xs text-gray-500 mb-1">{s.label}</p>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+          <div key={s.label} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 9, padding: '12px 16px' }}>
+            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 5px' }}>{s.label}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color: s.color, margin: 0 }}>{s.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Search & Filter */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4">
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="flex-1 relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search candidates by name or skill..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-9 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#ff9900] focus:ring-1 focus:ring-[#ff9900] bg-white text-gray-900 placeholder-gray-400"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </div>
-          <div className="flex gap-2 flex-shrink-0">
-            <AdvancedFilter onFilter={async (filters) => {
-              if (!Object.keys(filters).length) { fetchCandidates(); return; }
-              try {
-                const res = await fetch('/api/admin/candidates/filter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filters) });
-                const data = await res.json();
-                setCandidates(data.filter((c: any) => c.name !== 'N/A'));
-              } catch { /* ignore */ }
-            }} />
-            <select
-              value={sortField}
-              onChange={e => setSortField(e.target.value as SortField)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#ff9900] bg-white text-gray-700"
-            >
-              <option value="createdAt">Sort: Date</option>
-              <option value="bestScore">Sort: Score</option>
-              <option value="name">Sort: Name</option>
-            </select>
-            <button
-              onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}
-              className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50 text-gray-600 transition"
-              title="Toggle order"
-            >
-              <svg className={`w-4 h-4 transition-transform ${sortOrder === 'desc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
-              </svg>
-            </button>
-          </div>
+      {/* Search + controls */}
+      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 9, padding: '12px 14px', marginBottom: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
+          <svg style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }} width={14} height={14} fill="none" stroke="#94a3b8" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" placeholder="Search by name or skill…" value={search} onChange={e => setSearch(e.target.value)}
+            style={{ width: '100%', paddingLeft: 32, paddingRight: search ? 32 : 10, paddingTop: 7, paddingBottom: 7, border: '1px solid #e2e8f0', borderRadius: 7, fontSize: 13, outline: 'none', color: '#111827', background: '#f8fafc', boxSizing: 'border-box' }} />
+          {search && (
+            <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', lineHeight: 1 }}>✕</button>
+          )}
         </div>
-        {search && (
-          <p className="mt-2 text-xs text-gray-500">
-            {list.length} result{list.length !== 1 ? 's' : ''} for "<span className="font-medium text-gray-700">{search}</span>"
-          </p>
-        )}
+        <select value={sortField} onChange={e => setSortField(e.target.value as SortField)}
+          style={{ padding: '7px 10px', border: '1px solid #e2e8f0', borderRadius: 7, fontSize: 13, color: '#374151', background: '#f8fafc', outline: 'none', cursor: 'pointer' }}>
+          <option value="createdAt">Date</option>
+          <option value="bestScore">Score</option>
+          <option value="name">Name</option>
+        </select>
+        <button onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}
+          style={{ padding: '7px 10px', border: '1px solid #e2e8f0', borderRadius: 7, background: '#f8fafc', cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>
+          <svg width={14} height={14} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'none', display: 'block' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+          </svg>
+        </button>
+        <button onClick={fetchCandidates}
+          style={{ padding: '7px 12px', border: '1px solid #e2e8f0', borderRadius: 7, background: '#f8fafc', cursor: 'pointer', fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+          Refresh
+        </button>
       </div>
 
       {/* Table */}
       {list.length === 0 ? (
         <EmptyState message={search ? 'No candidates match your search' : 'No candidates found'} />
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 9, overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr className="bg-[#f7f8f8] border-b border-gray-200">
-                  {['Candidate', 'Skills', 'Experience', 'Result', ''].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
-                      {h}
-                    </th>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  {['Candidate', 'Skills', 'Exp', 'Score', 'Violations', 'Result', ''].map(h => (
+                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {list.map((c, i) => (
-                  <tr
-                    key={c.userId}
-                    className={`border-b border-gray-100 hover:bg-[#fffbf2] cursor-pointer transition-colors group ${i % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'}`}
-                    onClick={() => navigate(`/admin/candidate/${c.userId}`)}
-                  >
-                    {/* Candidate */}
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#232f3e] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                          {c.name?.charAt(0).toUpperCase() || '?'}
+                {list.map((c, i) => {
+                  const copyPasteCount = (c as any).copyPasteViolations ?? (c as any).copyPasteCount ?? 0;
+                  const rs = resultStyle(c.summary?.bestResult || '');
+                  const ss = scoreStyle(c.summary?.bestScore || '0');
+                  return (
+                    <tr key={c.userId} className="cl-row" style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', background: '#fff' }}
+                      onClick={() => navigate(`/admin/candidate/${c.userId}`)}>
+
+                      {/* Candidate */}
+                      <td style={{ padding: '11px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#667eea,#764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                            {c.name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <p style={{ margin: 0, fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{c.name || 'N/A'}</p>
+                            <p style={{ margin: 0, fontSize: 10.5, color: '#94a3b8', fontFamily: 'monospace' }}>{c.userId?.slice(0, 10)}…</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-[#0066c0] group-hover:underline">{c.name || 'N/A'}</p>
-                          <p className="text-xs text-gray-400 font-mono">{c.userId?.slice(0, 8)}…</p>
+                      </td>
+
+                      {/* Skills */}
+                      <td style={{ padding: '11px 14px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {c.skills?.slice(0, 3).map((s, idx) => (
+                            <span key={idx} style={{ padding: '1px 7px', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{s}</span>
+                          ))}
+                          {(c.skills?.length || 0) > 3 && (
+                            <span style={{ padding: '1px 7px', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 11 }}>+{c.skills!.length - 3}</span>
+                          )}
+                          {!c.skills?.length && <span style={{ fontSize: 12, color: '#cbd5e1' }}>—</span>}
                         </div>
-                      </div>
-                    </td>
-                    {/* Skills */}
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {c.skills?.slice(0, 3).map((s, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-[#e8f4fd] text-[#0066c0] border border-[#c8e6f9] rounded text-xs font-medium">
-                            {s}
-                          </span>
-                        ))}
-                        {(c.skills?.length || 0) > 3 && (
-                          <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">+{c.skills!.length - 3}</span>
+                      </td>
+
+                      {/* Experience */}
+                      <td style={{ padding: '11px 14px', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 12, color: '#374151' }}>
+                          {c.experience > 0 ? `${c.experience} yr${c.experience !== 1 ? 's' : ''}` : 'Fresher'}
+                        </span>
+                      </td>
+
+                      {/* Score */}
+                      <td style={{ padding: '11px 14px' }}>
+                        {c.summary?.bestScore && c.summary.bestScore !== 'N/A' ? (
+                          <span style={{ ...ss, padding: '2px 9px', borderRadius: 5, fontSize: 12, fontWeight: 700 }}>{c.summary.bestScore}%</span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#cbd5e1' }}>—</span>
                         )}
-                        {!c.skills?.length && <span className="text-xs text-gray-400">—</span>}
-                      </div>
-                    </td>
-                    {/* Experience */}
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-gray-700">
-                        {c.experience > 0 ? `${c.experience} yr${c.experience !== 1 ? 's' : ''}` : 'Fresher'}
-                      </span>
-                    </td>
-                    {/* Result */}
-                    <td className="px-4 py-3">
-                      <span className={`inline-block px-2.5 py-0.5 rounded border text-xs font-semibold ${resultBg(c.summary?.bestResult || '')}`}>
-                        {c.summary?.bestResult || 'Pending'}
-                      </span>
-                    </td>
-                    {/* Arrow */}
-                    <td className="px-4 py-3">
-                      <svg className="w-4 h-4 text-gray-400 group-hover:text-[#ff9900] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+
+                      {/* Copy-paste violations — compact */}
+                      <td style={{ padding: '11px 14px' }}>
+                        {copyPasteCount > 0 ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: 5, fontSize: 11, fontWeight: 700 }}>
+                            <svg width={10} height={10} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                            </svg>
+                            {copyPasteCount}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#cbd5e1' }}>—</span>
+                        )}
+                      </td>
+
+                      {/* Result */}
+                      <td style={{ padding: '11px 14px' }}>
+                        <span style={{ ...rs, padding: '2px 9px', borderRadius: 5, fontSize: 11, fontWeight: 700 }}>
+                          {c.summary?.bestResult || 'Pending'}
+                        </span>
+                      </td>
+
+                      {/* Arrow */}
+                      <td style={{ padding: '11px 14px' }}>
+                        <svg width={14} height={14} fill="none" stroke="#cbd5e1" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          <div className="px-4 py-3 bg-[#f7f8f8] border-t border-gray-200 text-xs text-gray-500">
-            Showing {list.length} of {candidates.length} candidates
+          <div style={{ padding: '9px 14px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', fontSize: 11, color: '#94a3b8' }}>
+            {list.length} of {candidates.length} candidates
           </div>
         </div>
       )}

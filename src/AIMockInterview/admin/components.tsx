@@ -22,8 +22,14 @@ export const ScoreCard: React.FC<{ title: string; score: string; questionsAnswer
 
 export const LoadingSpinner: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => (
   <div className="flex flex-col items-center justify-center min-h-[400px]">
-    <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-[#ff9900]" />
-    <p className="mt-3 text-sm text-gray-500">{message}</p>
+    <div style={{
+      width: 36, height: 36, borderRadius: '50%',
+      border: '2.5px solid #e5e7eb',
+      borderTop: '2.5px solid #4f46e5',
+      animation: 'adm-shimmer-spin 0.7s linear infinite',
+    }} />
+    <style>{`@keyframes adm-shimmer-spin{to{transform:rotate(360deg)}}`}</style>
+    <p className="mt-3 text-sm text-gray-400">{message}</p>
   </div>
 );
 

@@ -1,13 +1,6 @@
 import axios from 'axios';
 import { Candidate } from './types';
-let user = "production";
-let API_BASE = "";
-if (user==="production") {
-  API_BASE = "https://interviews-zadn.onrender.com/api/admin";
-} else {
-  API_BASE = "http://localhost:3001/api/admin";
-
-}
+const API_BASE = "http://localhost:3000/api/admin";
 
 export const candidateApi = {
   getCandidates: async (): Promise<Candidate[]> => {
@@ -16,8 +9,17 @@ export const candidateApi = {
   },
 
   getCandidateById: async (userId: string): Promise<Candidate> => {
-    const { data } = await axios.get(`${API_BASE}/candidate/${userId}`);
-    return data;
+    const [candidateRes, imagesRes] = await Promise.allSettled([
+      axios.get(`${API_BASE}/candidate/${userId}`),
+      axios.get(`${API_BASE}/candidate/${userId}/images`),
+    ]);
+    const candidate = candidateRes.status === 'fulfilled' ? candidateRes.value.data : {};
+    if (imagesRes.status === 'fulfilled') {
+      const { examImages = [], proctoringSnapshots = [] } = imagesRes.value.data;
+      candidate.examImages = examImages;
+      candidate.proctoringSnapshots = proctoringSnapshots;
+    }
+    return candidate;
   },
 
   getAttemptLimit: async (): Promise<{ maxAttempts: number }> => {

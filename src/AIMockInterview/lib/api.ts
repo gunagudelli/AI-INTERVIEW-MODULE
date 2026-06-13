@@ -1,11 +1,4 @@
-// let user = process.env.NODE_ENV || "development";
-let user = "production";
-let API_BASE_URL = "";
-if (user === "production") {
-  API_BASE_URL = "https://interviews-zadn.onrender.com";
-} else {
-  API_BASE_URL = "http://localhost:3001";
-}
+let API_BASE_URL = "http://localhost:3000";
 
 export const api = {
   async chat(message: string, userId?: string, sessionId?: string) {
@@ -27,7 +20,6 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/interview/start`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(data),
     });
     return response.json();
@@ -37,7 +29,6 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/interview/answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(data),
     });
     return response.json();
@@ -52,7 +43,6 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(credentials),
       });
 
@@ -86,7 +76,6 @@ export const api = {
   async uploadResume(formData: FormData) {
     const response = await fetch(`${API_BASE_URL}/api/upload-resume`, {
       method: "POST",
-      credentials: "include",
       body: formData,
     });
     return response.json();
@@ -100,7 +89,6 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/session-stats`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(payload),
     });
     const data = await response.json();
@@ -113,7 +101,6 @@ export const api = {
   async uploadExamImage(formData: FormData) {
     const response = await fetch(`${API_BASE_URL}/api/upload-exam-image`, {
       method: "POST",
-      credentials: "include",
       body: formData,
     });
     let data: { error?: string; message?: string } = {};
@@ -137,7 +124,6 @@ export const api = {
     try {
       const response = await fetch(`${API_BASE_URL}/api/upload-exam-image`, {
         method: "POST",
-        credentials: "include",
         body: formData,
       });
       if (!response.ok) {
@@ -149,10 +135,7 @@ export const api = {
   },
 
   async analyzeResume() {
-    const response = await fetch(`${API_BASE_URL}/api/analyze-resume`, {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await fetch(`${API_BASE_URL}/api/analyze-resume`);
     return response.json();
   },
 
@@ -160,24 +143,19 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/upload-snapshot`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(data),
     });
     return response.json();
   },
 
   async analyzeVideo() {
-    const response = await fetch(`${API_BASE_URL}/api/analyze-video`, {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await fetch(`${API_BASE_URL}/api/analyze-video`);
     return response.json();
   },
 
   async processVoice(formData: FormData) {
     const response = await fetch(`${API_BASE_URL}/api/voice`, {
       method: "POST",
-      credentials: "include",
       body: formData,
     });
     return response.json();
@@ -187,74 +165,61 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/code-runner`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(data),
     });
     return response.json();
   },
 
   async round3Execute(data: { code: string; language: string; userId: string; sessionId: string; questionId?: number }) {
-    const response = await fetch(`${API_BASE_URL}/api/code/run`, {
+    const response = await fetch(`${API_BASE_URL}/api/interview/round3-execute`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ code: data.code, language: data.language }),
+      body: JSON.stringify({ code: data.code, language: data.language, userId: data.userId, sessionId: data.sessionId, questionId: data.questionId }),
     });
     return response.json();
   },
 
   async getCodingQuestion(userId: string, sessionId: string) {
+    // Try enhanced coding-question endpoint first (returns full metadata)
     const response = await fetch(
-      `${API_BASE_URL}/api/interview/coding-question?userId=${userId}&sessionId=${sessionId}`,
-      { credentials: "include" }
+      `${API_BASE_URL}/api/interview/coding-question?userId=${userId}&sessionId=${sessionId}`
     );
-    return response.json();
+    if (response.ok) {
+      const data = await response.json();
+      if (data && !data.error) return data;
+    }
+    // Fallback: current-question via query params
+    const r2 = await fetch(
+      `${API_BASE_URL}/api/interview/current-question?userId=${userId}&sessionId=${sessionId}`
+    );
+    return r2.json();
   },
 
   async evaluateCode(data: { code: string; language: string; questionId: number; testCases?: any[] }) {
-    const response = await fetch(`${API_BASE_URL}/api/code/submit`, {
+    const response = await fetch(`${API_BASE_URL}/api/code-runner/evaluate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ 
-        code: data.code, 
-        language: data.language,
-        testCases: data.testCases || []
-      }),
+      body: JSON.stringify({ code: data.code, language: data.language, questionId: data.questionId }),
     });
     return response.json();
   },
 
   async getAttemptStatus(userId: string) {
-    const response = await fetch(
-      `${API_BASE_URL}/api/interview/attempts/status?userId=${userId}`,
-      {
-        credentials: "include",
-      },
-    );
+    const response = await fetch(`${API_BASE_URL}/api/interview/attempts/status?userId=${userId}`);
     return response.json();
   },
 
   async getCandidate(userId: string) {
-    const response = await fetch(
-      `${API_BASE_URL}/api/admin/candidate/${userId}`,
-      {
-        credentials: "include",
-      },
-    );
+    const response = await fetch(`${API_BASE_URL}/api/admin/candidate/${userId}`);
     return response.json();
   },
 
   async generateCommunicationQuestion(userId: string, sessionId: string) {
-    const response = await fetch(
-      `${API_BASE_URL}/api/communication/generate-question`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ userId, sessionId }),
-      },
-    );
+    const response = await fetch(`${API_BASE_URL}/api/communication/generate-question`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, sessionId }),
+    });
     return response.json();
   },
 
@@ -264,15 +229,11 @@ export const api = {
     questionNo: number;
     selectedOption: number;
   }) {
-    const response = await fetch(
-      `${API_BASE_URL}/api/communication/submit-answer`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(data),
-      },
-    );
+    const response = await fetch(`${API_BASE_URL}/api/communication/submit-answer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
     return response.json();
   },
 
@@ -280,7 +241,6 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/hr/generate-question`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ userId, sessionId }),
     });
     return response.json();
@@ -295,16 +255,13 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/hr/submit-answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(data),
     });
     return response.json();
   },
 
   async getInterviewConfig() {
-    const response = await fetch(`${API_BASE_URL}/api/admin/interview-config`, {
-      credentials: "include",
-    });
+    const response = await fetch(`${API_BASE_URL}/api/admin/interview-config`);
     return response.json();
   },
 };

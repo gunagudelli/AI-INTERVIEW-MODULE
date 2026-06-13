@@ -1,0 +1,12 @@
+export { default as RecruiterLogin } from './RecruiterLogin';
+export { default as RecruiterRegister } from './RecruiterRegister';
+export { default as RecruiterDashboard } from './RecruiterDashboard';
+export { default as RecruiterProfile } from './RecruiterProfile';
+export { default as RecruiterAnalytics } from './RecruiterAnalytics';
+export { default as RecruiterSettings } from './RecruiterSettings';
+export { default as CreateJob } from './CreateJob';
+export { default as EditJob } from './EditJob';
+export { default as JobsList } from './JobsList';
+export { default as JobApplications } from './JobApplications';
+export { default as CandidatesList } from './CandidatesList';
+export { default as ApplicationDetail } from './ApplicationDetail';

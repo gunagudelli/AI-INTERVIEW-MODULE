@@ -69,6 +69,12 @@ const PROCTOR_VIOLATIONS: Record<ProctorViolationType, ViolationConfig> = {
     uploadCooldownMs: 30000,
     uiCooldownMs: 5000,
   },
+  [ProctorViolationType.COPY_PASTE]: {
+    message: "Copy/paste detected. This has been flagged.",
+    statusLabel: "Copy/paste",
+    uploadCooldownMs: 10000,
+    uiCooldownMs: 2000,
+  },
 };
 
 type Landmark = { x: number; y: number; z?: number };

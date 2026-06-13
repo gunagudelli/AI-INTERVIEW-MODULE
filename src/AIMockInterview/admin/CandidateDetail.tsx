@@ -13,71 +13,15 @@ interface ExamImage {
   capturedAt: string;
 }
 
-/* ─────────── tiny helpers ─────────── */
 const clamp = (v: string) => Math.min(parseFloat(v) || 0, 100);
 
-const scoreColor = (pct: number) => {
-  if (pct >= 60) return { accent: '#0f7a3c', bg: '#f0faf4', text: '#0a5c2e', bar: '#18a254' };
-  if (pct >= 40) return { accent: '#92600a', bg: '#fffbf0', text: '#7a5008', bar: '#e8920a' };
-  return { accent: '#b91c1c', bg: '#fff5f5', text: '#991b1b', bar: '#e53e3e' };
-};
+const scoreColor = (n: number) =>
+  n >= 60 ? { accent: '#16a34a', bg: '#f0fdf4', bar: '#22c55e', border: '#bbf7d0' } :
+  n >= 40 ? { accent: '#d97706', bg: '#fffbeb', bar: '#f59e0b', border: '#fde68a' } :
+            { accent: '#dc2626', bg: '#fef2f2', bar: '#ef4444', border: '#fecaca' };
 
-const resultPill = (r: string) => {
-  if (r === 'Selected') return { bg: '#f0faf4', text: '#0a5c2e', border: '#a7d9b8' };
-  if (r === 'Not Selected') return { bg: '#fff5f5', text: '#991b1b', border: '#f5b8b8' };
-  return { bg: '#f4f5f7', text: '#4b5563', border: '#d1d5db' };
-};
-
-/* ─────────── Score Ring (SVG) ─────────── */
-const ScoreRing: React.FC<{ pct: string; size?: number }> = ({ pct, size = 52 }) => {
-  const n = clamp(pct);
-  const c = scoreColor(n);
-  const r = (size - 6) / 2;
-  const circ = 2 * Math.PI * r;
-  const dash = (n / 100) * circ;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e5e7eb" strokeWidth={4} />
-      <circle
-        cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke={c.bar} strokeWidth={4}
-        strokeDasharray={`${dash} ${circ}`}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
-      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central"
-        style={{ fontSize: size < 50 ? 11 : 13, fontWeight: 600, fill: c.accent, fontFamily: 'inherit' }}>
-        {n}%
-      </text>
-    </svg>
-  );
-};
-
-/* ─────────── Thin progress bar ─────────── */
-const Bar: React.FC<{ pct: string }> = ({ pct }) => {
-  const n = clamp(pct);
-  const c = scoreColor(n);
-  return (
-    <div style={{ height: 3, background: '#f0f0f0', borderRadius: 2, overflow: 'hidden', marginTop: 6 }}>
-      <div style={{ width: `${n}%`, height: '100%', background: c.bar, borderRadius: 2, transition: 'width 0.4s ease' }} />
-    </div>
-  );
-};
-
-/* ─────────── Dot Badge ─────────── */
-const Pill: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
-  <span style={{
-    display: 'inline-flex', alignItems: 'center', gap: 4,
-    fontSize: 11, fontWeight: 500, padding: '2px 8px',
-    borderRadius: 4, border: '1px solid #e5e7eb',
-    background: '#f9fafb', color: '#4b5563',
-    whiteSpace: 'nowrap', ...style
-  }}>{children}</span>
-);
-
-/* ─────────── Markdown renderer (bold + line breaks only) ─────────── */
-const renderMd = (text: string): React.ReactNode[] => {
-  return text.split('\n').map((line, li) => {
+const renderMd = (text: string): React.ReactNode[] =>
+  text.split('\n').map((line, li) => {
     const parts: React.ReactNode[] = [];
     const re = /\*\*(.+?)\*\*/g;
     let last = 0, m;
@@ -89,7 +33,60 @@ const renderMd = (text: string): React.ReactNode[] => {
     if (last < line.length) parts.push(line.slice(last));
     return <span key={li}>{parts}{li < text.split('\n').length - 1 && <br />}</span>;
   });
+
+const Tag: React.FC<{ children: React.ReactNode; color?: 'blue' | 'purple' | 'green' | 'default' }> = ({ children, color = 'default' }) => {
+  const styles = {
+    blue:    { background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' },
+    purple:  { background: '#faf5ff', color: '#7c3aed', border: '1px solid #ddd6fe' },
+    green:   { background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' },
+    default: { background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' },
+  };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      fontSize: 11, fontWeight: 500, padding: '2px 8px',
+      borderRadius: 5, whiteSpace: 'nowrap', ...styles[color],
+    }}>{children}</span>
+  );
 };
+
+const ScoreRing: React.FC<{ pct: string; size?: number }> = ({ pct, size = 48 }) => {
+  const n = clamp(pct);
+  const c = scoreColor(n);
+  const r = (size - 6) / 2;
+  const circ = 2 * Math.PI * r;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#f1f5f9" strokeWidth={5} />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={c.bar} strokeWidth={5}
+        strokeDasharray={`${(n/100)*circ} ${circ}`} strokeLinecap="round"
+        transform={`rotate(-90 ${size/2} ${size/2})`} />
+      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central"
+        style={{ fontSize: size < 50 ? 11 : 12, fontWeight: 700, fill: c.accent, fontFamily: 'inherit' }}>
+        {n}%
+      </text>
+    </svg>
+  );
+};
+
+const ProgressBar: React.FC<{ pct: string }> = ({ pct }) => {
+  const n = clamp(pct);
+  const c = scoreColor(n);
+  return (
+    <div style={{ height: 4, background: '#f1f5f9', borderRadius: 2, overflow: 'hidden', marginTop: 6 }}>
+      <div style={{ width: `${n}%`, height: '100%', background: c.bar, borderRadius: 2, transition: 'width .5s ease' }} />
+    </div>
+  );
+};
+
+const CSS = `
+  @keyframes fadeUp { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:none } }
+  .cd-page { animation: fadeUp .18s ease both }
+  .cd-card { transition: border-color .15s }
+  .cd-card:hover { border-color: #cbd5e1 !important }
+  .acc-body { animation: fadeUp .1s ease both }
+`;
+
 export const CandidateDetail: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
@@ -100,9 +97,9 @@ export const CandidateDetail: React.FC = () => {
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [lightbox, setLightbox] = useState<ProctoringSnapshot | null>(null);
   const [examLightbox, setExamLightbox] = useState<ExamImage | null>(null);
-  const [showExamImages, setShowExamImages] = useState(false);
+  const [showImages, setShowImages] = useState(false);
   const [examFilter, setExamFilter] = useState<string | null>(null);
-  const [showResumePreview, setShowResumePreview] = useState(false);
+  const [showResume, setShowResume] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -123,521 +120,165 @@ export const CandidateDetail: React.FC = () => {
   if (!candidate) return <ErrorState message="Candidate not found" />;
 
   const attempt: Attempt | undefined = candidate.attempts?.[selAttempt];
-  const BASE = 'https://interviews-zadn.onrender.com';
+  const BASE = 'http://localhost:3000/api/admin';
 
-  /* ── shared card style ── */
-  const card: React.CSSProperties = {
-    background: '#fff',
-    border: '1px solid #e8e8e8',
-    borderRadius: 10,
-    overflow: 'hidden',
-  };
-
-  const sectionTitle: React.CSSProperties = {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-    textTransform: 'uppercase', color: '#9ca3af', marginBottom: 12,
-  };
+  const examImages: ExamImage[] = (candidate as any).examImages || [];
+  const copyPaste = examImages.filter(e => e.type === 'COPY_PASTE_VIOLATION' || e.violationType === 'COPY_PASTE');
+  const photos = examImages.filter(e => e.type !== 'COPY_PASTE_VIOLATION' && e.violationType !== 'COPY_PASTE');
+  const vioTypes = Array.from(new Set(photos.filter(e => e.violationType).map(e => e.violationType))) as string[];
+  const filteredPhotos = examFilter === 'NONE' ? photos.filter(e => !e.violationType) :
+                         examFilter ? photos.filter(e => e.violationType === examFilter) : photos;
 
   return (
-    <div style={{ padding: '24px 28px', maxWidth: 960, margin: '0 auto', fontFamily: "'Amazon Ember', 'Segoe UI', sans-serif" }}>
+    <div className="cd-page" style={{ padding: '20px 24px', maxWidth: 980, margin: '0 auto', fontFamily: "'Inter', 'Segoe UI', sans-serif", fontSize: 14, color: '#111827' }}>
+      <style>{CSS}</style>
 
-      {/* ── Breadcrumb ── */}
-      <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            background: 'none', border: '1px solid #e5e7eb', cursor: 'pointer',
-            color: '#374151', padding: '5px 12px', fontSize: 13, borderRadius: 6,
-            fontWeight: 500,
-          }}
-        >
-          <svg width={14} height={14} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+      {/* Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+        <button onClick={() => navigate(-1)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 7, cursor: 'pointer', fontSize: 13, color: '#374151', fontWeight: 500 }}>
+          <svg width={13} height={13} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           Back
         </button>
-        <span style={{ color: '#d1d5db' }}>›</span>
-        <span style={{ color: '#111827', fontWeight: 500 }}>{candidate.name}</span>
-      </nav>
+        <span style={{ color: '#cbd5e1' }}>›</span>
+        <span style={{ fontSize: 13, color: '#64748b' }}>Candidates</span>
+        <span style={{ color: '#cbd5e1' }}>›</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{candidate.name}</span>
+      </div>
 
-      {/* ── Profile Card ── */}
-      <div style={{ ...card, padding: '20px 24px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-          {/* Avatar */}
-          <div style={{
-            width: 52, height: 52, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #1a2840 0%, #232f3e 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontSize: 20, fontWeight: 700, flexShrink: 0,
-            letterSpacing: '-0.5px',
-          }}>
+      {/* Profile Header */}
+      <div className="cd-card" style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '20px 24px', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#667eea,#764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 18, fontWeight: 700, flexShrink: 0 }}>
             {candidate.name?.charAt(0).toUpperCase() || '?'}
           </div>
-
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0 }}>{candidate.name}</h1>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 6 }}>
-              <span style={{ fontSize: 12, color: '#6b7280' }}>
-                {candidate.experience > 0 ? `${candidate.experience} yrs exp` : 'Fresher'}
-              </span>
-              <span style={{ color: '#e5e7eb' }}>·</span>
-              <Pill style={candidate.isTechnical
-                ? { background: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }
-                : { background: '#faf5ff', color: '#7c3aed', borderColor: '#ddd6fe' }}>
-                {candidate.isTechnical ? 'Technical' : 'Non-Technical'}
-              </Pill>
-              {candidate.domains?.map((d, i) => <Pill key={i}>{d}</Pill>)}
+            <h1 style={{ fontSize: 17, fontWeight: 700, margin: '0 0 6px' }}>{candidate.name}</h1>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: '#64748b' }}>{candidate.experience > 0 ? `${candidate.experience} yrs` : 'Fresher'}</span>
+              <span style={{ color: '#e2e8f0' }}>·</span>
+              <Tag color={candidate.isTechnical ? 'blue' : 'purple'}>{candidate.isTechnical ? 'Technical' : 'Non-Technical'}</Tag>
+              {candidate.domains?.map((d, i) => <Tag key={i}>{d}</Tag>)}
             </div>
             {candidate.skills?.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 10 }}>
-                {candidate.skills.map((sk, i) => (
-                  <Pill key={i} style={{ background: '#f0f7ff', color: '#1a56a0', borderColor: '#c3daf9' }}>{sk}</Pill>
-                ))}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {candidate.skills.map((sk, i) => <Tag key={i} color="blue">{sk}</Tag>)}
               </div>
             )}
           </div>
         </div>
-
         {((candidate as any).resumeUrl || candidate.resumePath) && (
-          <button
-            onClick={() => setShowResumePreview(true)}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '8px 16px', background: '#ff9900',
-              color: '#111', fontSize: 13, fontWeight: 600,
-              borderRadius: 6, border: '1px solid #e88900', cursor: 'pointer', flexShrink: 0,
-            }}
-          >
-            <svg width={14} height={14} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
+          <button onClick={() => setShowResume(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#374151' }}>
+            <svg width={14} height={14} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
             View Resume
           </button>
         )}
       </div>
 
-      {/* ── Summary Stats + Best Result ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 16 }}>
+      {/* Stats Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 14 }}>
         {[
-          { label: 'Total Attempts', value: String(candidate.summary?.totalAttempts ?? 0), unit: '' },
-          { label: 'Completed', value: String(candidate.summary?.completedAttempts ?? 0), unit: '' },
-          { label: 'Best Score', value: candidate.summary?.bestScore ?? 'N/A', unit: '%' },
-          { label: 'Latest Score', value: candidate.summary?.latestScore ?? 'N/A', unit: '%' },
-        ].map(s => {
-          const n = parseFloat(s.value);
-          const colored = s.unit === '%' && s.value !== 'N/A';
-          const c = colored ? scoreColor(n) : null;
-          return (
-            <div key={s.label} style={{
-              ...card, padding: '14px 16px', textAlign: 'center',
-            }}>
-              <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>{s.label}</p>
-              {colored && s.value !== 'N/A'
-                ? <ScoreRing pct={s.value} size={52} />
-                : <p style={{ fontSize: 26, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1 }}>{s.value}</p>
-              }
-            </div>
-          );
-        })}
-
-        {/* Best Result */}
-        {(() => {
-          const rp = resultPill(candidate.summary?.bestResult || '');
-          return (
-            <div style={{
-              ...card, padding: '14px 16px', textAlign: 'center',
-              borderColor: rp.border,
-            }}>
-              <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Best Result</p>
-              <span style={{
-                display: 'inline-block', fontSize: 13, fontWeight: 700,
-                padding: '4px 12px', borderRadius: 20,
-                background: rp.bg, color: rp.text, border: `1px solid ${rp.border}`,
-              }}>
-                {candidate.summary?.bestResult || 'N/A'}
-              </span>
-            </div>
-          );
-        })()}
+          { label: 'Total Attempts', value: String(candidate.summary?.totalAttempts ?? 0), ring: false },
+          { label: 'Completed', value: String(candidate.summary?.completedAttempts ?? 0), ring: false },
+          { label: 'Best Score', value: candidate.summary?.bestScore ?? 'N/A', ring: true },
+          { label: 'Latest Score', value: candidate.summary?.latestScore ?? 'N/A', ring: true },
+        ].map(s => (
+          <div key={s.label} className="cd-card" style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>
+            <p style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' }}>{s.label}</p>
+            {s.ring && s.value !== 'N/A'
+              ? <div style={{ display: 'flex', justifyContent: 'center' }}><ScoreRing pct={s.value} size={50} /></div>
+              : <p style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 }}>{s.value}</p>
+            }
+          </div>
+        ))}
+        <div className="cd-card" style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>
+          <p style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Result</p>
+          {(() => {
+            const r = candidate.summary?.bestResult || '';
+            const s = r === 'Selected' ? { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' } :
+                      r === 'Not Selected' ? { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' } :
+                      { bg: '#f8fafc', color: '#64748b', border: '#e2e8f0' };
+            return <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 20, background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>{r || 'N/A'}</span>;
+          })()}
+        </div>
       </div>
 
-      {/* ── Resume Preview Modal ── */}
-      {showResumePreview && (() => {
-        const resumeUrl = (candidate as any).resumeUrl || `${BASE}${candidate.resumePath}`;
-        const isDocx = resumeUrl?.match(/\.docx?$/i);
-        const previewUrl = isDocx
-          ? `https://docs.google.com/gview?url=${encodeURIComponent(resumeUrl)}&embedded=true`
-          : resumeUrl;
-        return (
-          <div
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-            onClick={() => setShowResumePreview(false)}
-          >
-            <div
-              style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', width: '90%', maxWidth: 800, height: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 18px', borderBottom: '1px solid #f0f0f0', flexShrink: 0 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>Resume — {candidate.name}</span>
-                <button onClick={() => setShowResumePreview(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 18, lineHeight: 1 }}>✕</button>
-              </div>
-              <iframe
-                src={previewUrl}
-                title="Resume Preview"
-                style={{ flex: 1, border: 'none', width: '100%' }}
-              />
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* ── Exam Images ── */}
-      {((candidate as any).examImages?.length || 0) > 0 && (() => {
-        const examImages: ExamImage[] = (candidate as any).examImages;
-        const violations = examImages.filter(e => e.violationType);
-        const violationTypes = Array.from(new Set(violations.map(e => e.violationType))) as string[];
-        const filtered = examFilter ? examImages.filter(e => e.violationType === examFilter) : examImages;
-        return (
-          <div style={{ ...card, marginBottom: 16 }}>
-            <div style={{
-              padding: '12px 20px', borderBottom: showExamImages ? '1px solid #f0f0f0' : 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: '#fafafa', flexWrap: 'wrap', gap: 8,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <svg width={16} height={16} fill="none" stroke="#6b7280" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Exam Images</span>
-                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb' }}>
-                  {examImages.length} total
-                </span>
-                {violations.length > 0 && (
-                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: '#fff5f5', color: '#b91c1c', border: '1px solid #fca5a5' }}>
-                    {violations.length} violations
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => setShowExamImages(v => !v)}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '6px 14px', fontSize: 12, fontWeight: 600,
-                  borderRadius: 6, border: '1px solid #e5e7eb',
-                  background: showExamImages ? '#f3f4f6' : '#fff',
-                  color: '#374151', cursor: 'pointer',
-                }}
-              >
-                <svg width={13} height={13} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                {showExamImages ? 'Hide Images' : 'View Images'}
-              </button>
-            </div>
-
-            {showExamImages && (
-              <div style={{ padding: 16 }}>
-                {/* Filter buttons */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-                  <button
-                    onClick={() => setExamFilter(null)}
-                    style={{
-                      padding: '4px 12px', fontSize: 11, fontWeight: 600, borderRadius: 20, cursor: 'pointer',
-                      border: `1px solid ${examFilter === null ? '#1a2840' : '#e5e7eb'}`,
-                      background: examFilter === null ? '#1a2840' : '#fff',
-                      color: examFilter === null ? '#fff' : '#6b7280',
-                    }}
-                  >
-                    All ({examImages.length})
-                  </button>
-                  {violationTypes.map(v => {
-                    const count = examImages.filter(e => e.violationType === v).length;
-                    const active = examFilter === v;
-                    return (
-                      <button
-                        key={v}
-                        onClick={() => setExamFilter(active ? null : v)}
-                        style={{
-                          padding: '4px 12px', fontSize: 11, fontWeight: 600, borderRadius: 20, cursor: 'pointer',
-                          border: `1px solid ${active ? '#b91c1c' : '#fca5a5'}`,
-                          background: active ? '#b91c1c' : '#fff5f5',
-                          color: active ? '#fff' : '#b91c1c',
-                        }}
-                      >
-                        {v.replace(/_/g, ' ')} ({count})
-                      </button>
-                    );
-                  })}
-                  {examImages.some(e => !e.violationType) && (
-                    <button
-                      onClick={() => setExamFilter(examFilter === 'NONE' ? null : 'NONE')}
-                      style={{
-                        padding: '4px 12px', fontSize: 11, fontWeight: 600, borderRadius: 20, cursor: 'pointer',
-                        border: `1px solid ${examFilter === 'NONE' ? '#0066c0' : '#bfdbfe'}`,
-                        background: examFilter === 'NONE' ? '#0066c0' : '#eff6ff',
-                        color: examFilter === 'NONE' ? '#fff' : '#1d4ed8',
-                      }}
-                    >
-                      Normal ({examImages.filter(e => !e.violationType).length})
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: 10 }}>
-                  {(examFilter === 'NONE' ? examImages.filter(e => !e.violationType) : filtered).map((img, i) => {
-                    const vio = !!img.violationType;
-                    return (
-                      <button
-                        key={img.id}
-                        onClick={() => setExamLightbox(img)}
-                        style={{
-                          position: 'relative', borderRadius: 7, overflow: 'hidden',
-                          border: `1.5px solid ${vio ? '#fca5a5' : '#e5e7eb'}`,
-                          cursor: 'pointer', padding: 0, background: 'none',
-                          transition: 'transform 0.15s', aspectRatio: '1',
-                        }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
-                      >
-                        <img
-                          src={img.imageUrl} alt={`Exam ${i + 1}`}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                          onError={e => { (e.target as HTMLImageElement).src = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23f1f5f9'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='9'>No img</text></svg>`; }}
-                        />
-                        {vio && (
-                          <div style={{
-                            position: 'absolute', top: 3, right: 3,
-                            width: 14, height: 14, background: '#ef4444',
-                            borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            <span style={{ color: '#fff', fontSize: 8, fontWeight: 700 }}>!</span>
-                          </div>
-                        )}
-                        {img.type === 'CANDIDATE_IMAGE' && (
-                          <div style={{
-                            position: 'absolute', bottom: 0, left: 0, right: 0,
-                            background: 'rgba(0,82,204,0.75)', padding: '2px 0',
-                          }}>
-                            <span style={{ color: '#fff', fontSize: 7, fontWeight: 700, display: 'block', textAlign: 'center' }}>ID</span>
-                          </div>
-                        )}
-                        {vio && (
-                          <div style={{
-                            position: 'absolute', bottom: 0, left: 0, right: 0,
-                            background: 'rgba(185,28,28,0.75)', padding: '2px 3px',
-                          }}>
-                            <span style={{ color: '#fff', fontSize: 6, fontWeight: 600, display: 'block', textAlign: 'center', lineHeight: 1.2 }}>
-                              {img.violationType!.replace(/_/g, ' ')}
-                            </span>
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                {filtered.length === 0 && (
-                  <p style={{ textAlign: 'center', fontSize: 12, color: '#9ca3af', margin: '16px 0 0' }}>No images match this filter.</p>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* ── Exam Image Lightbox ── */}
-      {examLightbox && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          onClick={() => setExamLightbox(null)}
-        >
-          <div
-            style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '14px 18px', borderBottom: '1px solid #f0f0f0' }}>
-              <div>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: examLightbox.violationType ? '#b91c1c' : '#374151' }}>
-                  {examLightbox.violationType ? `⚠ ${examLightbox.violationType.replace(/_/g, ' ')}` : examLightbox.type === 'CANDIDATE_IMAGE' ? '🪪 Candidate ID Photo' : 'Exam Image'}
-                </p>
-                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9ca3af' }}>{new Date(examLightbox.capturedAt).toLocaleString('en-IN')}</p>
-              </div>
-              <button onClick={() => setExamLightbox(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 4, fontSize: 18, lineHeight: 1 }}>✕</button>
-            </div>
-            <img
-              src={examLightbox.imageUrl}
-              alt="Exam image"
-              style={{ width: '100%', maxHeight: 380, objectFit: 'contain', display: 'block' }}
-            />
-            <div style={{ padding: '10px 18px', background: '#fafafa', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace', margin: 0 }}>Session: {examLightbox.sessionStatsId.slice(0, 16)}…</p>
-              <a href={examLightbox.imageUrl} target="_blank" rel="noopener noreferrer"
-                style={{ fontSize: 11, color: '#0066c0', textDecoration: 'none', fontWeight: 500 }}>Open full ↗</a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Proctoring Snapshots ── */}
-      {(candidate.proctoringSnapshots?.length || 0) > 0 && (
-        <div style={{ ...card, marginBottom: 16 }}>
-          {/* Header */}
-          <div style={{
-            padding: '12px 20px', borderBottom: '1px solid #f0f0f0',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: '#fafafa',
-          }}>
+      {/* Exam Images */}
+      {examImages.length > 0 && (
+        <div className="cd-card" style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, marginBottom: 14, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 18px', background: '#f8fafc', borderBottom: showImages ? '1px solid #f1f5f9' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width={16} height={16} fill="none" stroke="#6b7280" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
-              </svg>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Proctoring Snapshots</span>
-              <span style={{
-                fontSize: 11, padding: '1px 7px', borderRadius: 10,
-                background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb',
-              }}>
-                {candidate.proctoringSnapshots!.length}
-              </span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Proctoring</span>
+              <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>{photos.length} photos</span>
+              {photos.filter(e => e.violationType).length > 0 && <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>{photos.filter(e => e.violationType).length} violations</span>}
+              {copyPaste.length > 0 && <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa' }}>{copyPaste.length} copy-paste</span>}
             </div>
-            <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#9ca3af' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} /> Violation
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d1d5db', display: 'inline-block' }} /> Normal
-              </span>
-            </div>
+            <button onClick={() => setShowImages(v => !v)} style={{ padding: '5px 12px', fontSize: 12, fontWeight: 600, borderRadius: 6, border: '1px solid #e2e8f0', background: '#fff', color: '#374151', cursor: 'pointer' }}>
+              {showImages ? 'Hide' : 'Show Images'}
+            </button>
           </div>
 
-          <div style={{ padding: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: 10 }}>
-              {candidate.proctoringSnapshots!.map((snap, i) => {
-                const src = snap.imageUrl.startsWith('http') ? snap.imageUrl : BASE + snap.imageUrl;
-                const vio = !!snap.violationType;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => setLightbox(snap)}
-                    style={{
-                      position: 'relative', borderRadius: 7, overflow: 'hidden',
-                      border: `1.5px solid ${vio ? '#fca5a5' : '#e5e7eb'}`,
-                      cursor: 'pointer', padding: 0, background: 'none',
-                      transition: 'border-color 0.15s, transform 0.15s',
-                      aspectRatio: '1',
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
-                  >
-                    <img
-                      src={src} alt={`Snap ${i + 1}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                      onError={e => { (e.target as HTMLImageElement).src = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23f1f5f9'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='9'>No img</text></svg>`; }}
-                    />
-                    {vio && (
-                      <div style={{
-                        position: 'absolute', top: 3, right: 3,
-                        width: 14, height: 14, background: '#ef4444',
-                        borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <span style={{ color: '#fff', fontSize: 8, fontWeight: 700 }}>!</span>
-                      </div>
-                    )}
+          {showImages && (
+            <div style={{ padding: 16 }}>
+              {/* Filter tabs */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                {[{ label: `All (${photos.length})`, val: null }, ...vioTypes.map(v => ({ label: `${v.replace(/_/g,' ')} (${photos.filter(e=>e.violationType===v).length})`, val: v })), photos.some(e=>!e.violationType) ? { label: `Normal (${photos.filter(e=>!e.violationType).length})`, val: 'NONE' } : null].filter(Boolean).map((f: any) => (
+                  <button key={String(f.val)} onClick={() => setExamFilter(examFilter === f.val ? null : f.val)}
+                    style={{ padding: '3px 10px', fontSize: 11, fontWeight: 600, borderRadius: 20, cursor: 'pointer', border: `1px solid ${examFilter === f.val ? '#667eea' : '#e2e8f0'}`, background: examFilter === f.val ? '#667eea' : '#fff', color: examFilter === f.val ? '#fff' : '#64748b' }}>
+                    {f.label}
                   </button>
-                );
-              })}
-            </div>
+                ))}
+              </div>
 
-            {candidate.proctoringSnapshots!.some(s => s.violationType) && (
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}>
-                <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Violations</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {Array.from(new Set(candidate.proctoringSnapshots!.filter(s => s.violationType).map(s => s.violationType))).map(v => (
-                    <Pill key={v} style={{ background: '#fff5f5', color: '#b91c1c', borderColor: '#fca5a5' }}>
-                      {v?.replace(/_/g, ' ')}
-                    </Pill>
-                  ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(70px,1fr))', gap: 8 }}>
+                {filteredPhotos.map((img, i) => (
+                  <button key={img.id} onClick={() => setExamLightbox(img)} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: `1.5px solid ${img.violationType ? '#fca5a5' : '#e2e8f0'}`, cursor: 'pointer', padding: 0, background: 'none', aspectRatio: '1', transition: 'transform .15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.06)')}
+                    onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}>
+                    <img src={img.imageUrl} alt={`Exam ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      onError={e => { (e.target as HTMLImageElement).src = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='70' height='70'><rect width='70' height='70' fill='%23f1f5f9'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='8'>No img</text></svg>`; }} />
+                    {img.violationType && <div style={{ position: 'absolute', top: 3, right: 3, width: 13, height: 13, background: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 7, fontWeight: 700 }}>!</span></div>}
+                    {img.type === 'CANDIDATE_IMAGE' && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(37,99,235,.8)', padding: '2px 0', textAlign: 'center' }}><span style={{ color: '#fff', fontSize: 7, fontWeight: 700 }}>ID</span></div>}
+                    {img.violationType && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(185,28,28,.8)', padding: '2px 3px', textAlign: 'center' }}><span style={{ color: '#fff', fontSize: 6, fontWeight: 600 }}>{img.violationType.replace(/_/g,' ')}</span></div>}
+                  </button>
+                ))}
+              </div>
+
+              {copyPaste.length > 0 && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #f1f5f9' }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#c2410c', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 8 }}>Copy-Paste Violations ({copyPaste.length})</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {copyPaste.map((v, i) => (
+                      <div key={v.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 6, background: '#fff7ed', border: '1px solid #fed7aa', fontSize: 11 }}>
+                        <span style={{ fontWeight: 700, color: '#c2410c' }}>#{i+1}</span>
+                        <span style={{ color: '#94a3b8' }}>{new Date(v.capturedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* ── Lightbox ── */}
-      {lightbox && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          onClick={() => setLightbox(null)}
-        >
-          <div
-            style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', maxWidth: 480, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '14px 18px', borderBottom: '1px solid #f0f0f0' }}>
-              <div>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: lightbox.violationType ? '#b91c1c' : '#374151' }}>
-                  {lightbox.violationType ? `⚠ ${lightbox.violationType.replace(/_/g, ' ')}` : 'Normal snapshot'}
-                </p>
-                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9ca3af' }}>{new Date(lightbox.capturedAt).toLocaleString('en-IN')}</p>
-              </div>
-              <button onClick={() => setLightbox(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 4, fontSize: 18, lineHeight: 1 }}>✕</button>
-            </div>
-            <img
-              src={lightbox.imageUrl.startsWith('http') ? lightbox.imageUrl : BASE + lightbox.imageUrl}
-              alt="Proctoring snapshot"
-              style={{ width: '100%', maxHeight: 380, objectFit: 'contain', display: 'block' }}
-            />
-            <div style={{ padding: '10px 18px', background: '#fafafa', borderTop: '1px solid #f0f0f0' }}>
-              <p style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace', margin: 0 }}>Session: {lightbox.sessionId?.slice(0, 16)}…</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Attempts ── */}
+      {/* Attempts */}
       {(candidate.attempts?.length || 0) === 0 ? (
-        <div style={{ ...card, padding: 48, textAlign: 'center', color: '#9ca3af' }}>
-          <svg width={40} height={40} style={{ margin: '0 auto 12px', display: 'block', color: '#d1d5db' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '48px 24px', textAlign: 'center', color: '#94a3b8' }}>
           <p style={{ fontSize: 13, margin: 0 }}>No interview attempts found.</p>
         </div>
       ) : (
-        <div style={card}>
-          {/* Attempt Tabs */}
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden' }}>
+          {/* Attempt tabs */}
           {candidate.attempts.length > 1 && (
-            <div style={{
-              display: 'flex', gap: 4, padding: '12px 16px 0',
-              background: '#fafafa', borderBottom: '1px solid #e8e8e8',
-              overflowX: 'auto',
-            }}>
+            <div style={{ display: 'flex', gap: 2, padding: '10px 14px 0', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
               {candidate.attempts.map((a, i) => {
                 const active = selAttempt === i;
-                const rp = resultPill(a.result);
+                const n = clamp(a.overallScore);
+                const c = scoreColor(n);
                 return (
-                  <button
-                    key={i}
-                    onClick={() => { setSelAttempt(i); setExpanded(new Set()); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 7,
-                      padding: '8px 14px', fontSize: 13, fontWeight: active ? 600 : 400,
-                      borderRadius: '6px 6px 0 0', border: 'none', cursor: 'pointer',
-                      whiteSpace: 'nowrap', transition: 'background 0.12s',
-                      background: active ? '#fff' : 'transparent',
-                      color: active ? '#111827' : '#6b7280',
-                      borderBottom: active ? '2px solid #ff9900' : '2px solid transparent',
-                      marginBottom: -1,
-                    }}
-                  >
+                  <button key={i} onClick={() => { setSelAttempt(i); setExpanded(new Set()); }} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', fontSize: 13, fontWeight: active ? 600 : 400, borderRadius: '7px 7px 0 0', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: active ? '#fff' : 'transparent', color: active ? '#111827' : '#64748b', borderBottom: active ? '2px solid #667eea' : '2px solid transparent', marginBottom: -1 }}>
                     Attempt {a.attemptNumber}
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: '1px 7px',
-                      borderRadius: 4, border: `1px solid ${rp.border}`,
-                      background: rp.bg, color: rp.text,
-                    }}>{a.overallScore}%</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 7px', borderRadius: 4, background: c.bg, color: c.accent, border: `1px solid ${c.border}` }}>{a.overallScore}%</span>
                   </button>
                 );
               })}
@@ -645,149 +286,85 @@ export const CandidateDetail: React.FC = () => {
           )}
 
           {attempt && (
-            <div style={{ padding: 24 }}>
-              {/* Attempt Header Row */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid #f3f4f6' }}>
+            <div style={{ padding: 22 }}>
+              {/* Attempt header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 18, paddingBottom: 18, borderBottom: '1px solid #f1f5f9' }}>
                 <div>
-                  <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Attempt {attempt.attemptNumber}</h2>
-                  <p style={{ fontSize: 12, color: '#9ca3af', margin: 0 }}>
-                    {new Date(attempt.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    &nbsp;·&nbsp;{attempt.status}&nbsp;·&nbsp;{attempt.totalQuestions} questions
+                  <h2 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px' }}>Attempt {attempt.attemptNumber}</h2>
+                  <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
+                    {new Date(attempt.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} · {attempt.status} · {attempt.totalQuestions} questions
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <ScoreRing pct={attempt.overallScore} size={56} />
+                  <ScoreRing pct={attempt.overallScore} size={52} />
                   {(() => {
-                    const rp = resultPill(attempt.result);
-                    return (
-                      <span style={{
-                        fontSize: 13, fontWeight: 700, padding: '5px 14px',
-                        borderRadius: 20, border: `1px solid ${rp.border}`,
-                        background: rp.bg, color: rp.text,
-                      }}>
-                        {attempt.result}
-                      </span>
-                    );
+                    const r = attempt.result;
+                    const s = r === 'Selected' ? { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' } :
+                              r === 'Not Selected' ? { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' } :
+                              { bg: '#f8fafc', color: '#64748b', border: '#e2e8f0' };
+                    return <span style={{ fontSize: 13, fontWeight: 700, padding: '5px 14px', borderRadius: 20, background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>{r}</span>;
                   })()}
                 </div>
               </div>
 
-              {/* Round Score Cards */}
-              <p style={sectionTitle}>Round Breakdown</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10, marginBottom: 20 }}>
+              {/* Round cards */}
+              <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: '#94a3b8', margin: '0 0 10px' }}>Round Breakdown</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 8, marginBottom: 20 }}>
                 {attempt.roundBreakdown.map(rb => {
                   const n = clamp(rb.percentage);
                   const c = scoreColor(n);
                   return (
-                    <div key={rb.round} style={{
-                      background: '#fafafa', border: '1px solid #f0f0f0',
-                      borderRadius: 8, padding: '12px 14px',
-                    }}>
+                    <div key={rb.round} style={{ background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: 9, padding: '12px 14px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                        <span style={{ fontSize: 11, color: '#6b7280', fontWeight: 600, lineHeight: 1.3, maxWidth: '65%' }}>{rb.label}</span>
-                        <span style={{
-                          fontSize: 14, fontWeight: 700, color: c.accent,
-                          background: c.bg, padding: '1px 6px', borderRadius: 4,
-                        }}>{n}%</span>
+                        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, lineHeight: 1.3, maxWidth: '65%' }}>{rb.label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: c.accent, background: c.bg, padding: '1px 6px', borderRadius: 4, border: `1px solid ${c.border}` }}>{n}%</span>
                       </div>
-                      <Bar pct={rb.percentage} />
-                      <p style={{ fontSize: 11, color: '#9ca3af', margin: '5px 0 0' }}>{rb.scored}/{rb.maxScore} pts</p>
+                      <ProgressBar pct={rb.percentage} />
+                      <p style={{ fontSize: 11, color: '#94a3b8', margin: '5px 0 0' }}>{rb.scored}/{rb.maxScore} pts</p>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Round Accordion */}
-              <p style={sectionTitle}>Questions & Feedback</p>
+              {/* Q&A accordion */}
+              <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: '#94a3b8', margin: '0 0 8px' }}>Questions & Feedback</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {attempt.roundBreakdown.map((rb: RoundBreakdown) => {
                   const n = clamp(rb.percentage);
                   const c = scoreColor(n);
                   const open = expanded.has(rb.round);
                   return (
-                    <div key={rb.round} style={{ border: '1px solid #e8e8e8', borderRadius: 8, overflow: 'hidden' }}>
-                      {/* Accordion Header */}
-                      <button
-                        onClick={() => toggle(rb.round)}
-                        style={{
-                          width: '100%', display: 'flex', alignItems: 'center',
-                          justifyContent: 'space-between', padding: '12px 16px',
-                          background: open ? '#fffbf5' : '#fafafa',
-                          border: 'none', cursor: 'pointer', textAlign: 'left',
-                          borderBottom: open ? '1px solid #f0f0f0' : 'none',
-                          transition: 'background 0.12s',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <span style={{
-                            width: 24, height: 24, borderRadius: '50%',
-                            background: '#1a2840', color: '#fff',
-                            fontSize: 10, fontWeight: 700,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            flexShrink: 0,
-                          }}>R{rb.round}</span>
+                    <div key={rb.round} style={{ border: '1px solid #e2e8f0', borderRadius: 9, overflow: 'hidden' }}>
+                      <button onClick={() => toggle(rb.round)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: open ? '#fffbf5' : '#f8fafc', border: 'none', cursor: 'pointer', textAlign: 'left', borderBottom: open ? '1px solid #f1f5f9' : 'none' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                          <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg,#667eea,#764ba2)', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>R{rb.round}</span>
                           <span style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{rb.label}</span>
-                          <span style={{
-                            fontSize: 11, padding: '1px 8px', borderRadius: 4, fontWeight: 600,
-                            background: c.bg, color: c.accent,
-                            border: `1px solid ${c.accent}22`,
-                          }}>
-                            {n}% · {rb.scored}/{rb.maxScore}
-                          </span>
-                          <span style={{ fontSize: 11, color: '#9ca3af' }}>{rb.questionsAnswered} Q</span>
+                          <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 4, fontWeight: 600, background: c.bg, color: c.accent, border: `1px solid ${c.border}` }}>{n}% · {rb.scored}/{rb.maxScore}</span>
+                          <span style={{ fontSize: 11, color: '#94a3b8' }}>{rb.questionsAnswered} Q</span>
                         </div>
-                        <svg
-                          width={14} height={14} fill="none" stroke="#9ca3af" viewBox="0 0 24 24"
-                          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}
-                        >
+                        <svg width={13} height={13} fill="none" stroke="#94a3b8" viewBox="0 0 24 24" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }}>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
 
                       {open && (
-                        <div>
+                        <div className="acc-body">
                           {rb.questions.map((q, idx) => {
                             const qs = parseFloat(q.score);
                             const qc = scoreColor(qs >= 7 ? 80 : qs >= 4 ? 50 : 20);
                             return (
-                              <div key={idx} style={{
-                                padding: '18px 20px',
-                                borderBottom: idx < rb.questions.length - 1 ? '1px solid #f9fafb' : 'none',
-                                background: '#fff',
-                              }}>
-                                {/* Q number + text */}
+                              <div key={idx} style={{ padding: '16px 18px', borderBottom: idx < rb.questions.length - 1 ? '1px solid #f8fafc' : 'none', background: '#fff' }}>
                                 <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-                                  <span style={{
-                                    flexShrink: 0, width: 22, height: 22,
-                                    borderRadius: '50%', background: '#f3f4f6',
-                                    color: '#6b7280', fontSize: 10, fontWeight: 700,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  }}>{idx + 1}</span>
+                                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', background: '#f1f5f9', color: '#64748b', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{idx+1}</span>
                                   <p style={{ margin: 0, fontSize: 13, color: '#111827', fontWeight: 500, lineHeight: 1.6 }}>{renderMd(q.question)}</p>
                                 </div>
-
-                                {/* Answer box */}
-                                <div style={{
-                                  marginLeft: 32, marginBottom: 10,
-                                  background: '#f9fafb', border: '1px solid #f0f0f0',
-                                  borderRadius: 6, padding: '10px 14px',
-                                }}>
-                                  <p style={{ margin: '0 0 4px', fontSize: 10, color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Answer</p>
+                                <div style={{ marginLeft: 30, marginBottom: 10, background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: 6, padding: '9px 13px' }}>
+                                  <p style={{ margin: '0 0 3px', fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em' }}>Answer</p>
                                   <p style={{ margin: 0, fontSize: 13, color: '#374151', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{q.answer || '—'}</p>
                                 </div>
-
-                                {/* Score + Feedback */}
-                                <div style={{ marginLeft: 32, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                                  <span style={{
-                                    flexShrink: 0, fontSize: 12, fontWeight: 700,
-                                    padding: '3px 10px', borderRadius: 4,
-                                    background: qc.bg, color: qc.accent,
-                                    border: `1px solid ${qc.accent}22`,
-                                    whiteSpace: 'nowrap',
-                                  }}>
-                                    {q.score} / 10
-                                  </span>
-                                  <p style={{ margin: 0, fontSize: 12, color: '#6b7280', lineHeight: 1.65 }}>{q.feedback}</p>
+                                <div style={{ marginLeft: 30, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                                  <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 4, background: qc.bg, color: qc.accent, border: `1px solid ${qc.border}`, whiteSpace: 'nowrap' }}>{q.score} / 10</span>
+                                  <p style={{ margin: 0, fontSize: 12, color: '#64748b', lineHeight: 1.65 }}>{q.feedback}</p>
                                 </div>
                               </div>
                             );
@@ -800,6 +377,63 @@ export const CandidateDetail: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Resume Modal */}
+      {showResume && (() => {
+        const url = (candidate as any).resumeUrl || `${BASE}${candidate.resumePath}`;
+        const previewUrl = url?.match(/\.docx?$/i) ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true` : url;
+        return (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowResume(false)}>
+            <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', width: '90%', maxWidth: 800, height: '88vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 18px', borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>Resume — {candidate.name}</span>
+                <button onClick={() => setShowResume(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18 }}>✕</button>
+              </div>
+              <iframe src={previewUrl} title="Resume" style={{ flex: 1, border: 'none', width: '100%' }} />
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Exam Image Lightbox */}
+      {examLightbox && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setExamLightbox(null)}>
+          <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', maxWidth: 460, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '13px 16px', borderBottom: '1px solid #f1f5f9' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: examLightbox.violationType ? '#dc2626' : '#374151' }}>
+                  {examLightbox.violationType ? `${examLightbox.violationType.replace(/_/g,' ')}` : examLightbox.type === 'CANDIDATE_IMAGE' ? 'Candidate ID Photo' : 'Exam Image'}
+                </p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>{new Date(examLightbox.capturedAt).toLocaleString('en-IN')}</p>
+              </div>
+              <button onClick={() => setExamLightbox(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18 }}>✕</button>
+            </div>
+            <img src={examLightbox.imageUrl} alt="Exam" style={{ width: '100%', maxHeight: 360, objectFit: 'contain', display: 'block' }} />
+            <div style={{ padding: '9px 16px', background: '#f8fafc', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>Session: {examLightbox.sessionStatsId?.slice(0,16)}…</span>
+              <a href={examLightbox.imageUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: '#667eea', textDecoration: 'none', fontWeight: 500 }}>Open ↗</a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Proctoring Lightbox */}
+      {lightbox && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setLightbox(null)}>
+          <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', maxWidth: 460, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '13px 16px', borderBottom: '1px solid #f1f5f9' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: lightbox.violationType ? '#dc2626' : '#374151' }}>
+                  {lightbox.violationType ? lightbox.violationType.replace(/_/g,' ') : 'Normal snapshot'}
+                </p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>{new Date(lightbox.capturedAt).toLocaleString('en-IN')}</p>
+              </div>
+              <button onClick={() => setLightbox(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18 }}>✕</button>
+            </div>
+            <img src={lightbox.imageUrl.startsWith('http') ? lightbox.imageUrl : BASE + lightbox.imageUrl} alt="Snapshot" style={{ width: '100%', maxHeight: 360, objectFit: 'contain', display: 'block' }} />
+          </div>
         </div>
       )}
     </div>

@@ -1,0 +1,9 @@
+export { default as authReducer } from './authSlice';
+export { default as interviewReducer } from './interviewSlice';
+export { default as recruiterReducer } from './recruiterSlice';
+export { default as adminReducer } from './adminSlice';
+export { default as candidateReducer } from './candidateSlice';
+export { default as notificationReducer } from './notificationSlice';
+export { default as jobReducer } from './jobSlice';
+export { default as evaluationReducer } from './evaluationSlice';
+export { default as dashboardReducer } from './dashboardSlice';

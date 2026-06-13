@@ -83,8 +83,10 @@ export const InterviewConfig: React.FC = () => {
       <style>{`
         @keyframes spin   { to { transform: rotate(360deg) } }
         @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes rowIn  { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
         .ic-input:focus   { outline: none; border-color: #2563EB !important; }
         .ic-btn:hover     { opacity: .88; }
+        .ic-row           { animation: rowIn 0.18s ease both; }
         input[type=number]::-webkit-inner-spin-button { opacity: .4; }
       `}</style>
 
@@ -108,7 +110,7 @@ export const InterviewConfig: React.FC = () => {
           color: toast.ok ? '#15803D' : '#BE123C',
           fontSize: 13, fontWeight: 500, animation: 'fadeIn .2s ease',
         }}>
-          {toast.ok ? '✓' : '✕'} {toast.msg}
+          {toast.ok ? 'Saved' : 'Error'} {toast.msg}
         </div>
       )}
 
@@ -129,7 +131,9 @@ export const InterviewConfig: React.FC = () => {
         return (
           <div
             key={cfg.round}
+            className="ic-row"
             style={{
+              animationDelay: `${idx * 0.05}s`,
               display: 'grid', gridTemplateColumns: '32px 1fr 110px 110px',
               gap: 12, padding: '10px 16px', alignItems: 'center',
               borderRadius: 8, marginBottom: 4,

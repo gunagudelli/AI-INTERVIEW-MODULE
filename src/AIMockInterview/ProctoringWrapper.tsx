@@ -31,7 +31,7 @@ export const ProctoringWrapper: React.FC<ProctoringWrapperProps> = ({
         }
 
         const proctor = new ProctoringSDK({
-          apiUrl: `${'http://localhost:3001'}/api/proctoring`,
+          apiUrl: `http://localhost:3000/api/proctoring`,
           userId,
           sessionId,
           onViolation: (result: any) => {

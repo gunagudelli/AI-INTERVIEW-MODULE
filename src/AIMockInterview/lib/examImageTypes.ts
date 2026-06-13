@@ -2,6 +2,7 @@
 export const ExamImageType = {
   CANDIDATE_IMAGE: "CANDIDATE_IMAGE",
   CANDIDATE_EXAM_PROXY: "CANDIDATE_EXAM_PROXY",
+  COPY_PASTE_VIOLATION: "COPY_PASTE_VIOLATION",
 } as const;
 
 export type ExamImageTypeValue =
@@ -16,4 +17,5 @@ export enum ProctorViolationType {
   FACE_OFF_CENTER = "FACE_OFF_CENTER",
   FACE_TOO_FAR = "FACE_TOO_FAR",
   CAMERA_ERROR = "CAMERA_ERROR",
+  COPY_PASTE = "COPY_PASTE",
 }

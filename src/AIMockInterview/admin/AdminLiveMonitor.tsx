@@ -39,6 +39,15 @@ export const AdminLiveMonitor: React.FC = () => {
 
   return (
     <div className="p-6 bg-gray-900 min-h-screen">
+      <style>{`
+        @keyframes lm-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+        @keyframes lm-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
+        .lm-card{animation:lm-in .2s ease both;transition:box-shadow .15s,border-color .15s}
+        .lm-card:hover{box-shadow:0 4px 20px rgba(16,185,129,.15)!important;border-color:#34d399!important}
+        .lm-live-dot{animation:lm-dot 1.2s ease-in-out infinite}
+        .lm-stat{transition:background .12s}
+        .lm-stat:hover{background:#111827!important}
+      `}</style>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -46,7 +55,7 @@ export const AdminLiveMonitor: React.FC = () => {
             <p className="text-gray-400 text-sm mt-1">{sessions.length} active sessions</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-400">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-green-400 rounded-full lm-live-dot"></div>
             Auto-refresh every 5s
           </div>
         </div>
@@ -57,8 +66,8 @@ export const AdminLiveMonitor: React.FC = () => {
           </div>
         ) : (
           <div className="grid gap-4">
-            {sessions.map(session => (
-              <div key={session.session_id} className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+            {sessions.map((session, si) => (
+              <div key={session.session_id} className="lm-card bg-gray-800 rounded-lg border border-gray-700 p-6" style={{animationDelay:`${si*0.07}s`}}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-lg">
@@ -75,21 +84,21 @@ export const AdminLiveMonitor: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="bg-gray-900 rounded p-3">
+                  <div className="lm-stat bg-gray-900 rounded p-3">
                     <div className="text-gray-400 text-xs mb-1">Current Round</div>
                     <div className="text-white font-bold text-lg">{session.round || 1}</div>
                   </div>
-                  <div className="bg-gray-900 rounded p-3">
+                  <div className="lm-stat bg-gray-900 rounded p-3">
                     <div className="text-gray-400 text-xs mb-1">Progress</div>
                     <div className="text-white font-bold text-lg">
                       {session.question_no || 0}/{session.total_questions || 0}
                     </div>
                   </div>
-                  <div className="bg-gray-900 rounded p-3">
+                  <div className="lm-stat bg-gray-900 rounded p-3">
                     <div className="text-gray-400 text-xs mb-1">Started</div>
                     <div className="text-white font-bold text-sm">{getTimeSince(session.started_at)}</div>
                   </div>
-                  <div className="bg-gray-900 rounded p-3">
+                  <div className="lm-stat bg-gray-900 rounded p-3">
                     <div className="text-gray-400 text-xs mb-1">Skills</div>
                     <div className="text-white text-xs truncate">
                       {session.skills ? JSON.parse(session.skills).slice(0, 2).join(', ') : 'N/A'}

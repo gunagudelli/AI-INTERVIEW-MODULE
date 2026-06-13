@@ -87,9 +87,26 @@
 
   function normalizeQuestion(q: any): any {
     if (!q) return null;
-    if (typeof q === "string") {
+    // Real backend returns { question: "**Problem:...**", questionNo, recommendedLanguage }
+    if (q.question && typeof q.question === 'string') {
+      const rawText = q.question;
       return {
-        questionId: null, title: "Coding Challenge",
+        questionId:  null,
+        title:       'Coding Challenge',
+        description: rawText,
+        rawText,
+        examples:    [],
+        constraints: [],
+        boilerplate: {},
+        parsed:      parseRawQuestion(rawText),
+        recommendedLanguage: q.recommendedLanguage || null,
+        questionNo:  q.questionNo || null,
+        totalQuestions: q.totalQuestions || null,
+      };
+    }
+    if (typeof q === 'string') {
+      return {
+        questionId: null, title: 'Coding Challenge',
         description: q, rawText: q,
         examples: [], constraints: [], boilerplate: {},
         parsed: parseRawQuestion(q),
@@ -97,13 +114,14 @@
     }
     return {
       questionId:  q.questionId ?? q.id ?? null,
-      title:       q.title || "Coding Challenge",
-      description: q.description || q.problem || q.questionText || q.text || "",
-      rawText:     q.text || q.rawText || q.description || q.problem || q.questionText || "",
+      title:       q.title || 'Coding Challenge',
+      description: q.description || q.problem || q.questionText || q.text || '',
+      rawText:     q.text || q.rawText || q.description || q.problem || q.questionText || '',
       examples:    q.examples    || [],
       constraints: q.constraints || [],
       boilerplate: q.boilerplate || {},
       parsed:      null,
+      recommendedLanguage: q.recommendedLanguage || null,
     };
   }
 

@@ -10,7 +10,7 @@ export const AdminAnalytics: React.FC = () => {
   const [toast, setToast] = useState('');
 
   useEffect(() => {
-    fetch('https://interviews-zadn.onrender.com/api/admin/analytics')
+    fetch('http://localhost:3000/api/admin/analytics')
       .then(r => r.json())
       .then(setAnalytics)
       .catch(() => {});
@@ -54,14 +54,19 @@ export const AdminAnalytics: React.FC = () => {
   };
 
   const statCards = [
-    { label: 'Total Candidates', value: analytics?.multiLevel?.total_users ?? analytics?.basic?.total_candidates ?? '—', icon: '👥' },
-    { label: 'Completed Interviews', value: analytics?.multiLevel?.completed ?? analytics?.basic?.completed_interviews ?? '—', icon: '✅' },
-    { label: 'Avg Score', value: analytics?.multiLevel?.avg_score ? `${analytics.multiLevel.avg_score}%` : analytics?.basic?.avg_score ?? '—', icon: '📊' },
-    { label: 'Pass Rate', value: analytics?.multiLevel?.pass_rate ? `${analytics.multiLevel.pass_rate}%` : '—', icon: '🎯' },
+    { label: 'Total Candidates', value: analytics?.multiLevel?.total_users ?? analytics?.basic?.total_candidates ?? '—' },
+    { label: 'Completed Interviews', value: analytics?.multiLevel?.completed ?? analytics?.basic?.completed_interviews ?? '—' },
+    { label: 'Avg Score', value: analytics?.multiLevel?.avg_score ? `${analytics.multiLevel.avg_score}%` : analytics?.basic?.avg_score ?? '—' },
+    { label: 'Pass Rate', value: analytics?.multiLevel?.pass_rate ? `${analytics.multiLevel.pass_rate}%` : '—' },
   ];
 
   return (
     <div className="p-6">
+      <style>{`
+        @keyframes an-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+        .an-card{animation:an-in .2s ease both;transition:box-shadow .15s,border-color .15s}
+        .an-card:hover{box-shadow:0 4px 16px rgba(79,70,229,.07)!important;border-color:#c7d2fe!important}
+      `}</style>
       {/* Toast */}
       {toast && (
         <div className="fixed top-4 right-4 z-50 bg-[#232f3e] text-white text-sm px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
@@ -79,12 +84,9 @@ export const AdminAnalytics: React.FC = () => {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {statCards.map(s => (
-          <div key={s.label} className="bg-white rounded-lg border border-gray-200 shadow-sm px-4 py-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-500 font-medium">{s.label}</p>
-              <span className="text-lg">{s.icon}</span>
-            </div>
+        {statCards.map((s, i) => (
+          <div key={s.label} className="an-card bg-white rounded-lg border border-gray-200 shadow-sm px-4 py-4" style={{animationDelay:`${i*0.07}s`}}>
+            <p className="text-xs text-gray-500 font-medium mb-2">{s.label}</p>
             <p className="text-2xl font-bold text-gray-900">{s.value}</p>
           </div>
         ))}
@@ -92,7 +94,7 @@ export const AdminAnalytics: React.FC = () => {
 
       <div className="grid md:grid-cols-2 gap-5 mb-5">
         {/* Basic Interviews */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="an-card bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-200 bg-[#f7f8f8]">
             <h3 className="text-sm font-semibold text-gray-900">Basic Interviews</h3>
           </div>
@@ -111,7 +113,7 @@ export const AdminAnalytics: React.FC = () => {
         </div>
 
         {/* Multi-Level Interviews */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="an-card bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-200 bg-[#f7f8f8]">
             <h3 className="text-sm font-semibold text-gray-900">Multi-Level Interviews</h3>
           </div>
