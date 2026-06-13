@@ -3,7 +3,9 @@ import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import applicationAPI from '../../services/applicationAPI';
 import axios from 'axios';
 
-const BASE = process.env.REACT_APP_RECRUITER_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3000';
+import { getBaseUrl } from '../../utils/config';
+
+const BASE = getBaseUrl();
 
 type Step = 'jd' | 'upload' | 'parsing' | 'form' | 'submitting' | 'done';
 

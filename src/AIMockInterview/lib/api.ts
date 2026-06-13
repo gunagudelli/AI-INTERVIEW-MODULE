@@ -1,7 +1,11 @@
-let API_BASE_URL = "http://localhost:3000";
+import { getBaseUrl } from '../utils/config';
+
+// Get base URL dynamically for each request
+const getApiBaseUrl = () => getBaseUrl();
 
 export const api = {
   async chat(message: string, userId?: string, sessionId?: string) {
+    const API_BASE_URL = getApiBaseUrl();
     const response = await fetch(`${API_BASE_URL}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -12,11 +16,13 @@ export const api = {
   },
 
   async getHistory() {
+    const API_BASE_URL = getApiBaseUrl();
     const response = await fetch(`${API_BASE_URL}/api/history`);
     return response.json();
   },
 
   async startInterview(data: any) {
+    const API_BASE_URL = getApiBaseUrl();
     const response = await fetch(`${API_BASE_URL}/api/interview/start`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -26,6 +32,7 @@ export const api = {
   },
 
   async submitAnswer(data: any) {
+    const API_BASE_URL = getApiBaseUrl();
     const response = await fetch(`${API_BASE_URL}/api/interview/answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -36,6 +43,7 @@ export const api = {
 
   async login(credentials: any) {
     try {
+      const API_BASE_URL = getApiBaseUrl();
       console.log("Attempting login to:", `${API_BASE_URL}/api/login`);
       console.log("Credentials:", credentials);
       console.log("Frontend origin:", window.location.origin);
