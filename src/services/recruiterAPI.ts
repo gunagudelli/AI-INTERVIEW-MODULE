@@ -1,17 +1,26 @@
 import axios from 'axios';
+import { getBaseUrl } from '../utils/config';
 
-const BASE = process.env.REACT_APP_RECRUITER_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Use dynamic base URL from config
+const getApiBaseUrl = () => getBaseUrl();
 
 // authenticated instance — recruiter token
-const api = axios.create({ baseURL: BASE });
+const api = axios.create();
 api.interceptors.request.use((config) => {
+  // Set base URL dynamically on each request
+  config.baseURL = getApiBaseUrl();
   const token = localStorage.getItem('recruiter_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
 // no-auth instance — employee / public calls
-const pub = axios.create({ baseURL: BASE });
+const pub = axios.create();
+pub.interceptors.request.use((config) => {
+  // Set base URL dynamically on each request
+  config.baseURL = getApiBaseUrl();
+  return config;
+});
 
 // ── RECRUITER AUTH ───────────────────────────────────────────
 export const recruiterAuth = {
