@@ -25,6 +25,7 @@ const EmployeeReferralRegister: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPw, setShowPw] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,9 +34,7 @@ const EmployeeReferralRegister: React.FC = () => {
     try {
       const res = await referralAPI.employeeRegister(form);
       if (res.success) {
-        localStorage.setItem('employee_ref_token', res.token || '');
-        localStorage.setItem('employee_ref_user', JSON.stringify(res.user));
-        navigate('/referral/dashboard');
+        setShowSuccess(true);
       } else setError(res.error || 'Registration failed');
     } catch (err: any) {
       setError(err?.response?.data?.error || 'Registration failed');
@@ -56,21 +55,63 @@ const EmployeeReferralRegister: React.FC = () => {
     }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        .err-in:focus { outline: none; border-color: #0ea5e9 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(14,165,233,0.09) !important; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        .err-in:focus { outline: none; border-color: #0ea5e9 !important; background: #fff !important; }
         .err-btn:hover:not(:disabled) { background: #0284c7 !important; }
         @media (max-width: 720px) { .err-left { display: none !important; } }
       `}</style>
+
+      {showSuccess && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 100, padding: 16, animation: 'fadeIn 0.18s ease',
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 14, padding: '36px 32px',
+            maxWidth: 400, width: '100%', textAlign: 'center',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            animation: 'scaleIn 0.22s ease',
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%', background: '#e0f2fe',
+              border: '1px solid #bae6fd', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', margin: '0 auto 16px',
+            }}>
+              <svg width="22" height="22" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>Account created!</h3>
+            <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 24px', lineHeight: 1.6 }}>
+              Your employee referral account has been created successfully.<br />
+              Please sign in with your credentials to continue.
+            </p>
+            <button
+              onClick={() => navigate('/referral/login')}
+              style={{
+                width: '100%', padding: '10px', background: '#0ea5e9', color: 'white',
+                border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Go to Sign In →
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{
         display: 'flex', width: '100%', maxWidth: 900,
         background: 'white', border: '1px solid #e5e7eb',
         borderRadius: 14, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
       }}>
 
         {/* LEFT */}
         <div className="err-left" style={{
-          width: 320, flexShrink: 0, background: '#f8fafc',
+          width: 320, flexShrink: 0, background: '#fafafa',
           borderRight: '1px solid #e5e7eb', padding: '36px 30px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24,
         }}>
@@ -100,11 +141,11 @@ const EmployeeReferralRegister: React.FC = () => {
               Employee Referral Platform
             </h2>
             <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
-              Refer top talent, track referral progress, and earn rewards transparently.
+              Refer top talent, track referral progress, and earn rewards through a transparent process.
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {FEATURES.map(f => (
               <div key={f.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <div style={{
@@ -122,8 +163,6 @@ const EmployeeReferralRegister: React.FC = () => {
               </div>
             ))}
           </div>
-
-
         </div>
 
         {/* RIGHT */}
@@ -160,8 +199,8 @@ const EmployeeReferralRegister: React.FC = () => {
                   <input type="text" required placeholder="John Doe" value={form.name} onChange={set('name')} className="err-in" style={inp} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Phone</label>
-                  <input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set('phone')} className="err-in" style={inp} />
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Department</label>
+                  <input type="text" placeholder="Engineering" value={form.department} onChange={set('department')} className="err-in" style={inp} />
                 </div>
               </div>
 
@@ -170,31 +209,19 @@ const EmployeeReferralRegister: React.FC = () => {
                 <input type="email" required placeholder="you@company.com" value={form.email} onChange={set('email')} className="err-in" style={inp} />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Password <span style={{ color: '#ef4444' }}>*</span></label>
-                <div style={{ position: 'relative' }}>
-                  <input type={showPw ? 'text' : 'password'} required placeholder="Min. 6 characters" value={form.password} onChange={set('password')} className="err-in" style={{ ...inp, paddingRight: 38 }} />
-                  <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
-                    <EyeIcon open={showPw} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Optional */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
-                <span style={{ fontSize: 10, fontWeight: 600, color: '#cbd5e1', letterSpacing: '0.06em' }}>OPTIONAL</span>
-                <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
-              </div>
-
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Department</label>
-                  <input type="text" placeholder="Engineering" value={form.department} onChange={set('department')} className="err-in" style={inp} />
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Phone</label>
+                  <input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set('phone')} className="err-in" style={inp} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Company</label>
-                  <input type="text" placeholder="Askoxy" value={form.company} onChange={set('company')} className="err-in" style={inp} />
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Password <span style={{ color: '#ef4444' }}>*</span></label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPw ? 'text' : 'password'} required placeholder="Min. 6 characters" value={form.password} onChange={set('password')} className="err-in" style={{ ...inp, paddingRight: 38 }} />
+                    <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
+                      <EyeIcon open={showPw} />
+                    </button>
+                  </div>
                 </div>
               </div>
 

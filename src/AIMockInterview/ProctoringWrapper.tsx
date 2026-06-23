@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import BASE_URL from '../Config';
 
 interface ProctoringWrapperProps {
   userId: string;
@@ -31,7 +32,7 @@ export const ProctoringWrapper: React.FC<ProctoringWrapperProps> = ({
         }
 
         const proctor = new ProctoringSDK({
-          apiUrl: `http://localhost:3000/api/proctoring`,
+          apiUrl: `${BASE_URL}/api/proctoring`,
           userId,
           sessionId,
           onViolation: (result: any) => {

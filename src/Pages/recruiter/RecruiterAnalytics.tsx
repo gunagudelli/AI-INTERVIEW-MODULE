@@ -11,10 +11,10 @@ const CSS = `
   @keyframes spin   { to { transform: rotate(360deg); } }
   @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
   @keyframes ra-in  { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
-  .kcard:hover  { border-color:#BFDBFE!important; box-shadow:0 2px 10px rgba(37,99,235,.07)!important; }
-  .rrow:hover td { background:#F9FAFB!important; cursor:pointer; }
+  .kcard:hover  { border-color:#cbd5e1!important; }
+  .rrow:hover td { background:#FFFFFF!important; cursor:pointer; }
   .stbadge:hover { opacity:.8!important; transform:scale(1.04); }
-  .jrow:hover   { background:#F9FAFB!important; }
+  .jrow:hover   { background:#FFFFFF!important; }
   .ra-kpi { animation:ra-in .2s ease both; }
   .ra-section { animation:ra-in .25s ease both; }
   .ra-btn:hover { background:#DBEAFE!important; }
@@ -22,11 +22,11 @@ const CSS = `
 
 /* ── tiny helpers ─────────────────────────────────────── */
 const STAGE_MAP: Record<string,[string,string,string]> = {
-  pending:           ['#F9FAFB','#6B7280','Pending'],
+  pending:           ['#FFFFFF','#6B7280','Pending'],
   applied:           ['#EFF6FF','#2563EB','Applied'],
   screened:          ['#FEF9C3','#A16207','Screened'],
   shortlisted:       ['#DBEAFE','#1D4ED8','Shortlisted'],
-  interview_sent:    ['#FFF7ED','#C2410C','Email Sent'],
+  interview_sent:    ['#FDF2F2','#6B0000','Email Sent'],
   interview_scheduled:['#FAE8FF','#A21CAF','Scheduled'],
   rejected:          ['#FEF2F2','#DC2626','Rejected'],
   hired:             ['#F0FDF4','#16A34A','Hired'],
@@ -209,7 +209,7 @@ const RecruiterAnalytics:React.FC = () => {
   ].filter(s=>s.v>0);
 
   if(loading) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#F8FAFC'}}>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#ffffff'}}>
       <div style={{width:28,height:28,border:'3px solid #E5E7EB',borderTop:'3px solid #2563EB',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
     </div>
   );
@@ -221,7 +221,7 @@ const RecruiterAnalytics:React.FC = () => {
   );
 
   return (
-    <div style={{minHeight:'100vh',background:'#F8FAFC',fontFamily:"'Inter',-apple-system,sans-serif",animation:'fadeIn .25s ease'}}>
+    <div style={{minHeight:'100vh',background:'#ffffff',fontFamily:"'Inter',-apple-system,sans-serif",animation:'fadeIn .25s ease'}}>
       <style>{CSS}</style>
 
       {/* Header */}
@@ -237,7 +237,7 @@ const RecruiterAnalytics:React.FC = () => {
           {[
             {label:'Total Jobs',   value:totalJobs,  icon:<Briefcase size={17}/>, iBg:'#EFF6FF',iCol:'#2563EB'},
             {label:'Applications', value:totalApps,  icon:<Users size={17}/>,     iBg:'#F0FDF4',iCol:'#16A34A'},
-            {label:'Email Sent',   value:emailSent,  icon:<Mail size={17}/>,      iBg:'#FFF7ED',iCol:'#C2410C'},
+            {label:'Email Sent',   value:emailSent,  icon:<Mail size={17}/>,      iBg:'#FDF2F2',iCol:'#6B0000'},
             {label:'Shortlisted',  value:shortlisted,icon:<Target size={17}/>,    iBg:'#DBEAFE',iCol:'#1D4ED8'},
             {label:'Hired',        value:hired,       icon:<UserCheck size={17}/>, iBg:'#F0FDF4',iCol:'#16A34A'},
           ].map((k,i)=><div key={k.label} className="ra-kpi" style={{animationDelay:`${i*0.07}s`}}><KPI {...k}/></div>)}
@@ -279,7 +279,7 @@ const RecruiterAnalytics:React.FC = () => {
             {[
               {label:'Applied',     count:applied,     color:'#2563EB',bg:'#EFF6FF'},
               {label:'Screened',    count:screened,    color:'#F59E0B',bg:'#FFFBEB'},
-              {label:'Email Sent',  count:emailSent,   color:'#C2410C',bg:'#FFF7ED'},
+              {label:'Email Sent',  count:emailSent,   color:'#6B0000',bg:'#FDF2F2'},
               {label:'Shortlisted', count:shortlisted, color:'#1D4ED8',bg:'#DBEAFE'},
               {label:'Hired',       count:hired,       color:'#16A34A',bg:'#F0FDF4'},
               {label:'Rejected',    count:rejected,    color:'#DC2626',bg:'#FEF2F2'},
@@ -378,7 +378,7 @@ const RecruiterAnalytics:React.FC = () => {
                         <div style={{fontSize:10,color:'#9CA3AF',fontWeight:500}}>Total</div>
                       </div>
                       <div>
-                        <div style={{fontSize:16,fontWeight:700,color:'#C2410C',letterSpacing:'-0.02em'}}>{recEmailSent}</div>
+                        <div style={{fontSize:16,fontWeight:700,color:'#6B0000',letterSpacing:'-0.02em'}}>{recEmailSent}</div>
                         <div style={{fontSize:10,color:'#9CA3AF',fontWeight:500}}>Emailed</div>
                       </div>
                       <div>
@@ -392,7 +392,7 @@ const RecruiterAnalytics:React.FC = () => {
 
                   {/* Expanded: job-wise breakdown */}
                   {isOpen && (
-                    <div style={{background:'#F9FAFB',borderTop:'1px solid #F3F4F6',padding:'0 22px 14px'}}>
+                    <div style={{background:'#FFFFFF',borderTop:'1px solid #F3F4F6',padding:'0 22px 14px'}}>
                       {rec.jobs.map((job,ji)=>{
                         const jobStatuses = job.apps.reduce((acc,a)=>{ acc[a.status]=(acc[a.status]||0)+1; return acc; },{} as Record<string,number>);
                         const jKey=`${ri}-${ji}`;
@@ -457,7 +457,7 @@ const RecruiterAnalytics:React.FC = () => {
                               <div style={{borderTop:'1px solid #F3F4F6',overflowX:'auto'}}>
                                 <table style={{width:'100%',borderCollapse:'collapse',minWidth:620}}>
                                   <thead>
-                                    <tr style={{background:'#F9FAFB',borderBottom:'1px solid #E5E7EB'}}>
+                                    <tr style={{background:'#FFFFFF',borderBottom:'1px solid #E5E7EB'}}>
                                       {['Candidate','Email','Match','Status','Applied','Action'].map(h=>(
                                         <th key={h} style={{padding:'8px 14px',textAlign:'left',fontSize:11,fontWeight:600,color:'#6B7280',whiteSpace:'nowrap'}}>{h}</th>
                                       ))}

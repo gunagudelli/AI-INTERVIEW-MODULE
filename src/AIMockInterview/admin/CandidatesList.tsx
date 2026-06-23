@@ -24,7 +24,21 @@ const CSS = `
   @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
   .cl-row { transition: background .1s }
   .cl-row:hover { background: #f8fafc !important }
+  .act-btn { transition: opacity .1s }
+  .act-btn:hover { opacity: .8 }
 `;
+
+const btnStyle = (bg: string, color: string): React.CSSProperties => ({
+  padding: '3px 9px',
+  background: bg,
+  color,
+  border: 'none',
+  borderRadius: 5,
+  fontSize: 11,
+  fontWeight: 600,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+});
 
 export const CandidatesList: React.FC = () => {
   const navigate = useNavigate();
@@ -133,13 +147,13 @@ export const CandidatesList: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  {['Candidate', 'Skills', 'Exp', 'Score', 'Violations', 'Result', ''].map(h => (
+                  {['Candidate', 'Skills', 'Exp', 'Score', 'Violations', 'Result', 'Actions'].map(h => (
                     <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {list.map((c, i) => {
+                {list.map((c) => {
                   const copyPasteCount = (c as any).copyPasteViolations ?? (c as any).copyPasteCount ?? 0;
                   const rs = resultStyle(c.summary?.bestResult || '');
                   const ss = scoreStyle(c.summary?.bestScore || '0');
@@ -189,7 +203,7 @@ export const CandidatesList: React.FC = () => {
                         )}
                       </td>
 
-                      {/* Copy-paste violations — compact */}
+                      {/* Violations */}
                       <td style={{ padding: '11px 14px' }}>
                         {copyPasteCount > 0 ? (
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: 5, fontSize: 11, fontWeight: 700 }}>
@@ -210,11 +224,33 @@ export const CandidatesList: React.FC = () => {
                         </span>
                       </td>
 
-                      {/* Arrow */}
-                      <td style={{ padding: '11px 14px' }}>
-                        <svg width={14} height={14} fill="none" stroke="#cbd5e1" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                      {/* Actions */}
+                      <td style={{ padding: '11px 14px' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', gap: 5, flexWrap: 'nowrap' }}>
+                          <button className="act-btn" style={btnStyle('#eff6ff', '#2563eb')}
+                            onClick={() => {
+                              const sub = encodeURIComponent(`Interview Update - ${c.name}`);
+                              const body = encodeURIComponent(`Dear ${c.name},\n\nThank you for attending the interview.\n\nRegards,\nRecruiter Team`);
+                              window.open(`mailto:?subject=${sub}&body=${body}`);
+                            }}>
+                            📧 Mail
+                          </button>
+                          <button className="act-btn" style={btnStyle('#f5f3ff', '#7c3aed')}
+                            onClick={() => {
+                              if (c.resumePath) window.open(c.resumePath, '_blank');
+                              else alert('No resume uploaded.');
+                            }}>
+                            📄 Resume
+                          </button>
+                          <button className="act-btn" style={btnStyle('#fef2f2', '#dc2626')}
+                            onClick={() => { if (window.confirm(`Reject ${c.name}?`)) alert(`${c.name} marked as Rejected.`); }}>
+                            ✕ Reject
+                          </button>
+                          <button className="act-btn" style={btnStyle('#f0fdf4', '#16a34a')}
+                            onClick={() => { if (window.confirm(`Hire ${c.name}?`)) alert(`${c.name} marked as Hired! 🎉`); }}>
+                            ✓ Hired
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

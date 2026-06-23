@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { recruiterAPI } from '../../services/recruiterAPI';
+import BASE_URL from '../../Config';
 import { ChevronLeft, X, Wand2, Mic, MicOff, Sparkles, Copy, ExternalLink, CheckCircle } from 'lucide-react';
 
 const TYPES = [
@@ -10,9 +11,8 @@ const TYPES = [
   { value: 'internship', label: 'Internship' },
 ];
 const DEPARTMENTS = ['Engineering', 'Product', 'Design', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Other'];
-const BASE = process.env.REACT_APP_RECRUITER_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const BASE = BASE_URL;
 
-// ── Toast ──────────────────────────────────────────────────────
 type ToastType = 'success' | 'error' | 'info';
 interface Toast { id: number; msg: string; type: ToastType; }
 
@@ -24,10 +24,9 @@ const ToastContainer: React.FC<{ toasts: Toast[]; remove: (id: number) => void }
         border: `1px solid ${t.type === 'success' ? '#bbf7d0' : t.type === 'error' ? '#fecaca' : '#bfdbfe'}`,
         borderLeft: `3px solid ${t.type === 'success' ? '#16a34a' : t.type === 'error' ? '#dc2626' : '#2563eb'}`,
         borderRadius: 8, padding: '10px 13px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         minWidth: 260, maxWidth: 340, pointerEvents: 'all',
       }}>
-        <span style={{ fontSize: 13, flex: 1, color: '#1e293b', lineHeight: 1.5 }}>{t.msg}</span>
+        <span style={{ fontSize: 13, flex: 1, color: '#0f172a', lineHeight: 1.5 }}>{t.msg}</span>
         <button onClick={() => remove(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>
       </div>
     ))}
@@ -46,13 +45,12 @@ function useToast() {
   return { toasts, toast: add, remove };
 }
 
-// ── Apply Link Modal ───────────────────────────────────────────
 const ApplyLinkModal: React.FC<{ link: string; onClose: () => void }> = ({ link, onClose }) => {
   const [copied, setCopied] = useState(false);
   const copy = () => { navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: 16 }} onClick={onClose}>
-      <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 440, padding: 28, border: '1px solid #e2e8f0', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 440, padding: 28, border: '1px solid #e2e8f0' }} onClick={e => e.stopPropagation()}>
         <div style={{ textAlign: 'center', marginBottom: 22 }}>
           <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#f0fdf4', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
             <CheckCircle style={{ color: '#16a34a', width: 22, height: 22 }} />
@@ -60,16 +58,16 @@ const ApplyLinkModal: React.FC<{ link: string; onClose: () => void }> = ({ link,
           <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', margin: '0 0 3px' }}>Job Published Successfully</h3>
           <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>Share this link with candidates to apply</p>
         </div>
-        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 13px', marginBottom: 14 }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 13px', marginBottom: 14 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>Apply Link</div>
           <div style={{ fontSize: 12, color: '#0f172a', fontFamily: 'monospace', wordBreak: 'break-all', lineHeight: 1.5 }}>{link}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={copy} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: copied ? '#16a34a' : '#4f46e5', color: 'white', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'background 0.15s' }}>
+          <button onClick={copy} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: copied ? '#16a34a' : '#8B0000', color: 'white', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'background 0.15s' }}>
             <Copy style={{ width: 13, height: 13 }} />
             {copied ? 'Copied!' : 'Copy Link'}
           </button>
-          <button onClick={() => window.open(link, '_blank')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, background: 'white', color: '#4f46e5', border: '1px solid #e0e7ff', borderRadius: 8, padding: '10px 16px', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>
+          <button onClick={() => window.open(link, '_blank')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, background: 'white', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 16px', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>
             <ExternalLink style={{ width: 13, height: 13 }} />
             Open
           </button>
@@ -82,7 +80,6 @@ const ApplyLinkModal: React.FC<{ link: string; onClose: () => void }> = ({ link,
   );
 };
 
-// ── AI Modal ───────────────────────────────────────────────────
 const AIModal: React.FC<{
   onClose: () => void;
   onFill: (data: any) => void;
@@ -137,11 +134,11 @@ const AIModal: React.FC<{
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }} onClick={onClose}>
-      <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 460, border: '1px solid #e2e8f0', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }} onClick={e => e.stopPropagation()}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 50, padding: '16px 16px 16px', paddingTop: 64 }} onClick={onClose}>
+      <div style={{ background: 'white', borderRadius: 12, width: '100%', maxWidth: 460, border: '1px solid #e2e8f0', boxShadow: '0 8px 32px rgba(15,23,42,0.15)' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid #f1f5f9' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 30, height: 30, background: '#4f46e5', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 30, height: 30, background: '#8B0000', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Wand2 style={{ width: 14, height: 14, color: 'white' }} />
             </div>
             <div>
@@ -155,16 +152,16 @@ const AIModal: React.FC<{
         </div>
         <div style={{ padding: '16px 18px 18px' }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Describe The Role</div>
-          <div style={{ border: `1.5px solid ${isListening ? '#4f46e5' : '#e2e8f0'}`, borderRadius: 8, background: isListening ? '#eef2ff' : '#f9fafb', transition: 'border-color 0.15s', overflow: 'hidden' }}>
+          <div style={{ border: `1.5px solid ${isListening ? '#8B0000' : '#e2e8f0'}`, borderRadius: 8, background: isListening ? '#FDF2F2' : '#ffffff', transition: 'border-color 0.15s', overflow: 'hidden' }}>
             <textarea
               value={sentence} onChange={e => setSentence(e.target.value)}
               placeholder="e.g. React Native developer with 2+ years in mobile apps and REST APIs"
-              style={{ width: '100%', border: 'none', background: 'transparent', padding: '10px 12px 8px', fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', color: '#0f172a', minHeight: 72, lineHeight: 1.6, boxSizing: 'border-box' }}
+              style={{ width: '100%', border: 'none', background: 'transparent', padding: '10px 12px 8px', fontSize: 13, fontFamily: 'inherit', resize: 'none', outline: 'none', color: '#0f172a', minHeight: 80, lineHeight: 1.6, boxSizing: 'border-box' }}
               onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generate(); }}
             />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 9px 7px', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px 8px', borderTop: '1px solid #f1f5f9' }}>
               <span style={{ fontSize: 11, color: '#94a3b8' }}>{isListening ? '🔴 Listening…' : 'Ctrl + Enter to generate'}</span>
-              <button onClick={toggleVoice} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: isListening ? '#fef2f2' : '#eef2ff', border: `1px solid ${isListening ? '#fecaca' : '#e0e7ff'}`, color: isListening ? '#dc2626' : '#4f46e5', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
+              <button onClick={toggleVoice} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: isListening ? '#fef2f2' : '#ffffff', border: `1px solid ${isListening ? '#fecaca' : '#e2e8f0'}`, color: isListening ? '#dc2626' : '#475569', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
                 {isListening ? <MicOff style={{ width: 12, height: 12 }} /> : <Mic style={{ width: 12, height: 12 }} />}
                 {isListening ? 'Stop' : 'Voice'}
               </button>
@@ -172,13 +169,13 @@ const AIModal: React.FC<{
           </div>
           <div style={{ marginTop: 10, marginBottom: 14, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
             {['React Native dev, 2+ yrs', 'Node.js backend, 3 yrs', 'UI/UX designer, Figma'].map(ex => (
-              <button key={ex} onClick={() => setSentence(ex)} style={{ padding: '3px 9px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 20, fontSize: 11, color: '#64748b', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button key={ex} onClick={() => setSentence(ex)} style={{ padding: '3px 9px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 20, fontSize: 11, color: '#64748b', cursor: 'pointer', fontFamily: 'inherit' }}>
                 {ex}
               </button>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={generate} disabled={loading || !sentence.trim()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: loading || !sentence.trim() ? '#a5b4fc' : '#4f46e5', color: 'white', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 600, fontSize: 13, cursor: loading || !sentence.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
+            <button onClick={generate} disabled={loading || !sentence.trim()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: loading || !sentence.trim() ? '#94a3b8' : '#8B0000', color: 'white', border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 600, fontSize: 13, cursor: loading || !sentence.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}>
               {loading ? (
                 <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} /> Generating…</>
               ) : (
@@ -195,10 +192,9 @@ const AIModal: React.FC<{
   );
 };
 
-// ── Section Card ───────────────────────────────────────────────
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
-    <div style={{ padding: '12px 20px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+    <div style={{ padding: '12px 20px', borderBottom: '1px solid #ffffff', background: '#ffffff' }}>
       <h3 style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>{title}</h3>
     </div>
     <div style={{ padding: '20px' }}>{children}</div>
@@ -213,12 +209,11 @@ const FieldLabel: React.FC<{ children: React.ReactNode; required?: boolean }> = 
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb',
-  borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#f9fafb',
+  borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#ffffff',
   boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit',
   transition: 'border-color 0.15s',
 };
 
-// ── Main Component ─────────────────────────────────────────────
 const CreateJob: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -289,15 +284,14 @@ const CreateJob: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        .cj-input:focus { border-color: #4f46e5 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(79,70,229,0.09) !important; }
-        .cj-ai-btn:hover { background: #4338ca !important; }
+        .cj-input:focus { border-color: #8B0000 !important; background: #fff !important; }
+        .cj-ai-btn:hover { background: #6B0000 !important; }
       `}</style>
       <ToastContainer toasts={toasts} remove={remove} />
 
-      {/* Top Bar */}
       <div style={{
         background: 'white', borderBottom: '1px solid #e2e8f0',
         height: 52, display: 'flex', alignItems: 'center',
@@ -317,34 +311,26 @@ const CreateJob: React.FC = () => {
         <button
           onClick={() => setAiModal(true)}
           className="cj-ai-btn"
-          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#4f46e5', color: 'white', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.15s' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#8B0000', color: 'white', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.15s' }}
         >
           <Wand2 style={{ width: 13, height: 13 }} /> AI Generate
         </button>
       </div>
 
-      {/* Modals */}
       {aiModal && <AIModal onClose={() => setAiModal(false)} onFill={handleAIFill} toast={toast} />}
       {showLinkModal && applyLink && (
         <ApplyLinkModal link={applyLink} onClose={() => { setShowLinkModal(false); navigate('/recruiter/jobs'); }} />
       )}
 
-      {/* Form */}
       <form onSubmit={handleSubmit} style={{ maxWidth: 1000, margin: '0 auto', padding: '24px 24px', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
 
-        {/* LEFT COLUMN */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          {/* BASIC INFORMATION */}
           <Section title="Basic Information">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <FieldLabel required>Job Title</FieldLabel>
-                <input
-                  className="cj-input" style={inputStyle}
-                  value={form.title} onChange={set('title')}
-                  placeholder="e.g. Senior React Developer" required
-                />
+                <input className="cj-input" style={inputStyle} value={form.title} onChange={set('title')} placeholder="e.g. Senior React Developer" required />
               </div>
               <div>
                 <FieldLabel>Department</FieldLabel>
@@ -356,7 +342,6 @@ const CreateJob: React.FC = () => {
             </div>
           </Section>
 
-          {/* JOB DESCRIPTION */}
           <Section title="Job Description">
             <FieldLabel required>Description</FieldLabel>
             <textarea
@@ -368,30 +353,24 @@ const CreateJob: React.FC = () => {
             />
           </Section>
 
-          {/* REQUIRED SKILLS */}
           <Section title="Required Skills">
             <div style={{ display: 'flex', gap: 8 }}>
               <input
-                className="cj-input"
-                style={{ ...inputStyle, flex: 1 }}
-                value={skillInput}
-                onChange={e => setSkillInput(e.target.value)}
-                onKeyDown={handleSkillKey}
-                placeholder="Type a skill and press Enter or comma"
+                className="cj-input" style={{ ...inputStyle, flex: 1 }}
+                value={skillInput} onChange={e => setSkillInput(e.target.value)}
+                onKeyDown={handleSkillKey} placeholder="Type a skill and press Enter or comma"
               />
-              <button
-                type="button" onClick={() => addSkill(skillInput)}
-                style={{ padding: '9px 16px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
-              >
+              <button type="button" onClick={() => addSkill(skillInput)}
+                style={{ padding: '9px 16px', background: '#8B0000', color: 'white', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
                 Add
               </button>
             </div>
             {form.skills.length > 0 ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 }}>
                 {form.skills.map(sk => (
-                  <span key={sk} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: '#eef2ff', color: '#4f46e5', border: '1px solid #e0e7ff', padding: '4px 10px', borderRadius: 20 }}>
+                  <span key={sk} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', padding: '4px 10px', borderRadius: 20 }}>
                     {sk}
-                    <button type="button" onClick={() => removeSkill(sk)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a5b4fc', padding: 0, display: 'flex', alignItems: 'center' }}>
+                    <button type="button" onClick={() => removeSkill(sk)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0, display: 'flex', alignItems: 'center' }}>
                       <X style={{ width: 11, height: 11 }} />
                     </button>
                   </span>
@@ -402,7 +381,6 @@ const CreateJob: React.FC = () => {
             )}
           </Section>
 
-          {/* REQUIREMENTS */}
           <Section title="Requirements">
             <FieldLabel>Additional Requirements</FieldLabel>
             <textarea
@@ -415,10 +393,8 @@ const CreateJob: React.FC = () => {
           </Section>
         </div>
 
-        {/* RIGHT COLUMN */}
         <div style={{ width: 248, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 68 }}>
 
-          {/* JOB DETAILS */}
           <Section title="Job Details">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
@@ -433,13 +409,8 @@ const CreateJob: React.FC = () => {
               </div>
               <div>
                 <FieldLabel>Min Experience (Years)</FieldLabel>
-                <input
-                  className="cj-input" style={inputStyle}
-                  type="number" min={0} max={30}
-                  value={form.experience}
-                  onChange={e => setForm(f => ({ ...f, experience: e.target.value }))}
-                  placeholder="e.g. 2"
-                />
+                <input className="cj-input" style={inputStyle} type="number" min={0} max={30} value={form.experience}
+                  onChange={e => setForm(f => ({ ...f, experience: e.target.value }))} placeholder="e.g. 2" />
               </div>
               <div>
                 <FieldLabel>Salary Range</FieldLabel>
@@ -448,11 +419,9 @@ const CreateJob: React.FC = () => {
             </div>
           </Section>
 
-          {/* PUBLISH */}
-          <button
-            type="submit" disabled={loading}
+          <button type="submit" disabled={loading}
             style={{
-              width: '100%', padding: '10px', background: loading ? '#a5b4fc' : '#4f46e5',
+              width: '100%', padding: '10px', background: loading ? '#94a3b8' : '#8B0000',
               color: 'white', border: 'none', borderRadius: 8,
               fontSize: 13, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -464,10 +433,9 @@ const CreateJob: React.FC = () => {
             ) : 'Publish & Get Apply Link'}
           </button>
 
-          <button
-            type="button" onClick={() => navigate('/recruiter/jobs')}
+          <button type="button" onClick={() => navigate('/recruiter/jobs')}
             style={{ width: '100%', padding: '9px', background: 'white', color: '#64748b', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'border-color 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f46e5')}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = '#8B0000')}
             onMouseLeave={e => (e.currentTarget.style.borderColor = '#e5e7eb')}
           >
             Cancel

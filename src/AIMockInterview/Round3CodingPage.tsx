@@ -14,20 +14,92 @@
   }
 
   const LANGUAGES = [
-    { value: "python",     label: "Python 3"   },
-    { value: "javascript", label: "JavaScript" },
-    { value: "java",       label: "Java"       },
-    { value: "cpp",        label: "C++"        },
-    { value: "c",          label: "C"          },
+    { value: "java",       label: "Java 17"            },
+    { value: "javascript", label: "JavaScript (Node 18)"},
+    { value: "typescript", label: "TypeScript 5"        },
+    { value: "python",     label: "Python 3.11"         },
+    { value: "cpp",        label: "C++ 17"              },
+    { value: "c",          label: "C (GCC)"             },
+    { value: "go",         label: "Go 1.21"             },
+    { value: "csharp",     label: "C# (.NET 8)"         },
+    { value: "kotlin",     label: "Kotlin 1.9"          },
+    { value: "rust",       label: "Rust 1.75"           },
+    { value: "php",        label: "PHP 8.2"             },
+    { value: "ruby",       label: "Ruby 3.2"            },
   ];
 
-  const BOILERPLATES: Record<string, string> = {
-    python:     "def solution():\n    # Write your solution here\n    pass",
-    javascript: "function solution() {\n    // Write your solution here\n    return null;\n}",
-    java:       "class Solution {\n    public int solve() {\n        // Write your solution here\n        return 0;\n    }\n}",
-    cpp:        "class Solution {\npublic:\n    int solve() {\n        // Write your solution here\n        return 0;\n    }\n};",
-    c:          "int solve() {\n    // Write your solution here\n    return 0;\n}",
+  // Monaco editor language id mapping
+  const MONACO_LANG: Record<string, string> = {
+    java: 'java', javascript: 'javascript', typescript: 'typescript',
+    python: 'python', cpp: 'cpp', c: 'c', go: 'go',
+    csharp: 'csharp', kotlin: 'kotlin', rust: 'rust',
+    php: 'php', ruby: 'ruby',
   };
+
+  const BOILERPLATES: Record<string, string> = {
+    python:     "from typing import List, Optional, Dict, Any\n\ndef solution():\n    # Write your solution here\n    pass",
+    javascript: "function solution() {\n    // Write your solution here\n    return null;\n}",
+    typescript: "function solution(): any {\n    // Write your solution here\n    return null;\n}",
+    java:       "import java.util.*;\n\nclass Solution {\n    public static Object solution() {\n        // Write your solution here\n        return null;\n    }\n}",
+    cpp:        "#include <bits/stdc++.h>\nusing namespace std;\n\nauto solution() {\n    // Write your solution here\n}",
+    c:          "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint solution() {\n    // Write your solution here\n    return 0;\n}",
+    go:         "package main\n\nimport \"fmt\"\n\nfunc solution() interface{} {\n    // Write your solution here\n    return nil\n}\n\nfunc main() {\n    fmt.Println(solution())\n}",
+    csharp:     "using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\nclass Solution {\n    public static object Solve() {\n        // Write your solution here\n        return null;\n    }\n}",
+    kotlin:     "fun solution(): Any? {\n    // Write your solution here\n    return null\n}",
+    rust:       "fn solution() -> i64 {\n    // Write your solution here\n    0\n}",
+    php:        "<?php\n\nfunction solution() {\n    // Write your solution here\n    return null;\n}",
+    ruby:       "def solution\n  # Write your solution here\n  nil\nend",
+  };
+
+  function getBoilerplate(lang: string, parsed: any): string {
+    const fn  = parsed?.funcName;
+    const sig = parsed?.func?.replace(/`/g, '').trim();
+    if (!fn || !sig) return BOILERPLATES[lang] || BOILERPLATES.python;
+
+    if (lang === 'java') {
+      const hasImport = /import java/.test(sig);
+      return `import java.util.*;\n\nclass Solution {\n    ${sig} {\n        // Write your solution here\n        return null; // TODO: fix return type\n    }\n}`;
+    }
+    if (lang === 'python') {
+      const params = sig.match(/\(([^)]*)\)/)?.[1] || '';
+      return `from typing import List, Optional, Dict, Any\n\ndef ${fn}(${params}):\n    # Write your solution here\n    pass`;
+    }
+    if (lang === 'javascript') {
+      const params = sig.match(/\(([^)]*)\)/)?.[1] || '';
+      return `function ${fn}(${params}) {\n    // Write your solution here\n    return null;\n}`;
+    }
+    if (lang === 'typescript') {
+      const params = sig.match(/\(([^)]*)\)/)?.[1] || '';
+      return `function ${fn}(${params}): any {\n    // Write your solution here\n    return null;\n}`;
+    }
+    if (lang === 'cpp') {
+      return `#include <bits/stdc++.h>\nusing namespace std;\n\n${sig} {\n    // Write your solution here\n}`;
+    }
+    if (lang === 'c') {
+      return `#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n${sig} {\n    // Write your solution here\n}`;
+    }
+    if (lang === 'go') {
+      return `package main\n\nimport "fmt"\n\n${sig} {\n    // Write your solution here\n    return 0\n}\n\nfunc main() {\n    fmt.Println(${fn}())\n}`;
+    }
+    if (lang === 'csharp') {
+      return `using System;\nusing System.Collections.Generic;\nusing System.Linq;\n\nclass Solution {\n    ${sig} {\n        // Write your solution here\n        return null;\n    }\n}`;
+    }
+    if (lang === 'kotlin') {
+      return `${sig} {\n    // Write your solution here\n    return 0\n}`;
+    }
+    if (lang === 'rust') {
+      return `${sig} {\n    // Write your solution here\n    todo!()\n}`;
+    }
+    if (lang === 'php') {
+      const params = sig.match(/\(([^)]*)\)/)?.[1] || '';
+      return `<?php\n\nfunction ${fn}(${params}) {\n    // Write your solution here\n    return null;\n}`;
+    }
+    if (lang === 'ruby') {
+      const params = sig.match(/\(([^)]*)\)/)?.[1] || '';
+      return `def ${fn}(${params})\n  # Write your solution here\nend`;
+    }
+    return BOILERPLATES[lang] || BOILERPLATES.python;
+  }
 
   const NAVBAR_H   = 56;
   const TERMINAL_H = 200;
@@ -35,35 +107,35 @@
 
   function detectLanguageFromQuestion(raw: string): string {
     if (!raw) return "python";
-    const lower = raw.toLowerCase();
-    
-    // Check for explicit language markers
-    if (/\*\*language:\*\*\s*(python|py)/i.test(raw)) return "python";
-    if (/\*\*language:\*\*\s*(javascript|js)/i.test(raw)) return "javascript";
-    if (/\*\*language:\*\*\s*java/i.test(raw)) return "java";
-    if (/\*\*language:\*\*\s*(c\+\+|cpp)/i.test(raw)) return "cpp";
-    if (/\*\*language:\*\*\s*\bc\b/i.test(raw)) return "c";
-    
-    // Detect from function signature
-    if (/def\s+\w+\s*\(/.test(raw)) return "python";
-    if (/function\s+\w+\s*\(/.test(raw)) return "javascript";
-    if (/public\s+(static\s+)?(void|int|String|boolean)\s+\w+\s*\(/.test(raw)) return "java";
-    if (/class\s+\w+\s*\{[^}]*public:/.test(raw)) return "cpp";
-    
-    // Detect from code patterns
-    if (lower.includes('def ') || lower.includes('print(')) return "python";
-    if (lower.includes('function ') || lower.includes('console.log')) return "javascript";
-    if (lower.includes('public class') || lower.includes('system.out')) return "java";
-    if (lower.includes('cout') || lower.includes('cin')) return "cpp";
-    if (lower.includes('printf') || lower.includes('scanf')) return "c";
-    
-    return "python"; // default
+    // Check explicit **Language:** tag first (most reliable)
+    const langTag = raw.match(/\*\*Language:\*\*\s*([\w+#]+)/i)?.[1]?.toLowerCase();
+    if (langTag) {
+      const aliases: Record<string, string> = {
+        'c++': 'cpp', 'c#': 'csharp', 'py': 'python',
+        'js': 'javascript', 'ts': 'typescript', 'golang': 'go',
+      };
+      return aliases[langTag] || langTag;
+    }
+    // Detect from function signature patterns
+    if (/public\s+(static\s+)?[\w<>\[\]]+\s+\w+\s*\(/.test(raw)) return "java";
+    if (/^def\s+\w+\s*\(/m.test(raw))  return "python";
+    if (/^fun\s+\w+\s*\(/m.test(raw))  return "kotlin";
+    if (/^fn\s+\w+\s*\(/m.test(raw))   return "rust";
+    if (/^func\s+\w+\s*\(/m.test(raw)) return "go";
+    if (/\bfunction\b/.test(raw) && /:\s*\w+/.test(raw)) return "typescript";
+    if (/\bfunction\b/.test(raw))       return "javascript";
+    if (/static void Main/.test(raw))   return "csharp";
+    if (/cout\s*<</.test(raw))          return "cpp";
+    if (/printf\s*\(/.test(raw) && !(/cout/.test(raw))) return "c";
+    if (/^<\?php/m.test(raw) || /function\s+\w+\s*\(.*\)\s*\{/.test(raw) && /\$/.test(raw)) return "php";
+    if (/^def\s+\w+$/m.test(raw))       return "ruby";
+    return "python";
   }
 
   function parseRawQuestion(raw: string) {
     if (!raw) return null;
     const get = (key: string) => {
-      const re = new RegExp(`\\*\\*${key}:\\*\\*\\s*([\\s\\S]*?)(?=\\*\\*[A-Z]|$)`, "i");
+      const re = new RegExp(`\\*\\*${key}[^:]*:\\*\\*\\s*([\\s\\S]*?)(?=\\*\\*[A-Z]|$)`, "i");
       const m = raw.match(re);
       return m ? m[1].trim() : "";
     };
@@ -82,7 +154,12 @@
       .map((l: string) => l.replace(/^[•\-\*\s]+/, "").trim())
       .filter((l: string) => l.length > 0 && !l.toLowerCase().startsWith("testcase"));
 
-    return { problem, func: funcSig.replace(/`/g, "").trim(), language, examples, constraints };
+    // Extract function name from signature for backend
+    const cleanFunc = funcSig.replace(/`/g, "").trim();
+    const funcNameMatch = cleanFunc.match(/(?:public\s+\S+\s+(\w+)\s*\(|def\s+(\w+)\s*\(|function\s+(\w+)\s*\(|(\w+)\s*\()/);
+    const funcName = funcNameMatch ? (funcNameMatch[1] || funcNameMatch[2] || funcNameMatch[3] || funcNameMatch[4] || null) : null;
+
+    return { problem, func: cleanFunc, funcName, language, examples, constraints };
   }
 
   function normalizeQuestion(q: any): any {
@@ -137,7 +214,7 @@
     const [qNo,          setQNo]          = useState(initialQNo   || 1);
     const [totalQ,       setTotalQ]       = useState(initialTotalQ || 3);
     const [language,     setLanguage]     = useState(detectedLang);
-    const [code,         setCode]         = useState(() => first?.boilerplate?.[detectedLang] || BOILERPLATES[detectedLang] || BOILERPLATES.python);
+    const [code, setCode] = useState(() => getBoilerplate(detectedLang, first?.parsed));
     const [timeLeft,     setTimeLeft]     = useState(TIME_LIMIT);
     const [timerStopped, setTimerStopped] = useState(false);
     const [splitPos,     setSplitPos]     = useState(45);
@@ -185,7 +262,7 @@
             setTotalQ(data.totalQuestions || 3);
             setAskedQs([q.rawText || ""]);
             setLanguage(lang);
-            setCode(q.boilerplate?.[lang] || BOILERPLATES[lang] || BOILERPLATES.python);
+            setCode(getBoilerplate(lang, q.parsed));
           }
         })
         .catch(err => console.error("Failed to load coding question:", err))
@@ -251,7 +328,7 @@
     }, [isDragging]);
 
     function resetForQuestion(q: any, lang: string) {
-      const bp = q?.boilerplate?.[lang] || BOILERPLATES[lang] || BOILERPLATES.python;
+      const bp = getBoilerplate(lang, q?.parsed);
       setCode(bp);
       setCodeOutput(""); setCodeError(""); setEvalResult(null); setEvalSteps([]); setTestResults([]);
       setTimeLeft(TIME_LIMIT); setTimerStopped(false);
@@ -261,8 +338,8 @@
     function onLanguageChange(lang: string) {
       setLanguage(lang);
       languageRef.current = lang;
-      const bp = question?.boilerplate?.[lang] || BOILERPLATES[lang];
-      if (bp) setCode(bp);
+      const bp = getBoilerplate(lang, question?.parsed);
+      setCode(bp);
       setCodeOutput(""); setCodeError("");
       lastRunOk.current = false;
     }
@@ -308,22 +385,40 @@
       setRunning(true); setCodeOutput(""); setCodeError(""); setTestResults([]);
       lastRunOk.current = false;
       try {
-        const result = await api.round3Execute({ code: c, language, userId, sessionId, questionId: question?.questionId ?? undefined });
+        const funcName = question?.parsed?.funcName || null;
+        const result = await api.round3Execute({
+          code: c, language, userId, sessionId,
+          questionId: question?.questionId ?? undefined,
+          question: question?.rawText || question?.description || "",
+          ...(funcName && { functionName: funcName }),
+        });
         
-        if (result?.success) {
+        if (result?.success || result?.validated) {
           lastRunOk.current = true;
           setCodeError("");
-          setCodeOutput(result.output || "(no output)");
+          // Backend returns testCaseDetails — map to testResults for display
+          const tcs: any[] = result.testCaseDetails || result.testResults || [];
+          if (tcs.length > 0) {
+            setTestResults(tcs);
+            setCodeOutput("");
+          } else {
+            setCodeOutput(result.output || result.summary || "(no output)");
+          }
         } else {
           lastRunOk.current = false;
           setCodeOutput("");
-          setCodeError(result?.error || "Execution failed");
+          setCodeError(
+            result?.error ||
+            result?.summary ||
+            result?.message ||
+            "Execution failed"
+          );
         }
       } catch (err: any) {
         lastRunOk.current = false;
         setCodeError(err?.message || "Execution error");
       } finally { setRunning(false); }
-    }, [language, userId, sessionId]);
+    }, [language, userId, sessionId, question]);
 
     async function handleSubmit(timeExpired = false) {
       const c = codeRef.current.trim();
@@ -346,18 +441,25 @@
 
         const qId = question?.questionId;
 
-        // Evaluate against test cases
-        if (qId) {
-          const testCases = question?.testCases || [];
-          const evalData = await api.evaluateCode({ code: c || "", language, questionId: qId, testCases });
-          setEvalResult(evalData);
-          if (evalData?.results?.length > 0) {
-            setTestResults(evalData.results.map((r: any) => ({
-              ...r,
-              pass: r.passed,
-              passed: r.passed
-            })));
-          }
+        // Run test cases via round3Execute and show results immediately
+        const runResult = await api.round3Execute({
+          code: c || "",
+          language,
+          userId,
+          sessionId,
+          questionId: qId ?? undefined,
+          question: question?.rawText || question?.description || "",
+          ...(question?.parsed?.funcName && { functionName: question.parsed.funcName }),
+        });
+        setEvalResult(runResult);
+        const tcs: any[] = runResult.testCaseDetails || runResult.testResults || [];
+        if (tcs.length > 0) {
+          setTestResults(tcs.map((r: any) => ({ ...r, pass: r.pass ?? r.passed, passed: r.pass ?? r.passed })));
+        }
+        if (runResult.hasCompileErr || runResult.errorType === 'compile_error') {
+          setCodeError(runResult.summary || "Compilation Error");
+        } else if (runResult.summary) {
+          setCodeOutput(runResult.summary);
         }
 
         // Always advance the round via submitAnswer
@@ -552,7 +654,7 @@
             {/* Monaco — explicit pixel height calculated from window size */}
             <MonacoEditor
               height={editorHeight}
-              language={language === "cpp" ? "cpp" : language}
+              language={MONACO_LANG[language] || language}
               value={code}
               onChange={val => onCodeChange(val || "")}
               onValidate={() => { /* Monaco validation disabled */ }}

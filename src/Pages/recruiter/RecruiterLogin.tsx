@@ -25,6 +25,7 @@ const RecruiterLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +35,8 @@ const RecruiterLogin: React.FC = () => {
       if (res.success) {
         localStorage.setItem('recruiter_token', res.token);
         localStorage.setItem('recruiter_user', JSON.stringify(res.user));
-        navigate('/recruiter/dashboard');
+        setShowSuccess(true);
+        setTimeout(() => navigate('/recruiter/dashboard'), 1800);
       } else setError('Invalid email or password');
     } catch (err: any) {
       setError(err?.response?.data?.error || 'Invalid email or password');
@@ -44,35 +46,60 @@ const RecruiterLogin: React.FC = () => {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#f8fafc', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      background: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       padding: '24px 16px',
     }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        .rl-in:focus { outline: none; border-color: #4f46e5 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(79,70,229,0.09) !important; }
-        .rl-btn:hover:not(:disabled) { background: #4338ca !important; }
-        .rl-ghost:hover { border-color: #4f46e5 !important; color: #4f46e5 !important; }
+        .rl-in:focus { outline: none; border-color: #8B0000 !important; background: #fff !important; }
+        .rl-btn:hover:not(:disabled) { background: #6B0000 !important; }
+        .rl-ghost:hover { border-color: #8B0000 !important; color: #8B0000 !important; }
         @media (max-width: 720px) { .rl-left { display: none !important; } .rl-card { border-radius: 12px !important; } }
       `}</style>
 
-      {/* Card */}
+      {showSuccess && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 100, padding: 16, animation: 'fadeIn 0.18s ease',
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 14, padding: '36px 32px',
+            maxWidth: 380, width: '100%', textAlign: 'center',
+            border: '1px solid #e5e7eb',
+            animation: 'scaleIn 0.22s ease',
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%', background: '#f0fdf4',
+              border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', margin: '0 auto 16px',
+            }}>
+              <svg width="22" height="22" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>Login Successful!</h3>
+            <p style={{ fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
+              Welcome back! Redirecting to your dashboard…
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="rl-card" style={{
         display: 'flex', width: '100%', maxWidth: 860,
         background: 'white', border: '1px solid #e5e7eb',
         borderRadius: 14, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
       }}>
-
         {/* LEFT */}
         <div className="rl-left" style={{
-          width: 340, flexShrink: 0, background: '#fafafa',
+          width: 340, flexShrink: 0, background: '#ffffff',
           borderRight: '1px solid #e5e7eb', padding: '36px 32px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 28,
         }}>
-          {/* Brand */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
             <div style={{
-              width: 28, height: 28, borderRadius: 7, background: '#4f46e5', flexShrink: 0,
+              width: 28, height: 28, borderRadius: 7, background: '#8B0000', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -82,15 +109,14 @@ const RecruiterLogin: React.FC = () => {
             <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.1px' }}>ASKOXY RECRUITER</span>
           </div>
 
-          {/* Headline block */}
           <div>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: '#eff6ff', border: '1px solid #bfdbfe',
+              background: '#FDF2F2', border: '1px solid #FECDD3',
               borderRadius: 5, padding: '3px 8px', marginBottom: 10,
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#3b82f6' }} />
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#1d4ed8', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#475569' }} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, letterSpacing: '-0.5px', margin: '0 0 8px' }}>
               AI-Powered Hiring Platform
@@ -100,28 +126,24 @@ const RecruiterLogin: React.FC = () => {
             </p>
           </div>
 
-          {/* Features */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {FEATURES.map(f => (
               <div key={f.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <div style={{
-                  width: 18, height: 18, borderRadius: '50%', background: '#eef2ff',
+                  width: 18, height: 18, borderRadius: '50%', background: '#FDF2F2',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
                 }}>
-                  <svg width="9" height="9" fill="none" stroke="#4f46e5" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="9" height="9" fill="none" stroke="#8B0000" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', margin: '0 0 1px' }}>{f.label}</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#0f172a', margin: '0 0 1px' }}>{f.label}</p>
                   <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{f.desc}</p>
                 </div>
               </div>
             ))}
           </div>
-
-          {/* Trust */}
-
         </div>
 
         {/* RIGHT */}
@@ -130,7 +152,6 @@ const RecruiterLogin: React.FC = () => {
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
           <div style={{ maxWidth: 320, margin: '0 auto', width: '100%' }}>
-
             <div style={{ marginBottom: 24 }}>
               <h2 style={{ fontSize: 19, fontWeight: 700, color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.3px' }}>Sign in</h2>
               <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Enter your credentials to continue</p>
@@ -152,31 +173,28 @@ const RecruiterLogin: React.FC = () => {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 5 }}>Work email</label>
-                <input
-                  type="email" placeholder="you@company.com" value={form.email} required
+                <input type="email" placeholder="you@company.com" value={form.email} required
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   className="rl-in"
-                  style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#f9fafb', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                  style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#ffffff', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
                 />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 5 }}>Password</label>
                 <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPass ? 'text' : 'password'} placeholder="••••••••" value={form.password} required
+                  <input type={showPass ? 'text' : 'password'} placeholder="••••••••" value={form.password} required
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                     className="rl-in"
-                    style={{ width: '100%', padding: '9px 40px 9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#f9fafb', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                    style={{ width: '100%', padding: '9px 40px 9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#ffffff', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
                   />
                   <button type="button" onClick={() => setShowPass(p => !p)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
                     <EyeIcon open={showPass} />
                   </button>
                 </div>
               </div>
-              <button
-                type="submit" disabled={loading} className="rl-btn"
+              <button type="submit" disabled={loading} className="rl-btn"
                 style={{
-                  padding: '9px', background: loading ? '#818cf8' : '#4f46e5',
+                  padding: '9px', background: loading ? '#94a3b8' : '#8B0000',
                   color: 'white', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 600,
                   cursor: loading ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
@@ -189,20 +207,19 @@ const RecruiterLogin: React.FC = () => {
             </form>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0' }}>
-              <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
+              <div style={{ flex: 1, height: 1, background: '#ffffff' }} />
               <span style={{ fontSize: 11, color: '#cbd5e1' }}>New here?</span>
-              <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
+              <div style={{ flex: 1, height: 1, background: '#ffffff' }} />
             </div>
 
-            <button
-              onClick={() => navigate('/RecruiterRegister')} className="rl-ghost"
+            <button onClick={() => navigate('/RecruiterRegister')} className="rl-ghost"
               style={{ width: '100%', padding: '9px', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: 7, fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s' }}
             >
               Create a recruiter account
             </button>
 
             <p style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', margin: '14px 0 0' }}>
-              By signing in you agree to our <span style={{ color: '#4f46e5', cursor: 'pointer' }}>Terms</span> & <span style={{ color: '#4f46e5', cursor: 'pointer' }}>Privacy Policy</span>
+              By signing in you agree to our <span style={{ color: '#475569', cursor: 'pointer', textDecoration: 'underline' }}>Terms</span> & <span style={{ color: '#475569', cursor: 'pointer', textDecoration: 'underline' }}>Privacy Policy</span>
             </p>
           </div>
         </div>

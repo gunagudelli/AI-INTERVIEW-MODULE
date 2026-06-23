@@ -26,10 +26,11 @@ export const C = {
 };
 
 export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  applied:              { bg: '#EFF6FF', color: '#2563EB' },
+  applied:              { bg: '#EFF6FF', color: '#1D4ED8' },
   pending:              { bg: '#F9FAFB', color: '#6B7280' },
   screened:             { bg: '#FEF9C3', color: '#A16207' },
   interview_sent:       { bg: '#FFF7ED', color: '#C2410C' },
+  interview_scheduled:  { bg: '#F5F3FF', color: '#7C3AED' },
   shortlisted:          { bg: '#EFF6FF', color: '#1D4ED8' },
   approved:             { bg: '#EFF6FF', color: '#1D4ED8' },
   hired:                { bg: '#F0FDF4', color: '#16A34A' },
@@ -38,15 +39,16 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
 };
 
 export const STATUS_LABEL: Record<string, string> = {
-  applied:            'Applied',
-  pending:            'Pending',
-  screened:           'Screened',
-  interview_sent:     'Assessment Sent',
-  shortlisted:        'Shortlisted',
-  approved:           'Shortlisted',
-  hired:              'Hired',
-  rejected:           'Rejected',
-  assessment_pending: 'Assessment Pending',
+  applied:              'Applied',
+  pending:              'Pending',
+  screened:             'Screened',
+  interview_sent:       'Assessment Sent',
+  interview_scheduled:  'Interview Scheduled',
+  shortlisted:          'Shortlisted',
+  approved:             'Shortlisted',
+  hired:                'Selected',
+  rejected:             'Rejected',
+  assessment_pending:   'Assessment Pending',
 };
 
 export const getStatusStyle = (status: string) =>

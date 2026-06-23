@@ -636,7 +636,7 @@ export default function InterviewPage() {
   const [configLoading, setConfigLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/admin/interview-config')
+    fetch(`${BASE_URL}/api/admin/interview-config`)
       .then(r => r.json())
       .then(data => {
         setInterviewConfig(data.rounds || data);
@@ -1077,8 +1077,7 @@ export default function InterviewPage() {
     setCodeVerifying(true);
     setAssessmentError('');
     try {
-      const BACKEND = 'http://localhost:3000';
-      const res = await fetch(`${BACKEND}/api/applications/validate-assessment`, {
+      const res = await fetch(`${BASE_URL}/api/applications/validate-assessment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: codeEmail.trim(), code: codeInput.trim().toUpperCase() }),
@@ -1116,7 +1115,7 @@ export default function InterviewPage() {
         setYearsOfExperience(app.experience_years || 0);
         setCandidateId(app.id?.toString() || null);
         // Register candidate in admin panel
-        fetch(`${BACKEND}/api/admin/register-candidate`, {
+        fetch(`${BASE_URL}/api/admin/register-candidate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1472,7 +1471,7 @@ export default function InterviewPage() {
         setViolationMsg('Copy/paste is disabled during the assessment.');
         setTimeout(() => setViolationMsg(''), 3000);
         if (user?.id && sessionStatsId) {
-          fetch('http://localhost:3000/api/upload-exam-image', {
+          fetch(`${BASE_URL}/api/upload-exam-image`, {
             method: 'POST',
             body: (() => { const f = new FormData(); f.append('userId', user.id); f.append('sessionStatsId', sessionStatsId); f.append('type', 'COPY_PASTE_VIOLATION'); f.append('violationType', `CTRL_${e.key.toUpperCase()}`); f.append('file', new Blob([JSON.stringify({ event: msg, round, qNo })], { type: 'application/json' }), 'violation.json'); return f; })()
           }).catch(() => {});
@@ -2138,9 +2137,9 @@ export default function InterviewPage() {
                 try {
                   const uid = user?.id || '';
                   const userEmail = parsed?.email || applicationData?.email || '';
-                  const commRes = await fetch('http://localhost:3000/api/communication/results/' + uid).then(r => r.json()).catch(() => ({}));
+                  const commRes = await fetch(`${BASE_URL}/api/communication/results/` + uid).then(r => r.json()).catch(() => ({}));
                   const overallScore = commRes?.percentage ?? 70;
-                  await fetch('http://localhost:3000/api/admin/save-result', {
+                  await fetch(`${BASE_URL}/api/admin/save-result`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2153,7 +2152,7 @@ export default function InterviewPage() {
                   });
                   // Mark assessment as completed so code cannot be reused
                   if (applicationData?.id) {
-                    await fetch(`http://localhost:3000/api/applications/${applicationData.id}/status`, {
+                    await fetch(`${BASE_URL}/api/applications/${applicationData.id}/status`, {
                       method: 'PUT',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ status: 'completed' }),
@@ -4100,17 +4099,7 @@ export default function InterviewPage() {
 
                   {/* Round 3 coding is handled by Round3CodingPage (fullscreen) */}
 
-                  {/* Feedback Display */}
-                  {showFeedback && currentFeedback && (
-                    <div className="feedback-box" style={{ marginBottom: 12 }}>
-                      <div className="feedback-label">AI Feedback</div>
-                      <div className="feedback-text">
-                        <strong>Score: {currentFeedback.score}/10</strong>
-                        <br />
-                        {currentFeedback.feedback}
-                      </div>
-                    </div>
-                  )}
+                  {/* Feedback Display — hidden */}
 
                   {/* Feedback next button */}
                   {showFeedback && currentFeedback && (

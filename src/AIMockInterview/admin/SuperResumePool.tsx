@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LoadingSpinner, ErrorState } from './components';
 import { ResumeSuperPool } from './ResumeSuperPool';
+import BASE_URL from '../../Config';
 
 interface AppStats {
   total: number; pending: number; screened: number;
@@ -38,7 +39,7 @@ export const SuperResumePool: React.FC = () => {
   const load = async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch('http://localhost:3000/api/admin/overview');
+      const res = await fetch(`${BASE_URL}/api/admin/overview`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
     } catch (e: any) { setError(e.message || 'Failed to load'); }

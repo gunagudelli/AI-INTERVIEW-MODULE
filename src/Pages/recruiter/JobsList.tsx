@@ -58,62 +58,60 @@ const JobsList: React.FC = () => {
   );
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-slate-50">
-      <div className="w-8 h-8 border-4 border-violet-100 border-t-violet-600 rounded-full animate-spin" />
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#ffffff' }}>
+      <div style={{ width:24, height:24, border:'2px solid #e2e8f0', borderTop:'2px solid #8B0000', borderRadius:'50%', animation:'spin .7s linear infinite' }} />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div style={{ minHeight:'100vh', background:'#ffffff', fontFamily:"'Inter',-apple-system,sans-serif" }}>
       <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes jl-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-        .jl-card{animation:jl-in .18s ease both;transition:border-color .15s,box-shadow .15s}
-        .jl-card:hover{border-color:#c4b5fd!important;box-shadow:0 2px 12px rgba(109,40,217,.07)!important}
+        .jl-card{animation:jl-in .18s ease both;transition:border-color .15s}
+        .jl-card:hover{border-color:#cbd5e1!important}
       `}</style>
 
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      <div style={{ background:'white', borderBottom:'1px solid #e2e8f0', padding:'14px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10 }}>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Job Postings</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{jobs.length} active position{jobs.length !== 1 ? 's' : ''}</p>
+          <h1 style={{ fontSize:18, fontWeight:700, color:'#0f172a', margin:0 }}>Job Postings</h1>
+          <p style={{ fontSize:12, color:'#94a3b8', margin:'2px 0 0' }}>{jobs.length} active position{jobs.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex gap-2">
+        <div style={{ display:'flex', gap:8 }}>
           <button
             onClick={() => navigate('/recruiter/jobs/create?ai=true')}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', background:'white', border:'1px solid #e2e8f0', borderRadius:7, fontSize:12.5, fontWeight:500, color:'#475569', cursor:'pointer' }}
           >
             ✨ Generate with AI
           </button>
           <button
             onClick={() => navigate('/recruiter/jobs/create')}
-            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 16px', background:'#8B0000', border:'none', borderRadius:7, fontSize:12.5, fontWeight:600, color:'white', cursor:'pointer' }}
           >
-            <span className="text-lg leading-none">+</span> Post New Job
+            + Post New Job
           </button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-6">
+      <div style={{ maxWidth:960, margin:'0 auto', padding:'20px 28px' }}
+>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm flex justify-between items-center">
+          <div style={{ background:'#fef2f2', border:'1px solid #fecaca', color:'#b91c1c', borderRadius:8, padding:'10px 14px', marginBottom:14, fontSize:13, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             {error}
-            <button onClick={load} className="bg-red-600 text-white px-3 py-1 rounded text-xs font-medium">Retry</button>
+            <button onClick={load} style={{ background:'#b91c1c', color:'white', border:'none', borderRadius:5, padding:'3px 10px', fontSize:12, fontWeight:500, cursor:'pointer' }}>Retry</button>
           </div>
         )}
 
-        {/* Search */}
         {jobs.length > 0 && (
-          <div className="relative mb-5">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search jobs..."
-              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400 transition"
-            />
+          <div style={{ position:'relative', marginBottom:16 }}>
+            <Search size={14} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#94a3b8' }}/>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search jobs..."
+              style={{ width:'100%', paddingLeft:30, paddingRight:36, paddingTop:9, paddingBottom:9, border:'1px solid #e2e8f0', borderRadius:8, fontSize:13, background:'white', outline:'none', boxSizing:'border-box' as any, color:'#0f172a' }}/>
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
+              <button onClick={() => setSearch('')} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#94a3b8', display:'flex' }}>
+                <X size={14}/>
               </button>
             )}
           </div>
@@ -121,111 +119,95 @@ const JobsList: React.FC = () => {
 
         {/* Empty */}
         {jobs.length === 0 ? (
-          <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 py-24 text-center">
-            <div className="w-16 h-16 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <Briefcase className="w-8 h-8 text-violet-500" />
+          <div style={{ background:'white', borderRadius:10, border:'2px dashed #e2e8f0', padding:'64px 24px', textAlign:'center' }}>
+            <div style={{ width:48, height:48, background:'#ffffff', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>
+              <Briefcase size={22} style={{ color:'#94a3b8' }} />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-2">No jobs posted yet</h2>
-            <p className="text-slate-500 text-sm mb-8 max-w-sm mx-auto">
-              Post your first job to start receiving applications and find the right candidates.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => navigate('/recruiter/jobs/create?ai=true')}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-              >
+            <h2 style={{ fontSize:16, fontWeight:700, color:'#0f172a', margin:'0 0 6px' }}>No jobs posted yet</h2>
+            <p style={{ fontSize:13, color:'#94a3b8', margin:'0 0 20px' }}>Post your first job to start receiving applications.</p>
+            <div style={{ display:'flex', gap:8, justifyContent:'center' }}>
+              <button onClick={() => navigate('/recruiter/jobs/create?ai=true')}
+                style={{ padding:'8px 18px', background:'white', border:'1px solid #e2e8f0', borderRadius:7, fontSize:13, fontWeight:500, color:'#475569', cursor:'pointer' }}>
                 ✨ Generate with AI
               </button>
-              <button
-                onClick={() => navigate('/recruiter/jobs/create')}
-                className="bg-violet-600 hover:bg-violet-700 text-white px-7 py-3 rounded-xl text-sm font-semibold transition-colors"
-              >
+              <button onClick={() => navigate('/recruiter/jobs/create')}
+                style={{ padding:'8px 18px', background:'#8B0000', border:'none', borderRadius:7, fontSize:13, fontWeight:600, color:'white', cursor:'pointer' }}>
                 Create First Job
               </button>
             </div>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 py-16 text-center">
-            <p className="text-slate-500 text-sm">No jobs found for "{search}"</p>
-            <button onClick={() => setSearch('')} className="text-violet-600 text-sm font-medium mt-2 hover:underline">Clear search</button>
+          <div style={{ background:'white', borderRadius:10, border:'1px solid #e2e8f0', padding:'48px', textAlign:'center' }}>
+            <p style={{ color:'#94a3b8', fontSize:13, margin:'0 0 8px' }}>No jobs found for "{search}"</p>
+            <button onClick={() => setSearch('')} style={{ fontSize:13, color:'#475569', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Clear search</button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {filtered.map((job, i) => (
-              <div key={job.id} className="jl-card bg-white rounded-xl border border-slate-200 p-5" style={{animationDelay:`${i*0.06}s`}}>
-                <div className="flex gap-4">
+              <div key={job.id} className="jl-card" style={{ background:'white', borderRadius:10, border:'1px solid #e2e8f0', padding:'16px 20px', animationDelay:`${i*0.06}s` }}>
+                <div style={{ display:'flex', gap:14 }}>
 
                   {/* Icon */}
-                  <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Briefcase className="w-5 h-5 text-violet-600" />
+                  <div style={{ width:40, height:40, borderRadius:9, background:'#ffffff', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:2 }}>
+                    <Briefcase size={18} style={{ color:'#475569' }} />
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0">
+                  <div style={{ flex:1, minWidth:0 }}>
                     {/* Title + badges */}
-                    <div className="flex items-center flex-wrap gap-2 mb-1.5">
-                      <h3 className="text-base font-bold text-slate-900">{job.title}</h3>
-                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${TYPE_BADGE[job.type] || TYPE_BADGE['full-time']}`}>
+                    <div style={{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:7, marginBottom:6 }}>
+                      <h3 style={{ fontSize:14, fontWeight:700, color:'#0f172a', margin:0 }}>{job.title}</h3>
+                      <span style={{ fontSize:11, fontWeight:500, padding:'2px 8px', borderRadius:20, background:'#ffffff', color:'#475569', border:'1px solid #e2e8f0' }}>
                         {(job.type || 'full-time').replace('-', ' ')}
                       </span>
-                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${job.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-slate-100 text-slate-500'}`}>
+                      <span style={{ fontSize:11, fontWeight:500, padding:'2px 8px', borderRadius:20, background: job.status === 'active' ? '#f0fdf4' : '#ffffff', color: job.status === 'active' ? '#15803d' : '#94a3b8', border:`1px solid ${job.status === 'active' ? '#bbf7d0' : '#e2e8f0'}` }}>
                         {job.status || 'active'}
                       </span>
                     </div>
 
                     {/* Meta row */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs text-slate-500">
-                      {job.department && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{job.department}</span>}
-                      {job.location   && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{job.location}</span>}
-                      {job.experience > 0 && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.experience}+ yrs</span>}
-                      {job.salary     && <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" />{job.salary}</span>}
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />
-                        {job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently'}
+                    <div style={{ display:'flex', flexWrap:'wrap', gap:'4px 16px', marginBottom:8, fontSize:12, color:'#94a3b8' }}>
+                      {job.department && <span style={{ display:'flex', alignItems:'center', gap:4 }}><Users size={11}/>{job.department}</span>}
+                      {job.location   && <span style={{ display:'flex', alignItems:'center', gap:4 }}><MapPin size={11}/>{job.location}</span>}
+                      {job.experience > 0 && <span style={{ display:'flex', alignItems:'center', gap:4 }}><Clock size={11}/>{job.experience}+ yrs</span>}
+                      {job.salary     && <span style={{ display:'flex', alignItems:'center', gap:4 }}><IndianRupee size={11}/>{job.salary}</span>}
+                      <span style={{ display:'flex', alignItems:'center', gap:4 }}><Calendar size={11}/>
+                        {job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : 'Recently'}
                       </span>
                     </div>
 
                     {/* Description */}
-                    <p className="text-sm text-slate-500 leading-relaxed mb-3 line-clamp-2">{job.description}</p>
+                    <p style={{ fontSize:13, color:'#64748b', lineHeight:1.6, margin:'0 0 10px', overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' as any }}>{job.description}</p>
 
                     {/* Skills */}
                     {job.skills?.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
+                      <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginBottom:12 }}>
                         {job.skills.slice(0, 6).map(sk => (
-                          <span key={sk} className="text-xs font-medium bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md">{sk}</span>
+                          <span key={sk} style={{ fontSize:11, fontWeight:500, background:'#ffffff', color:'#475569', padding:'2px 9px', borderRadius:5, border:'1px solid #e2e8f0' }}>{sk}</span>
                         ))}
                         {job.skills.length > 6 && (
-                          <span className="text-xs text-slate-400 px-2 py-1">+{job.skills.length - 6} more</span>
+                          <span style={{ fontSize:11, color:'#94a3b8', padding:'2px 6px' }}>+{job.skills.length - 6} more</span>
                         )}
                       </div>
                     )}
 
                     {/* Action bar */}
-                    <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-                      <button
-                        onClick={() => navigate(`/recruiter/jobs/${job.id}/applications`)}
-                        className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
-                      >
-                        <Users className="w-3.5 h-3.5" /> View Applications
+                    <div style={{ display:'flex', alignItems:'center', gap:6, paddingTop:10, borderTop:'1px solid #ffffff' }}>
+                      <button onClick={() => navigate(`/recruiter/jobs/${job.id}/applications`)}
+                        style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 12px', background:'#8B0000', color:'white', border:'none', borderRadius:6, fontSize:12, fontWeight:600, cursor:'pointer' }}>
+                        <Users size={12}/> Applications
                       </button>
-                      <button
-                        onClick={() => handleLinks(job.id)}
-                        className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-violet-600 bg-slate-50 hover:bg-violet-50 border border-slate-200 hover:border-violet-200 px-3.5 py-2 rounded-lg transition-colors"
-                      >
-                        <Link2 className="w-3.5 h-3.5" /> Get Links
+                      <button onClick={() => handleLinks(job.id)}
+                        style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px', background:'white', color:'#475569', border:'1px solid #e2e8f0', borderRadius:6, fontSize:12, fontWeight:500, cursor:'pointer' }}>
+                        <Link2 size={12}/> Links
                       </button>
-                      <button
-                        onClick={() => navigate(`/recruiter/jobs/${job.id}/edit`)}
-                        className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-lg transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" /> Edit
+                      <button onClick={() => navigate(`/recruiter/jobs/${job.id}/edit`)}
+                        style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px', background:'white', color:'#475569', border:'1px solid #e2e8f0', borderRadius:6, fontSize:12, fontWeight:500, cursor:'pointer' }}>
+                        <Pencil size={12}/> Edit
                       </button>
-                      <button
-                        onClick={() => handleDelete(job.id)}
-                        disabled={deleting === job.id}
-                        className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-100 px-3.5 py-2 rounded-lg transition-colors disabled:opacity-50 ml-auto"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        {deleting === job.id ? 'Deleting...' : 'Delete'}
+                      <button onClick={() => handleDelete(job.id)} disabled={deleting === job.id}
+                        style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px', background:'#fef2f2', color:'#b91c1c', border:'1px solid #fecaca', borderRadius:6, fontSize:12, fontWeight:500, cursor:'pointer', marginLeft:'auto', opacity: deleting === job.id ? 0.5 : 1 }}>
+                        <Trash2 size={12}/> {deleting === job.id ? 'Deleting...' : 'Delete'}
                       </button>
                     </div>
                   </div>
@@ -238,43 +220,34 @@ const JobsList: React.FC = () => {
 
       {/* Links Modal */}
       {linksModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setLinksModal(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div style={{ position:'fixed', inset:0, background:'rgba(15,23,42,.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:50, padding:16 }} onClick={() => setLinksModal(null)}>
+          <div style={{ background:'white', borderRadius:10, width:'100%', maxWidth:460, border:'1px solid #e2e8f0' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid #ffffff' }}>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Share Links</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Copy and share with candidates</p>
+                <h3 style={{ fontSize:14, fontWeight:600, color:'#0f172a', margin:0 }}>Share Links</h3>
+                <p style={{ fontSize:11, color:'#94a3b8', margin:'2px 0 0' }}>Copy and share with candidates</p>
               </div>
-              <button onClick={() => setLinksModal(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
+              <button onClick={() => setLinksModal(null)} style={{ background:'none', border:'none', color:'#94a3b8', cursor:'pointer', display:'flex' }}><X size={15}/></button>
             </div>
-
-            <div className="p-6 space-y-5">
+            <div style={{ padding:'18px 20px', display:'flex', flexDirection:'column', gap:16 }}>
               {[
-                { label: 'Application Link', sub: 'Share with candidates to apply for this role', val: linksModal.applicationLink || linksModal.applyLink || `${window.location.origin}/apply?jobId=${linksModal.jobId || ''}`, key: 'apply' },
-                { label: 'Interview Link',   sub: 'Direct AI interview link for shortlisted candidates', val: linksModal.link || linksModal.assessmentLink || '', key: 'interview' },
+                { label:'Application Link', sub:'Share with candidates to apply', val: linksModal.applicationLink || linksModal.applyLink || `${window.location.origin}/apply?jobId=${linksModal.jobId || ''}`, key:'apply' },
+                { label:'Interview Link',   sub:'For shortlisted candidates only', val: linksModal.link || linksModal.assessmentLink || '', key:'interview' },
               ].map(({ label, sub, val, key }) => (
                 <div key={key}>
-                  <p className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-0.5">{label}</p>
-                  <p className="text-xs text-slate-400 mb-2">{sub}</p>
-                  <div className="flex gap-2">
-                    <input
-                      readOnly value={val}
-                      className="flex-1 min-w-0 text-xs font-mono bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 outline-none text-slate-600"
-                    />
-                    <button
-                      onClick={() => copy(val, key)}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${copied === key ? 'bg-emerald-600 text-white' : 'bg-violet-600 hover:bg-violet-700 text-white'}`}
-                    >
-                      {copied === key ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                  <p style={{ fontSize:12, fontWeight:600, color:'#374151', margin:'0 0 2px' }}>{label}</p>
+                  <p style={{ fontSize:11, color:'#94a3b8', margin:'0 0 6px' }}>{sub}</p>
+                  <div style={{ display:'flex', gap:7 }}>
+                    <input readOnly value={val} style={{ flex:1, fontSize:11, fontFamily:'monospace', background:'#FFFFFF', border:'1px solid #e2e8f0', borderRadius:6, padding:'7px 10px', color:'#475569', outline:'none' }}/>
+                    <button onClick={() => copy(val, key)}
+                      style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 14px', borderRadius:6, border:'none', fontSize:12, fontWeight:600, cursor:'pointer', background: copied===key ? '#f0fdf4' : '#8B0000', color: copied===key ? '#15803d' : 'white' }}>
+                      {copied===key ? <><Check size={11}/> Copied</> : <><Copy size={11}/> Copy</>}
                     </button>
                   </div>
                 </div>
               ))}
-
-              <div className="bg-violet-50 rounded-lg px-4 py-3 text-xs text-violet-700">
-                <span className="font-semibold">Tip:</span> Application link is for public job posts. Interview link is for shortlisted candidates only.
+              <div style={{ background:'#ffffff', borderRadius:7, padding:'10px 13px', fontSize:12, color:'#64748b', border:'1px solid #ffffff' }}>
+                <strong>Tip:</strong> Application link is for public posts. Interview link is for shortlisted candidates only.
               </div>
             </div>
           </div>

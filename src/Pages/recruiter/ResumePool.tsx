@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import recruiterAPI from '../../services/recruiterAPI';
+import BASE_URL from '../../Config';
 import {
   Search, CheckCircle, XCircle, ExternalLink, Send,
   ChevronDown, ChevronUp, X, AlertCircle, Briefcase,
@@ -9,19 +10,17 @@ import {
   Mail, Zap, Database, Layers, Star,
 } from 'lucide-react';
 
-import { getBaseUrl } from '../../utils/config';
-
-const BASE = getBaseUrl();
+const BASE = BASE_URL;
 
 /* ── design tokens ─────────────────────────────────────────── */
 const T = {
-  bg:'#F8FAFC', card:'#FFFFFF', border:'#E5E7EB', borderLt:'#F1F5F9',
+  bg:'#ffffff', card:'#FFFFFF', border:'#F0F0F0', borderLt:'#F7F7F7',
   text:'#0F172A', textSec:'#475569', textMuted:'#94A3B8',
-  primary:'#2563EB', pLight:'#EFF6FF', pBorder:'#BFDBFE',
-  success:'#166534', sBg:'#DCFCE7', sBorder:'#BBF7D0',
+  primary:'#2563EB', pLight:'#EFF6FF', pBorder:'#DBEAFE',
+  success:'#166534', sBg:'#DCFCE7', sBorder:'#D1FAE5',
   warning:'#92400E', wBg:'#FEF3C7', wBorder:'#FDE68A',
-  error:'#991B1B',   eBg:'#FEE2E2', eBorder:'#FECACA',
-  info:'#1D4ED8',    iBg:'#DBEAFE',
+  error:'#991B1B',   eBg:'#FEE2E2', eBorder:'#FEE2E2',
+  info:'#1D4ED8',    iBg:'#EFF6FF',
 };
 
 /* ── interfaces ────────────────────────────────────────────── */
@@ -47,7 +46,7 @@ const scoreBg  = (s:number) => s>=80?T.sBg:s>=60?T.wBg:T.eBg;
 const scoreTag = (s:number) => s>=80?'Strong':s>=60?'Fair':'Weak';
 
 const STAGE_MAP: Record<string,[string,string]> = {
-  pending:['#F9FAFB',T.textMuted], applied:[T.iBg,T.info],
+  pending:['#FFFFFF',T.textMuted], applied:[T.iBg,T.info],
   screened:[T.wBg,T.warning], shortlisted:[T.iBg,'#1D4ED8'],
   interview_sent:[T.wBg,T.warning], interview_scheduled:['#F5F3FF','#5B21B6'],
   rejected:[T.eBg,T.error], hired:[T.sBg,T.success],
@@ -71,9 +70,9 @@ const CSS = `
   @keyframes prog     { from{width:0%} to{width:var(--w)} }
   @keyframes stepIn   { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
   @keyframes barFill  { from{width:0} to{width:100%} }
-  .card-h:hover { border-color:${T.pBorder} !important; box-shadow:0 2px 12px rgba(37,99,235,.08) !important; }
-  .trow:hover td { background:#F8FAFC !important; }
-  .ghost:hover   { background:#F1F5F9 !important; }
+  .card-h:hover { border-color:${T.pBorder} !important; }
+  .trow:hover td { background:#ffffff !important; }
+  .ghost:hover   { background:#FFFFFF !important; }
   .step-row { transition: background .3s, opacity .3s; }
 `;
 
@@ -102,115 +101,131 @@ const Ring: React.FC<{score:number;size?:number}> = ({score,size=48}) => {
 /* ══════════════════════════════════════════════════════════════
    AI ANALYSIS SCREEN
    ══════════════════════════════════════════════════════════════ */
-const AIAnalysisScreen: React.FC<{ total:number; done:number; jobCount:number }> = ({ total, done, jobCount }) => {
-  const [barWidth, setBarWidth] = useState(0);
-  const [dots, setDots] = useState(0);
-  const pct = total > 0 ? Math.min(Math.round((done / total) * 100), 100) : 0;
+const AIAnalysisScreen: React.FC<{ jobCount:number }> = ({ jobCount }) => {
+  const [tick, setTick]       = useState(0);
+  const [pct,  setPct]        = useState(0);
+  const [particles, setParticles] = useState<{id:number;x:number;y:number}[]>([]);
+  const dots = tick % 4;
 
+  // smooth fake progress: runs from 0 → 92 while waiting
   useEffect(() => {
-    const t = setTimeout(() => setBarWidth(pct), 100);
-    return () => clearTimeout(t);
-  }, [pct]);
-
-  useEffect(() => {
-    const t = setInterval(() => setDots(p => (p + 1) % 4), 500);
+    const t = setInterval(() => {
+      setPct(p => {
+        if (p < 30) return p + 2;
+        if (p < 60) return p + 1;
+        if (p < 85) return p + 0.5;
+        if (p < 92) return p + 0.1;
+        return p;
+      });
+    }, 300);
     return () => clearInterval(t);
   }, []);
 
+  useEffect(() => {
+    const t = setInterval(() => {
+      setTick(p => p + 1);
+      setParticles(p => [...p.slice(-6), { id: Date.now(), x: 38 + Math.random()*24, y: 30 + Math.random()*40 }]);
+    }, 650);
+    return () => clearInterval(t);
+  }, []);
+
+  const barPct = Math.round(pct);
+
   return (
-    <div style={{ height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:T.bg, fontFamily:"'Inter',sans-serif", padding:24 }}>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'32px 20px', background:'#FDF2F2', minHeight:380 }}>
       <style>{`
-        ${CSS}
-        @keyframes matchLine {
-          0%   { width:0;   opacity:0; }
-          20%  { opacity:1; }
-          80%  { opacity:1; }
-          100% { width:100%; opacity:0; }
-        }
-        @keyframes nodePulse {
-          0%,100% { transform:scale(1);   box-shadow:0 0 0 0 rgba(37,99,235,.4); }
-          50%     { transform:scale(1.12); box-shadow:0 0 0 6px rgba(37,99,235,0); }
-        }
-        @keyframes floatCard {
-          0%,100% { transform:translateY(0); }
-          50%     { transform:translateY(-4px); }
-        }
-        .match-line { animation: matchLine 1.6s ease-in-out infinite; }
-        .match-line:nth-child(2) { animation-delay:.3s; }
-        .match-line:nth-child(3) { animation-delay:.6s; }
-        .match-line:nth-child(4) { animation-delay:.9s; }
+        @keyframes rbeam { 0%{left:-100%;opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{left:110%;opacity:0} }
+        @keyframes rzap  { 0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 0 0 0 rgba(139,0,0,0.35)} 50%{transform:translate(-50%,-50%) scale(1.14);box-shadow:0 0 0 8px rgba(139,0,0,0)} }
+        @keyframes rfloat{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes rpop  { 0%{opacity:1;transform:scale(0)} 60%{opacity:1;transform:scale(1) translate(var(--px),var(--py))} 100%{opacity:0;transform:scale(.4) translate(var(--px),var(--py))} }
+        @keyframes rbar  { 0%{background-position:-300px 0} 100%{background-position:300px 0} }
+        .rbeam{animation:rbeam 1.4s ease-in-out infinite}
+        .rbeam:nth-child(2){animation-delay:.35s}
+        .rbeam:nth-child(3){animation-delay:.7s}
+        .rjd {animation:rfloat 2.8s ease-in-out infinite}
+        .rrs {animation:rfloat 2.8s ease-in-out infinite reverse}
       `}</style>
 
-      <div style={{ width:'100%', maxWidth:480, textAlign:'center' }}>
+      <div style={{ width:'100%', maxWidth:460 }}>
+        <div style={{ background:'#fff', borderRadius:14, border:'1px solid #F0F0F0', overflow:'hidden' }}>
+          <div style={{ height:4, background:'linear-gradient(90deg,#8B0000,#b91c1c,#ef4444,#8B0000)' }}/>
+          <div style={{ padding:'24px 28px 22px' }}>
 
-        {/* ── matching visual ── */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:16, marginBottom:28, animation:'floatCard 3s ease-in-out infinite' }}>
+            {/* JD card + beams + Resume card */}
+            <div style={{ display:'flex', alignItems:'center', gap:0, marginBottom:20 }}>
 
-          {/* JD card */}
-          <div style={{ background:'#fff', border:`1.5px solid ${T.pBorder}`, borderRadius:10, padding:'12px 14px', width:110, boxShadow:'0 2px 12px rgba(37,99,235,.1)' }}>
-            <div style={{ width:28, height:28, borderRadius:6, background:T.iBg, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 8px' }}>
-              <Briefcase size={13} style={{ color:T.primary }}/>
-            </div>
-            <div style={{ fontSize:11, fontWeight:700, color:T.text, marginBottom:5 }}>JD</div>
-            {[70,50,60].map((w,i) => (
-              <div key={i} style={{ height:4, background:T.pLight, borderRadius:2, marginBottom:3, width:`${w}%`, margin:'0 auto 3px' }}/>
-            ))}
-          </div>
-
-          {/* animated lines */}
-          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6, position:'relative', overflow:'hidden' }}>
-            {[0,1,2,3].map(i => (
-              <div key={i} style={{ height:2, background:T.border, borderRadius:1, overflow:'hidden', position:'relative' }}>
-                <div className="match-line" style={{
-                  position:'absolute', left:0, top:0, height:'100%',
-                  background:`linear-gradient(90deg,transparent,${T.primary},transparent)`,
-                  animationDelay:`${i * .35}s`,
-                }}/>
+              {/* JD card */}
+              <div className="rjd" style={{ background:'#FDF2F2', border:'1.5px solid #FECDD3', borderRadius:10, padding:'12px', width:100, textAlign:'center', flexShrink:0, zIndex:2 }}>
+                <div style={{ width:32, height:32, borderRadius:8, background:'#8B0000', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 7px', boxShadow:'0 3px 8px rgba(139,0,0,0.3)' }}>
+                  <Briefcase size={14} color="#fff"/>
+                </div>
+                <div style={{ fontSize:10, fontWeight:600, color:'#8B0000', marginBottom:2 }}>Job Descriptions</div>
+                <div style={{ fontSize:22, fontWeight:800, color:'#8B0000', lineHeight:1, marginBottom:6 }}>{jobCount}</div>
+                {[80,55,68].map((w,i) => <div key={i} style={{ height:3, background:'#FECDD3', borderRadius:2, margin:'0 auto 3px', width:`${w}%` }}/>)}
               </div>
-            ))}
-            {/* center zap */}
-            <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:22, height:22, borderRadius:'50%', background:T.primary, display:'flex', alignItems:'center', justifyContent:'center', animation:'nodePulse 1.4s ease-in-out infinite' }}>
-              <Zap size={10} color="#fff"/>
+
+              {/* animated beams */}
+              <div style={{ flex:1, height:60, position:'relative', overflow:'hidden', zIndex:1 }}>
+                {[20,40,60].map((top,i) => (
+                  <div key={i} style={{ position:'absolute', top:`${top}%`, left:0, right:0, height:2, background:'#FECDD3', borderRadius:1 }}>
+                    <div className="rbeam" style={{ position:'absolute', top:0, width:'40%', height:'100%', background:'linear-gradient(90deg,transparent,#8B0000,#ef4444,transparent)', animationDelay:`${i*.35}s` }}/>
+                  </div>
+                ))}
+                <div style={{ position:'absolute', top:'50%', left:'50%', width:28, height:28, borderRadius:'50%', background:'#8B0000', display:'flex', alignItems:'center', justifyContent:'center', animation:'rzap 1.6s ease-in-out infinite', zIndex:3, boxShadow:'0 0 0 4px #FDF2F2' }}>
+                  <Zap size={12} color="#fff"/>
+                </div>
+                {particles.map(p => (
+                  <div key={p.id} style={{ position:'absolute', top:`${p.y}%`, left:`${p.x}%`, width:5, height:5, borderRadius:'50%', background:'#b91c1c', animation:'rpop .8s ease-out forwards', ['--px' as any]:`${(Math.random()-.5)*22}px`, ['--py' as any]:`${(Math.random()-.5)*22}px` }}/>
+                ))}
+              </div>
+
+              {/* Resume card */}
+              <div className="rrs" style={{ background:'#FDF2F2', border:'1.5px solid #FECDD3', borderRadius:10, padding:'12px', width:100, textAlign:'center', flexShrink:0, zIndex:2 }}>
+                <div style={{ width:32, height:32, borderRadius:8, background:'#b91c1c', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 7px', boxShadow:'0 3px 8px rgba(185,28,28,0.3)' }}>
+                  <FileText size={14} color="#fff"/>
+                </div>
+                <div style={{ fontSize:10, fontWeight:600, color:'#8B0000', marginBottom:2 }}>Resumes</div>
+                <div style={{ fontSize:22, fontWeight:800, color:'#b91c1c', lineHeight:1, marginBottom:6 }}>
+                  <Spin s={14} c="#b91c1c"/>
+                </div>
+                {[85,60,72].map((w,i) => <div key={i} style={{ height:3, background:'#FECDD3', borderRadius:2, margin:'0 auto 3px', width:`${w}%` }}/>)}
+              </div>
+            </div>
+
+            {/* title */}
+            <div style={{ textAlign:'center', marginBottom:14 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:'#7f1d1d', letterSpacing:'-0.2px', marginBottom:2 }}>AI Matching{'.'.repeat(dots)}</div>
+              <div style={{ fontSize:11, color:'#b91c1c' }}>
+                Scanning <span style={{ fontWeight:700 }}>{jobCount}</span> JD{jobCount!==1?'s':''} against resume pool
+              </div>
+            </div>
+
+            {/* progress */}
+            <div style={{ marginBottom:14 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                <span style={{ fontSize:11, color:'#b91c1c', fontWeight:500 }}>Analyzing candidates…</span>
+                <span style={{ fontSize:12, fontWeight:700, color:'#8B0000' }}>{barPct}%</span>
+              </div>
+              <div style={{ height:7, background:'#FECDD3', borderRadius:99, overflow:'hidden', border:'1px solid #fca5a5' }}>
+                <div style={{ height:'100%', width:`${barPct}%`, borderRadius:99, background:'linear-gradient(90deg,#8B0000,#b91c1c,#ef4444)', transition:'width 0.4s ease', backgroundSize:'300px 100%', animation:'rbar 2s linear infinite' }}/>
+              </div>
+            </div>
+
+            {/* stats */}
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              {[
+                { l:'JDs Being Analyzed', v:jobCount,  c:'#8B0000', bg:'#FDF2F2' },
+                { l:'AI Processing',      v:'Active',  c:'#b91c1c', bg:'#FDF2F2' },
+              ].map(s => (
+                <div key={s.l} style={{ background:s.bg, border:'1px solid #FECDD3', borderRadius:8, padding:'8px 10px', textAlign:'center' }}>
+                  <div style={{ fontSize:15, fontWeight:800, color:s.c, lineHeight:1, marginBottom:2 }}>{s.v}</div>
+                  <div style={{ fontSize:9, fontWeight:600, color:'#b91c1c', textTransform:'uppercase', letterSpacing:'0.05em' }}>{s.l}</div>
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* Resume card */}
-          <div style={{ background:'#fff', border:`1.5px solid ${T.sBorder}`, borderRadius:10, padding:'12px 14px', width:110, boxShadow:'0 2px 12px rgba(22,101,52,.08)' }}>
-            <div style={{ width:28, height:28, borderRadius:6, background:T.sBg, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 8px' }}>
-              <FileText size={13} style={{ color:T.success }}/>
-            </div>
-            <div style={{ fontSize:11, fontWeight:700, color:T.text, marginBottom:5 }}>Resume</div>
-            {[80,55,65].map((w,i) => (
-              <div key={i} style={{ height:4, background:T.sBg, borderRadius:2, marginBottom:3, width:`${w}%`, margin:'0 auto 3px' }}/>
-            ))}
-          </div>
         </div>
-
-        {/* title */}
-        <div style={{ fontSize:18, fontWeight:700, color:T.text, marginBottom:4 }}>
-          Matching Resumes{'.'.repeat(dots)}
-        </div>
-        <div style={{ fontSize:12, color:T.textMuted, marginBottom:20 }}>
-          {jobCount} job{jobCount!==1?'s':''} · {total||'…'} resume{total!==1?'s':''}
-        </div>
-
-        {/* progress bar */}
-        <div style={{ background:'#fff', borderRadius:10, border:`1px solid ${T.border}`, padding:'14px 18px', boxShadow:'0 1px 6px rgba(0,0,0,.04)' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
-            <span style={{ fontSize:12, color:T.textMuted, fontWeight:500 }}>Progress</span>
-            <span style={{ fontSize:13, fontWeight:700, color: pct>=100 ? T.success : T.primary }}>{barWidth}%</span>
-          </div>
-          <div style={{ height:7, background:'#F1F5F9', borderRadius:99, overflow:'hidden' }}>
-            <div style={{
-              height:'100%', width:`${barWidth}%`, borderRadius:99,
-              background: pct>=100 ? `linear-gradient(90deg,#16a34a,#22c55e)` : `linear-gradient(90deg,${T.primary},#60a5fa)`,
-              transition:'width .9s cubic-bezier(.4,0,.2,1)',
-            }}/>
-          </div>
-          {done > 0 && (
-            <div style={{ fontSize:11, color:T.textMuted, marginTop:7 }}>{done} of {total} jobs analyzed</div>
-          )}
-        </div>
+        <div style={{ textAlign:'center', marginTop:10, fontSize:10, color:'#b91c1c' }}>Matching every resume against all JDs — please wait</div>
       </div>
     </div>
   );
@@ -311,7 +326,7 @@ const Detail: React.FC<{ job:Job; state:JobState; onBack:()=>void; onRetry:(j:Jo
               ].map(s => {
                 const Icon=s.ic;
                 return (
-                  <div key={s.l} style={{ background:T.card, borderRadius:8, border:`1px solid ${T.border}`, padding:'12px 14px', display:'flex', alignItems:'center', gap:10 }}>
+                <div key={s.l} style={{ background:T.card, borderRadius:8, border:`1px solid ${T.border}`, padding:'12px 14px', display:'flex', alignItems:'center', gap:10 }}>
                     <div style={{ width:30, height:30, borderRadius:7, background:s.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                       <Icon size={13} style={{ color:s.vc }}/>
                     </div>
@@ -365,7 +380,7 @@ const Detail: React.FC<{ job:Job; state:JobState; onBack:()=>void; onRetry:(j:Jo
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse', minWidth:860 }}>
                     <thead>
-                      <tr style={{ background:'#F9FAFB', borderBottom:`1px solid ${T.border}` }}>
+                      <tr style={{ background:'#FFFFFF', borderBottom:`1px solid ${T.border}` }}>
                         {['#','Candidate','Email / Phone','Match %','Stage','Recruiter','Last Activity','Actions'].map(h => (
                           <th key={h} style={{ padding:'9px 13px', textAlign:'left', fontSize:11.5, fontWeight:600, color:T.textMuted, whiteSpace:'nowrap' }}>{h}</th>
                         ))}
@@ -426,7 +441,7 @@ const Detail: React.FC<{ job:Job; state:JobState; onBack:()=>void; onRetry:(j:Jo
                                     </a>
                                   )}
                                   {tab==='matched' && (
-                                    <button onClick={() => invite(c)} disabled={inviting===c.id||invited.has(c.id)} style={{ display:'flex', alignItems:'center', gap:4, padding:'3px 9px', border:'none', borderRadius:5, fontSize:11, fontWeight:600, cursor: invited.has(c.id)?'default':'pointer', whiteSpace:'nowrap', fontFamily:'inherit', background: invited.has(c.id)?T.sBg:inviting===c.id?'#F1F5F9':T.primary, color: invited.has(c.id)?T.success:inviting===c.id?T.textMuted:'#fff' }}>
+                                    <button onClick={() => invite(c)} disabled={inviting===c.id||invited.has(c.id)} style={{ display:'flex', alignItems:'center', gap:4, padding:'3px 9px', border:'none', borderRadius:5, fontSize:11, fontWeight:600, cursor: invited.has(c.id)?'default':'pointer', whiteSpace:'nowrap', fontFamily:'inherit', background: invited.has(c.id)?T.sBg:inviting===c.id?'#FFFFFF':T.primary, color: invited.has(c.id)?T.success:inviting===c.id?T.textMuted:'#fff' }}>
                                       {inviting===c.id?<Spin s={9} c="#fff"/>:<Send size={9}/>}
                                       {invited.has(c.id)?'Invited ✓':inviting===c.id?'…':'Invite'}
                                     </button>
@@ -444,7 +459,7 @@ const Detail: React.FC<{ job:Job; state:JobState; onBack:()=>void; onRetry:(j:Jo
                             {isOpen && (
                               <tr style={{ borderBottom:`1px solid ${T.border}` }}>
                                 <td colSpan={8} style={{ padding:0 }}>
-                                  <div style={{ background:'#F9FAFB', padding:'14px 16px', animation:'fadeUp .15s ease' }}>
+                                  <div style={{ background:'#FFFFFF', padding:'14px 16px', animation:'fadeUp .15s ease' }}>
 
                                     {/* skills */}
                                     {((c.matched_skills||[]).length>0||(c.missing_skills||[]).length>0) && (
@@ -487,7 +502,7 @@ const Detail: React.FC<{ job:Job; state:JobState; onBack:()=>void; onRetry:(j:Jo
                                         <div style={{ overflowX:'auto' }}>
                                           <table style={{ width:'100%', borderCollapse:'collapse', background:T.card, borderRadius:6, border:`1px solid ${T.border}`, fontSize:12 }}>
                                             <thead>
-                                              <tr style={{ background:'#F9FAFB' }}>
+                                              <tr style={{ background:'#FFFFFF' }}>
                                                 {['Job Title','Recruiter','Status','Score','Assessment','Applied'].map(h => (
                                                   <th key={h} style={{ padding:'7px 12px', textAlign:'left', fontSize:11, fontWeight:600, color:T.textMuted, borderBottom:`1px solid ${T.border}`, whiteSpace:'nowrap' }}>{h}</th>
                                                 ))}
@@ -522,7 +537,7 @@ const Detail: React.FC<{ job:Job; state:JobState; onBack:()=>void; onRetry:(j:Jo
                     </tbody>
                   </table>
                 </div>
-                <div style={{ padding:'8px 13px', borderTop:`1px solid ${T.borderLt}`, background:'#FAFAFA' }}>
+                <div style={{ padding:'8px 13px', borderTop:`1px solid ${T.borderLt}`, background:'#ffffff' }}>
                   <span style={{ fontSize:11.5, color:T.textMuted }}>Showing {list.length} candidate{list.length!==1?'s':''}</span>
                 </div>
               </div>
@@ -551,6 +566,11 @@ const ResumePool: React.FC = () => {
   const totalUnmatched = useMemo(() => Object.values(states).reduce((a,s)=>a+(s.result?.unmatched_count||0),0), [states]);
   const doneCount      = Object.values(states).filter(s=>s.status==='done').length;
   const loadingCount   = Object.values(states).filter(s=>s.status==='loading').length;
+  // estimate total resumes from any completed job, fall back to job count for display
+  const resumeEstimate = useMemo(() => {
+    const first = Object.values(states).find(s=>s.status==='done'&&s.result);
+    return first?.result?.total ?? 0;
+  }, [states]);
 
   useEffect(() => {
     recruiterAPI.getAllJobs()
@@ -595,11 +615,6 @@ const ResumePool: React.FC = () => {
       setStates(p => ({...p,[job.id]:{status:'error',error:e?.response?.data?.error||'Failed'}}));
     }
   };
-
-  /* ── if analyzing, show full-screen AI screen instead of list ── */
-  if (loadingCount > 0) {
-    return <AIAnalysisScreen total={jobs.length} done={doneCount} jobCount={jobs.length}/>;
-  }
 
   /* ── detail view ── */
   if (selectedId && states[selectedId]) {
@@ -652,13 +667,13 @@ const ResumePool: React.FC = () => {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
             {[
               { l:'Total Resumes', v:totalResumes,    ic:FileText,    vc:T.primary, bg:T.iBg },
-              { l:'Active JDs',   v:jobs.length,      ic:Briefcase,   vc:T.textSec, bg:'#F1F5F9' },
+              { l:'Active JDs',   v:jobs.length,      ic:Briefcase,   vc:T.textSec, bg:'#FFFFFF' },
               { l:'Matched',      v:totalMatched,     ic:CheckCircle, vc:T.success, bg:T.sBg },
               { l:'Unmatched',    v:totalUnmatched,   ic:XCircle,     vc:T.error,   bg:T.eBg },
             ].map(s => {
               const Icon=s.ic;
               return (
-                <div key={s.l} style={{ background:T.card, borderRadius:8, border:`1px solid ${T.border}`, padding:'13px 16px', display:'flex', alignItems:'center', gap:10 }}>
+              <div key={s.l} style={{ background:T.card, borderRadius:8, border:`1px solid ${T.border}`, padding:'13px 16px', display:'flex', alignItems:'center', gap:10 }}>
                   <div style={{ width:32, height:32, borderRadius:7, background:s.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                     <Icon size={14} style={{ color:s.vc }}/>
                   </div>
@@ -674,6 +689,8 @@ const ResumePool: React.FC = () => {
 
         {loading ? (
           <div style={{ display:'flex', justifyContent:'center', padding:72 }}><Spin s={26}/></div>
+        ) : !loading && loadingCount > 0 && doneCount === 0 ? (
+          <AIAnalysisScreen jobCount={jobs.length}/>
         ) : filtered.length===0 ? (
           <div style={{ background:T.card, borderRadius:8, border:`2px dashed ${T.border}`, padding:'64px 24px', textAlign:'center' }}>
             <Briefcase size={30} style={{ color:'#E2E8F0', marginBottom:10 }}/>
@@ -697,7 +714,7 @@ const ResumePool: React.FC = () => {
                   key={job.id}
                   className={isDone?'card-h':''}
                   onClick={() => isDone && setSelectedId(job.id)}
-                  style={{ background:T.card, borderRadius:8, border:`1px solid ${T.border}`, padding:'15px 18px', display:'flex', alignItems:'center', gap:16, cursor: isDone?'pointer':'default', opacity: isErr?.7:1, transition:'border-color .15s, box-shadow .15s' }}
+                  style={{ background:T.card, borderRadius:8, border:`1px solid ${T.border}`, padding:'15px 18px', display:'flex', alignItems:'center', gap:16, cursor: isDone?'pointer':'default', opacity: isErr?.7:1, transition:'border-color .15s' }}
                 >
                   <div style={{ width:38, height:38, borderRadius:8, background:T.iBg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                     <Briefcase size={17} style={{ color:T.primary }}/>
@@ -731,6 +748,12 @@ const ResumePool: React.FC = () => {
                       <div style={{ padding:'0 10px', borderLeft:`1px solid ${T.border}`, background:T.card, display:'flex', alignItems:'center' }}>
                         <ChevronDown size={13} style={{ color:T.primary }}/>
                       </div>
+                    </div>
+                  )}
+
+                  {s.status==='loading' && (
+                    <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:T.textMuted, flexShrink:0 }}>
+                      <Spin s={13}/> Analyzing…
                     </div>
                   )}
 

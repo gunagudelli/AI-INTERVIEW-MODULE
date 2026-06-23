@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { candidateApi } from './api';
+import BASE_URL from '../../Config';
 
 export const AdminAnalytics: React.FC = () => {
   const [analytics, setAnalytics] = useState<any>(null);
@@ -10,7 +11,7 @@ export const AdminAnalytics: React.FC = () => {
   const [toast, setToast] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/admin/analytics')
+    fetch(`${BASE_URL}/api/admin/analytics`)
       .then(r => r.json())
       .then(setAnalytics)
       .catch(() => {});

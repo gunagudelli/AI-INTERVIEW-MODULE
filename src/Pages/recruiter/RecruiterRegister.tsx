@@ -25,6 +25,7 @@ const RecruiterRegister: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,9 +38,7 @@ const RecruiterRegister: React.FC = () => {
         company_name: form.company, company: form.company,
       });
       if (res.success) {
-        localStorage.setItem('recruiter_token', res.token);
-        localStorage.setItem('recruiter_user', JSON.stringify(res.user));
-        navigate('/recruiter/dashboard');
+        setShowSuccess(true);
       } else setError('Registration failed. Please try again.');
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Registration failed');
@@ -48,39 +47,80 @@ const RecruiterRegister: React.FC = () => {
 
   const inp: React.CSSProperties = {
     width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb',
-    borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#f9fafb',
+    borderRadius: 7, fontSize: 13, color: '#0f172a', background: '#ffffff',
     boxSizing: 'border-box', transition: 'border-color 0.15s',
   };
 
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#f8fafc', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      background: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       padding: '24px 16px',
     }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        .rr-in:focus { outline: none; border-color: #4f46e5 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(79,70,229,0.09) !important; }
-        .rr-btn:hover:not(:disabled) { background: #4338ca !important; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        .rr-in:focus { outline: none; border-color: #8B0000 !important; background: #fff !important; }
+        .rr-btn:hover:not(:disabled) { background: #6B0000 !important; }
         @media (max-width: 720px) { .rr-left { display: none !important; } }
       `}</style>
+
+      {showSuccess && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 100, padding: 16, animation: 'fadeIn 0.18s ease',
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 14, padding: '36px 32px',
+            maxWidth: 400, width: '100%', textAlign: 'center',
+            border: '1px solid #e5e7eb',
+            animation: 'scaleIn 0.22s ease',
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%', background: '#f0fdf4',
+              border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', margin: '0 auto 16px',
+            }}>
+              <svg width="22" height="22" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>Account created!</h3>
+            <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 24px', lineHeight: 1.6 }}>
+              Your recruiter account has been created successfully.<br />
+              Please sign in with your credentials to continue.
+            </p>
+            <button
+              onClick={() => navigate('/RecruiterLogin')}
+              style={{
+                width: '100%', padding: '10px', background: '#8B0000', color: 'white',
+                border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Go to Sign In →
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{
         display: 'flex', width: '100%', maxWidth: 900,
         background: 'white', border: '1px solid #e5e7eb',
         borderRadius: 14, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
       }}>
 
         {/* LEFT */}
         <div className="rr-left" style={{
-          width: 320, flexShrink: 0, background: '#fafafa',
+          width: 320, flexShrink: 0, background: '#ffffff',
           borderRight: '1px solid #e5e7eb', padding: '36px 30px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
             <div style={{
-              width: 28, height: 28, borderRadius: 7, background: '#4f46e5', flexShrink: 0,
+              width: 28, height: 28, borderRadius: 7, background: '#8B0000', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -93,11 +133,11 @@ const RecruiterRegister: React.FC = () => {
           <div>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: '#eff6ff', border: '1px solid #bfdbfe',
+              background: '#ffffff', border: '1px solid #e2e8f0',
               borderRadius: 5, padding: '3px 8px', marginBottom: 10,
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#3b82f6' }} />
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#1d4ed8', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#475569' }} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
             </div>
             <h2 style={{ fontSize: 19, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, letterSpacing: '-0.4px', margin: '0 0 7px' }}>
               AI-Powered Hiring Platform
@@ -111,22 +151,20 @@ const RecruiterRegister: React.FC = () => {
             {FEATURES.map(f => (
               <div key={f.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <div style={{
-                  width: 18, height: 18, borderRadius: '50%', background: '#eef2ff',
+                  width: 18, height: 18, borderRadius: '50%', background: '#FDF2F2',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
                 }}>
-                  <svg width="9" height="9" fill="none" stroke="#4f46e5" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="9" height="9" fill="none" stroke="#8B0000" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', margin: '0 0 1px' }}>{f.label}</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#0f172a', margin: '0 0 1px' }}>{f.label}</p>
                   <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{f.desc}</p>
                 </div>
               </div>
             ))}
           </div>
-
-
         </div>
 
         {/* RIGHT */}
@@ -192,7 +230,7 @@ const RecruiterRegister: React.FC = () => {
               <button
                 type="submit" disabled={loading} className="rr-btn"
                 style={{
-                  padding: '9px', background: loading ? '#818cf8' : '#4f46e5',
+                  padding: '9px', background: loading ? '#94a3b8' : '#8B0000',
                   color: 'white', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 600,
                   cursor: loading ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
@@ -206,10 +244,10 @@ const RecruiterRegister: React.FC = () => {
 
             <p style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', margin: '14px 0 0' }}>
               Already have an account?{' '}
-              <span onClick={() => navigate('/RecruiterLogin')} style={{ color: '#4f46e5', fontWeight: 600, cursor: 'pointer' }}>Sign in</span>
+              <span onClick={() => navigate('/RecruiterLogin')} style={{ color: '#1D4ED8', fontWeight: 600, cursor: 'pointer' }}>Sign in</span>
             </p>
             <p style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', margin: '8px 0 0' }}>
-              By creating an account you agree to our <span style={{ color: '#4f46e5', cursor: 'pointer' }}>Terms</span> & <span style={{ color: '#4f46e5', cursor: 'pointer' }}>Privacy Policy</span>
+              By creating an account you agree to our <span style={{ color: '#475569', cursor: 'pointer', textDecoration: 'underline' }}>Terms</span> & <span style={{ color: '#475569', cursor: 'pointer', textDecoration: 'underline' }}>Privacy Policy</span>
             </p>
           </div>
         </div>

@@ -122,19 +122,19 @@ const RecruiterSettings: React.FC = () => {
 };
 
 const s: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: '#f8fafc', fontFamily: 'Inter, sans-serif' },
+  page: { minHeight: '100vh', background: '#ffffff', fontFamily: 'Inter, sans-serif' },
   center: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 12 },
   spinner: { width: 32, height: 32, border: '3px solid #ddd', borderTop: '3px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
   header: { background: 'white', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 },
   back: { padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' },
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', margin: 0 },
+  title: { fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 },
   body: { padding: 24, maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 },
   card: { background: 'white', borderRadius: 12, padding: 28, border: '1px solid #e2e8f0' },
-  cardTitle: { fontSize: 18, fontWeight: 700, color: '#1e293b', marginBottom: 20 },
-  infoGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20, padding: 16, background: '#f8fafc', borderRadius: 8 },
+  cardTitle: { fontSize: 18, fontWeight: 700, color: '#0f172a', marginBottom: 20 },
+  infoGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20, padding: 16, background: '#ffffff', borderRadius: 8 },
   infoItem: { display: 'flex', flexDirection: 'column', gap: 4 },
   infoLabel: { fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' },
-  infoVal: { fontSize: 15, color: '#1e293b', fontWeight: 500 },
+  infoVal: { fontSize: 15, color: '#0f172a', fontWeight: 500 },
   form: { display: 'flex', flexDirection: 'column', gap: 16 },
   row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6 },
@@ -145,7 +145,7 @@ const s: Record<string, React.CSSProperties> = {
   success: { background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', padding: 12, borderRadius: 8, marginBottom: 16 },
   err: { background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: 12, borderRadius: 8, marginBottom: 16 },
   dangerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  dangerLabel: { fontSize: 15, fontWeight: 600, color: '#1e293b', margin: 0 },
+  dangerLabel: { fontSize: 15, fontWeight: 600, color: '#0f172a', margin: 0 },
   dangerDesc: { fontSize: 13, color: '#64748b', margin: '4px 0 0' },
   logoutBtn: { padding: '10px 20px', background: '#dc2626', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
 };

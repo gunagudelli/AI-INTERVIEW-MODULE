@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { recruiterAPI } from '../../services/recruiterAPI';
+import BASE_URL from '../../Config';
 
 const RecruiterProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const RecruiterProfile: React.FC = () => {
       const fd = new FormData();
       fd.append('resume', resumeFile);
       fd.append('jobId', jobId);
-      const BASE = process.env.REACT_APP_RECRUITER_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3001';
+      const BASE = BASE_URL;
       const token = localStorage.getItem('recruiter_token');
       const res = await fetch(`${BASE}/api/applications/match-jd`, {
         method: 'POST',
@@ -175,18 +176,18 @@ const RecruiterProfile: React.FC = () => {
 };
 
 const s: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: '#f8fafc', fontFamily: 'Inter, sans-serif' },
+  page: { minHeight: '100vh', background: '#ffffff', fontFamily: 'Inter, sans-serif' },
   center: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 12 },
   spinner: { width: 32, height: 32, border: '3px solid #ddd', borderTop: '3px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
   header: { background: 'white', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 },
   back: { padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' },
-  title: { fontSize: 22, fontWeight: 700, color: '#1e293b', margin: 0 },
+  title: { fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 },
   body: { padding: 24, maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 },
   card: { background: 'white', borderRadius: 12, padding: 28, border: '1px solid #e2e8f0' },
-  cardTitle: { fontSize: 18, fontWeight: 700, color: '#1e293b', marginBottom: 20 },
+  cardTitle: { fontSize: 18, fontWeight: 700, color: '#0f172a', marginBottom: 20 },
   infoRow: { display: 'flex', gap: 12, marginBottom: 12 },
   infoLabel: { fontWeight: 600, color: '#64748b', minWidth: 80 },
-  infoVal: { color: '#1e293b' },
+  infoVal: { color: '#0f172a' },
   form: { display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6 },
   label: { fontSize: 14, fontWeight: 500, color: '#374151' },

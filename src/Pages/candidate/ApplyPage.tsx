@@ -2,10 +2,9 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import applicationAPI from '../../services/applicationAPI';
 import axios from 'axios';
+import BASE_URL from '../../Config';
 
-import { getBaseUrl } from '../../utils/config';
-
-const BASE = getBaseUrl();
+const BASE = BASE_URL;
 
 type Step = 'jd' | 'upload' | 'parsing' | 'form' | 'submitting' | 'done';
 

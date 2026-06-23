@@ -6,16 +6,16 @@
 
 // export default BASE_URL;
 
-const userType = localStorage.getItem("userType") || "live";
+const userType: string = "local"; // Change to "live" for production
 
 const BASE_URL =
   userType === "live"
-    ? "https://meta.oxyloans.com/api"
-    : "https://meta.oxyglobal.tech/api";
+    ? "https://interviews-zadn.onrender.com"
+    : "http://localhost:3000";
 
 const DEFAULT_CART_AGENT_BASE = `${BASE_URL}/cart-service/agent`;
 
-/**
+/** 
  * Cart agent APIs (offers, chat) — always local cart-management-service in dev.
  * REACT_APP_CART_AGENT_BASE may override (e.g. /local-api/... via setupProxy.js).
  * Production meta URLs are ignored so offers never call meta.oxyloans.com.

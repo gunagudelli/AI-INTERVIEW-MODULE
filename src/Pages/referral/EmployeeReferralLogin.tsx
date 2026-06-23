@@ -25,6 +25,7 @@ const EmployeeReferralLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [show, setShow] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('employee_ref_token');
@@ -39,7 +40,8 @@ const EmployeeReferralLogin: React.FC = () => {
       if (res.success) {
         localStorage.setItem('employee_ref_token', res.token || '');
         localStorage.setItem('employee_ref_user', JSON.stringify(res.user));
-        navigate('/referral/dashboard');
+        setShowSuccess(true);
+        setTimeout(() => navigate('/referral/dashboard'), 1800);
       } else setError('Invalid email or password');
     } catch (err: any) {
       setError(err?.response?.data?.error || 'Invalid email or password');
@@ -54,11 +56,43 @@ const EmployeeReferralLogin: React.FC = () => {
     }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
         .erl-in:focus { outline: none; border-color: #0ea5e9 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(14,165,233,0.09) !important; }
         .erl-btn:hover:not(:disabled) { background: #0284c7 !important; }
         .erl-ghost:hover { border-color: #0ea5e9 !important; color: #0ea5e9 !important; }
         @media (max-width: 720px) { .erl-left { display: none !important; } }
       `}</style>
+
+      {showSuccess && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 100, padding: 16, animation: 'fadeIn 0.18s ease',
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 14, padding: '36px 32px',
+            maxWidth: 380, width: '100%', textAlign: 'center',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            animation: 'scaleIn 0.22s ease',
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%', background: '#e0f2fe',
+              border: '1px solid #bae6fd', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', margin: '0 auto 16px',
+            }}>
+              <svg width="22" height="22" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>Login Successful!</h3>
+            <p style={{ fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
+              Welcome back! Redirecting to your dashboard…
+            </p>
+          </div>
+        </div>
+      )}
 
       <div style={{
         display: 'flex', width: '100%', maxWidth: 860,

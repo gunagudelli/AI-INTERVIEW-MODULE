@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
 
-const BASE = process.env.REACT_APP_RECRUITER_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3001';
+import BASE_URL from '../../Config';
+const BASE = BASE_URL;
 
 // ── Types ──────────────────────────────────────────────────────
 interface BulkCandidate {

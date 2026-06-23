@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Candidate } from './types';
-const API_BASE = "http://localhost:3000/api/admin";
+import BASE_URL from '../../Config';
+const API_BASE = `${BASE_URL}/api/admin`;
 
 export const candidateApi = {
   getCandidates: async (): Promise<Candidate[]> => {

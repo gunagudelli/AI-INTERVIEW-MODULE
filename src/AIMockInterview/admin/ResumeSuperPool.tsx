@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
-const API       = 'http://localhost:3000/api/resume-super-pool';
-const ADMIN_API = 'http://localhost:3000/api/admin/analyze-pool';
+import BASE_URL from '../../Config';
+const API       = `${BASE_URL}/api/resume-super-pool`;
+const ADMIN_API = `${BASE_URL}/api/admin/analyze-pool`;
 const THRESHOLD = 80;
 
 interface JdMatch {

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { candidateApi } from './api';
 import { Candidate, Attempt, RoundBreakdown, ProctoringSnapshot } from './types';
 import { LoadingSpinner, ErrorState } from './components';
+import BASE_URL from '../../Config';
 
 interface ExamImage {
   id: string;
@@ -120,7 +121,7 @@ export const CandidateDetail: React.FC = () => {
   if (!candidate) return <ErrorState message="Candidate not found" />;
 
   const attempt: Attempt | undefined = candidate.attempts?.[selAttempt];
-  const BASE = 'http://localhost:3000/api/admin';
+  const BASE = `${BASE_URL}/api/admin`;
 
   const examImages: ExamImage[] = (candidate as any).examImages || [];
   const copyPaste = examImages.filter(e => e.type === 'COPY_PASTE_VIOLATION' || e.violationType === 'COPY_PASTE');

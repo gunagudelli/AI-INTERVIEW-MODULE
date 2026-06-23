@@ -1,26 +1,26 @@
 import axios from 'axios';
-import { getBaseUrl } from '../utils/config';
 
-// Use dynamic base URL from config
-const getApiBaseUrl = () => getBaseUrl();
+import BASE_URL from '../Config';
+const BASE = BASE_URL;
 
 // authenticated instance — recruiter token
-const api = axios.create();
+const api = axios.create({ baseURL: BASE });
 api.interceptors.request.use((config) => {
-  // Set base URL dynamically on each request
-  config.baseURL = getApiBaseUrl();
   const token = localStorage.getItem('recruiter_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// no-auth instance — employee / public calls
-const pub = axios.create();
-pub.interceptors.request.use((config) => {
-  // Set base URL dynamically on each request
-  config.baseURL = getApiBaseUrl();
+// authenticated instance — employee token
+const empApi = axios.create({ baseURL: BASE });
+empApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('employee_ref_token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+// no-auth instance — public calls
+const pub = axios.create({ baseURL: BASE });
 
 // ── RECRUITER AUTH ───────────────────────────────────────────
 export const recruiterAuth = {
@@ -70,6 +70,13 @@ export const recruiterAPI = {
       return Array.isArray(d) ? d : (d?.jobs ?? []);
     }),
 
+  // getJobsForEmployee → only jobs from the employee's company recruiter
+  getJobsForEmployee: (employeeId: string | number) =>
+    pub.get('/api/referrals/jobs', { params: { employeeId } }).then(r => {
+      const d = r.data;
+      return Array.isArray(d) ? d : (d?.jobs ?? []);
+    }),
+
   // getJobById → returns { job: {...} } or raw object
   getJobById: (id: string | number) =>
     api.get(`/api/recruiter/jobs/${id}`).then(r => r.data),
@@ -104,6 +111,12 @@ export const recruiterAPI = {
     api.post(`/api/recruiter/applications/${id}/note`, { note }).then(r => r.data),
   rescreen: (id: string | number, skills?: string[]) =>
     api.post(`/api/recruiter/applications/${id}/rescreen`, skills ? { skills } : {}).then(r => r.data),
+
+  deleteApplication: (id: string | number) =>
+    api.delete(`/api/recruiter/applications/${id}`).then(r => r.data),
+
+  bulkDeleteApplications: (ids: (string | number)[]) =>
+    api.delete('/api/recruiter/applications/bulk', { data: { ids } }).then(r => r.data),
 
   // PATCH /api/applications/:id/status — body: { status }
   updateStatus: (id: string | number, status: string) =>
@@ -169,83 +182,73 @@ export const referralAPI = {
   employeeLogin: (email: string, password: string) =>
     pub.post('/api/referrals/employee/login', { email, password }).then(r => r.data),
 
-  // POST /api/referrals
-  // Body: { employeeId, candidateName, candidateEmail, candidatePhone, jobId, notes, relationship }
-  // Response: { success, referral: { id, referral_code, job_title } }
+  // Employee: submit referral (employee token)
   refer: (data: object) =>
-    pub.post('/api/referrals', data).then(r => r.data),
+    empApi.post('/api/referrals', data).then(r => r.data),
 
-  // GET /api/referrals/mine?employeeId=
-  // Response: { success, referrals: [{ id, candidate_name, candidate_email, candidate_phone,
-  //   job_title, job_id, status, referral_code, created_at, updated_at, notes,
-  //   review_notes, next_steps }] }
-  getMyReferrals: (employeeId: string | number) =>
-    pub.get('/api/referrals/mine', { params: { employeeId } }).then(r => r.data),
+  // Employee: own referrals (employee token)
+  getMyReferrals: (_employeeId?: string | number) =>
+    empApi.get('/api/referrals/mine').then(r => r.data),
 
-  // GET /api/referrals/status/:referral_code
-  // Response: { success, referral: { candidate_name, job_title, referral_code, status,
-  //   review_notes, next_steps, expected_bonus,
-  //   status_history: [{ status, date, note }] } }
+  // Public: track by code
   trackByCode: (code: string) =>
     pub.get(`/api/referrals/status/${code}`).then(r => r.data),
 
-  // GET /api/referrals?status=&search=&page=&limit=&recruiterId=
-  // Response: { success, referrals: [...], total }
-  getAll: (params?: object) =>
-    pub.get('/api/referrals', { params }).then(r => r.data),
-
+  // Public: get by id (tracking modal)
   getById: (id: number | string) =>
-    pub.get(`/api/referrals/${id}`).then(r => r.data),
+    empApi.get(`/api/referrals/${id}`).then(r => r.data),
 
-  // GET /api/referrals/stats?recruiterId=
-  // Response: { success, stats: { total, pending, approved, rejected, hired, unique_referrers } }
-  getStats: (recruiterId?: string | number | null) =>
-    pub.get('/api/referrals/stats', { params: { recruiterId } }).then(r => r.data),
+  // Recruiter: all referrals filtered by recruiter's JDs (recruiter token)
+  // Backend must JOIN jobs ON jobs.recruiter_id = decoded_recruiter_id from JWT
+  getAll: (params?: object) =>
+    api.get('/api/referrals', { params }).then(r => r.data),
 
-  // GET /api/referrals/top-referrers?recruiterId=&limit=5
-  // Response: { success, topReferrers: [{ id, name, email, department, total_referrals, hired_count }] }
-  getTopReferrers: (recruiterId?: string | number | null, limit = 5) =>
-    pub.get('/api/referrals/top-referrers', { params: { recruiterId, limit } }).then(r => r.data),
+  // Recruiter: stats
+  getStats: (_recruiterId?: string | number | null) =>
+    api.get('/api/referrals/stats').then(r => r.data),
 
-  // GET /api/applications/job/:jobId — for AI panel
+  // Recruiter: top referrers
+  getTopReferrers: (_recruiterId?: string | number | null, limit = 5) =>
+    api.get('/api/referrals/top-referrers', { params: { limit } }).then(r => r.data),
+
+  // Recruiter: applications for AI panel
   getApplicationsByJob: (jobId: string | number) =>
-    pub.get(`/api/applications/job/${jobId}`).then(r => r.data),
+    api.get(`/api/applications/job/${jobId}`).then(r => r.data),
 
-  // POST /api/recruiter/applications/:id/send-assessment
+  // Recruiter: send assessment
   sendAssessment: (applicationId: string | number) =>
-    pub.post(`/api/recruiter/applications/${applicationId}/send-assessment`).then(r => r.data),
+    api.post(`/api/recruiter/applications/${applicationId}/send-assessment`).then(r => r.data),
 
-  // PATCH /api/referrals/:id/status — body: { status }
+  // Recruiter: update referral status
   updateStatus: (id: number | string, _recruiterId: string | number | null, status: string) =>
-    pub.patch(`/api/referrals/${id}/status`, { status }).then(r => r.data),
+    api.patch(`/api/referrals/${id}/status`, { status }).then(r => r.data),
 
-  // PATCH /api/referrals/bulk/status — body: { ids[], status }
+  // Recruiter: bulk update status
   bulkUpdateStatus: (_recruiterId: string | number | null, ids: number[], status: string) =>
-    pub.patch('/api/referrals/bulk/status', { ids, status }).then(r => r.data),
+    api.patch('/api/referrals/bulk/status', { ids, status }).then(r => r.data),
 
-  // GET /api/admin/referrals/analytics
-  // Response: { success, analytics: { overview: { total_referrals, approval_rate, hire_rate,
-  //   average_review_time, total_bonus_paid },
-  //   top_performers: [{ employee_name, referrals, hires, bonus_earned }],
-  //   department_breakdown: { "Engineering": 5 } } }
+  deleteReferral: (id: string | number) =>
+    api.delete(`/api/referrals/${id}`).then(r => r.data),
+
+  bulkDeleteReferrals: (ids: (string | number)[]) =>
+    api.delete('/api/referrals/bulk', { data: { ids } }).then(r => r.data),
+
+  // Recruiter: analytics
   getAnalytics: () =>
-    pub.get('/api/admin/referrals/analytics').then(r => r.data),
+    api.get('/api/admin/referrals/analytics').then(r => r.data),
 
-  // POST /api/referrals/:id/analyze — upload resume → AI score → auto approve/reject
-  // multipart/form-data: resume (file, optional if already on record)
-  // Response: { success, aiScore, status, decision, threshold, matchedSkills[], missingSkills[], eligibility, reasoning }
+  // Recruiter: AI analyze resume
   analyzeResume: (id: string | number, file?: File) => {
     const form = new FormData();
     if (file) form.append('resume', file);
-    return pub.post(`/api/referrals/${id}/analyze`, form, {
+    return api.post(`/api/referrals/${id}/analyze`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data);
   },
 
-  // PUT /api/admin/referrals/:id/review
-  // Body: { status, review_notes, next_steps, reviewer_name }
+  // Recruiter: submit review
   submitReview: (id: string | number, data: { status: string; review_notes: string; next_steps: string; reviewer_name: string }) =>
-    pub.put(`/api/admin/referrals/${id}/review`, data).then(r => r.data),
+    api.put(`/api/admin/referrals/${id}/review`, data).then(r => r.data),
 };
 
 // ── APPLICATIONS (public apply) ──────────────────────────────

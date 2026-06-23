@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { referralAPI, recruiterAPI, applicationAPI } from '../../services/recruiterAPI';
+import BASE_URL from '../../Config';
 
 const STEPS = ['pending', 'screened', 'approved', 'interview_sent', 'hired'];
 
@@ -232,7 +233,7 @@ const EmployeeReferralDashboard: React.FC = () => {
   const [selectedJob, setSelectedJob]     = useState<any>(null);
   const [aiMatch, setAiMatch]             = useState<{ score: number; matched: string[]; missing: string[] } | null>(null);
 
-  const BASE = process.env.REACT_APP_RECRUITER_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  const BASE = BASE_URL;
 
   const handleJobChange = async (jobId: string) => {
     setForm(p => ({ ...p, jobId }));
@@ -276,7 +277,7 @@ const EmployeeReferralDashboard: React.FC = () => {
         return next;
       });
     } catch { setReferrals([]); }
-    try { const jobList = await recruiterAPI.getPublicJobs(); setJobs(jobList); }
+    try { const jobList = await recruiterAPI.getJobsForEmployee(employeeId); setJobs(jobList); }
     catch { setJobs([]); }
     finally { setLoading(false); }
   }, [employeeId]);
