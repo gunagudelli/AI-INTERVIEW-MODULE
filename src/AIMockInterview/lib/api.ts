@@ -130,15 +130,6 @@ export const api = {
     return response.json();
   },
 
-  async codeRunner(data: any) {
-    const response = await fetch(`${BASE}/api/code-runner`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
-  },
-
   async round3Execute(data: { code: string; language: string; userId: string; sessionId: string; questionId?: number; functionName?: string; question?: string }) {
     const decodeHTML = (str: string) =>
       str.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
@@ -159,15 +150,6 @@ export const api = {
     }
     const r2 = await fetch(`${BASE}/api/interview/current-question?userId=${userId}&sessionId=${sessionId}`);
     return r2.json();
-  },
-
-  async evaluateCode(data: { code: string; language: string; questionId: number; testCases?: any[] }) {
-    const response = await fetch(`${BASE}/api/code-runner/evaluate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: data.code, language: data.language, questionId: data.questionId }),
-    });
-    return response.json();
   },
 
   async getAttemptStatus(userId: string) {

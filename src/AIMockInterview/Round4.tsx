@@ -8,17 +8,17 @@ interface Round4Props {
   onComplete: () => void;
 }
 
-const PURPLE = "#7B4DFF";
+const PURPLE = "#2563EB";
 
 const STYLES = `
 :root {
-  --color-background-primary: var(--surface-0);
-  --color-background-secondary: var(--surface-1);
-  --color-border-tertiary: var(--border-1);
-  --color-border-secondary: var(--border-2);
-  --color-text-primary: var(--text-1);
-  --color-text-secondary: var(--text-2);
-  --color-text-tertiary: var(--text-3);
+  --color-background-primary: var(--surface);
+  --color-background-secondary: var(--s1);
+  --color-border-tertiary: var(--border);
+  --color-border-secondary: var(--border-strong);
+  --color-text-primary: var(--t1);
+  --color-text-secondary: var(--t2);
+  --color-text-tertiary: var(--t3);
   --color-text-success: var(--success);
   --color-text-danger: var(--danger);
 }
@@ -121,7 +121,7 @@ function AlexCharacter({ talking, emotion }: { talking: boolean; emotion: "neutr
       <ellipse cx="100" cy="110" rx="36" ry="38" fill="#f5c9a0" />
 
       {/* Hair */}
-      <ellipse cx="100" cy="88" rx="38" ry="30" fill="#7B4DFF" />
+      <ellipse cx="100" cy="88" rx="38" ry="30" fill="#2563EB" />
       <ellipse cx="100" cy="80" rx="36" ry="22" fill="#6a3de0" />
 
       {/* Ears */}
@@ -155,15 +155,15 @@ function AlexCharacter({ talking, emotion }: { talking: boolean; emotion: "neutr
 
 function ScreenBars({ active }: { active: boolean }) {
   const bars = [
-    { h: 8, c: "#7B4DFF", d: "0s" },
+    { h: 8, c: "#2563EB", d: "0s" },
     { h: 14, c: "#9366FF", d: ".1s" },
-    { h: 18, c: "#A878FF", d: ".2s" },
+    { h: 18, c: "#5B8DEF", d: ".2s" },
     { h: 14, c: "#9366FF", d: ".1s" },
-    { h: 10, c: "#7B4DFF", d: ".15s" },
-    { h: 16, c: "#A878FF", d: ".25s" },
+    { h: 10, c: "#2563EB", d: ".15s" },
+    { h: 16, c: "#5B8DEF", d: ".25s" },
     { h: 12, c: "#9366FF", d: ".05s" },
-    { h: 8,  c: "#7B4DFF", d: ".2s"  },
-    { h: 14, c: "#A878FF", d: ".1s"  },
+    { h: 8,  c: "#2563EB", d: ".2s"  },
+    { h: 14, c: "#5B8DEF", d: ".1s"  },
   ];
   return (
     <>
@@ -369,7 +369,9 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
             </div>
             <button
               onClick={onComplete}
-              style={{ width: "100%", padding: "13px", background: PURPLE, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", letterSpacing: ".01em" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#6A3EE8"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(123,77,255,.35)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = PURPLE; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ width: "100%", padding: "13px", background: PURPLE, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", letterSpacing: ".01em", transition: "background .15s, transform .15s, box-shadow .15s" }}
             >
               Continue to Round 5 — HR Interview →
             </button>
@@ -390,18 +392,18 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
             <div style={{ fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)" }}>Round 4 — Communication</div>
             <div style={{ height: 3, background: "var(--color-border-tertiary)", borderRadius: 2, marginTop: 5 }} />
           </div>
-          <div style={{ fontSize: 12, padding: "4px 10px", borderRadius: 99, background: "#7B4DFF14", color: PURPLE, border: `1px solid #7B4DFF30` }}>--</div>
+          <div style={{ fontSize: 12, padding: "4px 10px", borderRadius: 99, background: "#2563EB14", color: PURPLE, border: `1px solid #2563EB30` }}>--</div>
         </div>
         {/* Room with character */}
-        <div style={{ background: "#ede9f9", position: "relative", height: 220 }}>
+        <div style={{ background: "#e8f0fd", position: "relative", height: 220 }}>
           <svg width="100%" height="220" viewBox="0 0 680 220" style={{ position: "absolute", top: 0, left: 0 }}>
-            <rect width="680" height="220" fill="#ede9f9" />
-            <rect x="0" y="160" width="680" height="60" fill="#d5ccf0" />
-            <rect x="0" y="158" width="680" height="6" fill="#c4b8e8" />
+            <rect width="680" height="220" fill="#e8f0fd" />
+            <rect x="0" y="160" width="680" height="60" fill="#c7ddfa" />
+            <rect x="0" y="158" width="680" height="6" fill="#a9c8f5" />
           </svg>
           <AlexCharacter talking={false} emotion="neutral" />
           <div style={{ position: "absolute", top: 12, left: 16, background: "rgba(45,32,64,.7)", borderRadius: 99, padding: "4px 12px" }}>
-            <span style={{ fontSize: 10, color: "#c4b0f0", fontWeight: 500 }}>Alex — AI Interviewer</span>
+            <span style={{ fontSize: 10, color: "#a9c8f0", fontWeight: 500 }}>Alex — AI Interviewer</span>
           </div>
           <div style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", background: PURPLE, borderRadius: 99, padding: "5px 14px", display: "flex", alignItems: "center", gap: 6 }}>
             <Spinner />
@@ -422,7 +424,10 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
       <style>{STYLES}</style>
       <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 16, padding: 32, textAlign: "center" }}>
         <div style={{ fontSize: 14, color: "var(--color-text-danger)", marginBottom: 16 }}>{error}</div>
-        <button onClick={loadQuestion} style={{ padding: "10px 24px", background: PURPLE, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+        <button onClick={loadQuestion}
+          onMouseEnter={e => { e.currentTarget.style.background = "#6A3EE8"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(123,77,255,.35)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = PURPLE; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+          style={{ padding: "10px 24px", background: PURPLE, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", transition: "background .15s, transform .15s, box-shadow .15s" }}>
           Retry
         </button>
       </div>
@@ -442,13 +447,13 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
             <div style={{ fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)" }}>Round 4 — Communication</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
               <div style={{ flex: 1, height: 3, background: "var(--color-border-tertiary)", borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${progPct}%`, background: `linear-gradient(90deg,${PURPLE},#A878FF,${PURPLE})`, backgroundSize: "200% 100%", borderRadius: 2, transition: "width .6s ease", animation: "r4pgshim 2s linear infinite" }} />
+                <div style={{ height: "100%", width: `${progPct}%`, background: `linear-gradient(90deg,${PURPLE},#5B8DEF,${PURPLE})`, backgroundSize: "200% 100%", borderRadius: 2, transition: "width .6s ease", animation: "r4pgshim 2s linear infinite" }} />
               </div>
               <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", flexShrink: 0 }}>Q {questionNo}/{totalQ}</span>
             </div>
           </div>
           {difficulty && (
-            <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 99, background: "#7B4DFF14", color: PURPLE, border: `1px solid #7B4DFF30`, fontWeight: 500, textTransform: "capitalize" }}>{difficulty}</span>
+            <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 99, background: "#2563EB14", color: PURPLE, border: `1px solid #2563EB30`, fontWeight: 500, textTransform: "capitalize" }}>{difficulty}</span>
           )}
           {/* Circular timer */}
           <div style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
@@ -468,11 +473,11 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
         </div>
 
         {/* ── Room / Character ── */}
-        <div style={{ background: "#ede9f9", position: "relative", height: 220 }}>
+        <div style={{ background: "#e8f0fd", position: "relative", height: 220 }}>
           <svg width="100%" height="220" viewBox="0 0 680 220" style={{ position: "absolute", top: 0, left: 0 }}>
-            <rect width="680" height="220" fill="#ede9f9" />
-            <rect x="0" y="160" width="680" height="60" fill="#d5ccf0" />
-            <rect x="0" y="158" width="680" height="6" fill="#c4b8e8" />
+            <rect width="680" height="220" fill="#e8f0fd" />
+            <rect x="0" y="160" width="680" height="60" fill="#c7ddfa" />
+            <rect x="0" y="158" width="680" height="6" fill="#a9c8f5" />
             <rect x="40" y="20" width="100" height="70" rx="4" fill="#ccc4e8" opacity=".5" />
             <rect x="44" y="24" width="92" height="62" rx="2" fill="#b8aedc" opacity=".5" />
             <rect x="540" y="30" width="100" height="70" rx="4" fill="#ccc4e8" opacity=".5" />
@@ -496,13 +501,13 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
 
           {/* Name tag */}
           <div style={{ position: "absolute", top: 12, left: 16, background: "rgba(45,32,64,.75)", borderRadius: 99, padding: "4px 12px" }}>
-            <span style={{ fontSize: 10, color: "#c4b0f0", fontWeight: 500 }}>Alex — AI Interviewer</span>
+            <span style={{ fontSize: 10, color: "#a9c8f0", fontWeight: 500 }}>Alex — AI Interviewer</span>
           </div>
 
           {/* Category chip bottom */}
           {category && (
             <div style={{ position: "absolute", bottom: 10, right: 14, background: "rgba(45,32,64,.6)", borderRadius: 99, padding: "3px 10px" }}>
-              <span style={{ fontSize: 10, color: "#c4b0f0", textTransform: "capitalize" }}>{category.replace(/_/g, " ")}</span>
+              <span style={{ fontSize: 10, color: "#a9c8f0", textTransform: "capitalize" }}>{category.replace(/_/g, " ")}</span>
             </div>
           )}
         </div>
@@ -517,7 +522,9 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
             {canReplay && playCount < 2 && (
               <button
                 onClick={() => { setPlayCount(p => p + 1); setTalking(true); speak(question, () => setTalking(false)); }}
-                style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, background: PURPLE, color: "#fff", border: "none", cursor: "pointer", flexShrink: 0 }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#6A3EE8"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = PURPLE; }}
+                style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, background: PURPLE, color: "#fff", border: "none", cursor: "pointer", flexShrink: 0, transition: "background .15s" }}
               >
                 🔊 Replay ({2 - playCount} left)
               </button>
@@ -532,7 +539,7 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
               const isSel = selectedOption === idx;
               // After submit: if correctAnswer is known use it, otherwise fall back to isCorrect state for selected option
               const border = isSel && !submitted ? `1.5px solid ${PURPLE}` : "1.5px solid var(--color-border-tertiary)";
-              const bg = isSel && !submitted ? "#7B4DFF0C" : "var(--color-background-primary)";
+              const bg = isSel && !submitted ? "#2563EB0C" : "var(--color-background-primary)";
               const letter = String.fromCharCode(65 + idx);
               return (
                 <div key={idx}
@@ -565,7 +572,9 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
             <button
               disabled={selectedOption === null || submitting}
               onClick={() => { stopVoice(); doSubmit(selectedOption); }}
-              style={{ width: "100%", padding: 12, background: selectedOption === null ? "#9ca3af" : PURPLE, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: selectedOption === null ? "not-allowed" : "pointer", opacity: selectedOption === null ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background .15s" }}
+              onMouseEnter={e => { if (selectedOption !== null && !submitting) { e.currentTarget.style.background = "#6A3EE8"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(123,77,255,.35)"; } }}
+              onMouseLeave={e => { e.currentTarget.style.background = selectedOption === null ? "#9ca3af" : PURPLE; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ width: "100%", padding: 12, background: selectedOption === null ? "#9ca3af" : PURPLE, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: selectedOption === null ? "not-allowed" : "pointer", opacity: selectedOption === null ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background .15s, transform .15s, box-shadow .15s" }}
             >
               {submitting ? <><Spinner /> Evaluating…</> : "Submit Answer"}
             </button>
@@ -573,7 +582,9 @@ export default function Round4({ userId, sessionId, onComplete }: Round4Props) {
           {submitted && !roundComplete && questionNo < totalQ && (
             <button
               onClick={() => { stopVoice(); loadQuestion(); }}
-              style={{ width: "100%", padding: 12, background: "#16a34a", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#15803d"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(22,163,74,.35)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#16a34a"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ width: "100%", padding: 12, background: "#16a34a", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background .15s, transform .15s, box-shadow .15s" }}
             >
               Next Question → ({questionNo + 1}/{totalQ})
             </button>

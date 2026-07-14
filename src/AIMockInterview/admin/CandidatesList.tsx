@@ -4,43 +4,91 @@ import { candidateApi } from './api';
 import { Candidate } from './types';
 import { LoadingSpinner, EmptyState, ErrorState } from './components';
 import { AdvancedFilter } from './AdvancedFilter';
+import { COLORS, RADIUS, SHADOW } from './adminTheme';
 
 type SortField = 'name' | 'bestScore' | 'createdAt';
 
-const scoreStyle = (s: string) => {
-  const n = parseFloat(s || '0');
-  if (n >= 60) return { background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' };
-  if (n >= 40) return { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' };
-  return { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' };
-};
-
-const resultStyle = (r: string) => {
-  if (r === 'Selected') return { background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' };
-  if (r === 'Not Selected') return { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' };
-  return { background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' };
-};
-
 const CSS = `
-  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-  .cl-row { transition: background .1s }
-  .cl-row:hover { background: #f8fafc !important }
-  .act-btn { transition: opacity .1s }
-  .act-btn:hover { opacity: .8 }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; }
+
+  .cl-table tbody tr {
+    border-left: 3px solid transparent;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+  .cl-table tbody tr:hover {
+    background: #F8FAFC !important;
+    border-left-color: #2563EB;
+  }
+  .act-btn {
+    padding: 5px 11px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background 0.1s ease, color 0.1s ease;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .act-btn-mail,
+  .act-btn-resume { background: ${COLORS.neutralTint}; color: ${COLORS.textSecondary}; border: 1px solid ${COLORS.border}; }
+  .act-btn-reject { background: ${COLORS.dangerTint}; color: ${COLORS.dangerDark}; border: 1px solid ${COLORS.dangerBorder}; }
+  .act-btn-hire   { background: ${COLORS.successTint}; color: ${COLORS.successDark}; border: 1px solid ${COLORS.successBorder}; }
+  .act-btn:hover  { filter: brightness(0.95); }
+
+  .cl-select, .cl-input {
+    padding: 7px 10px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #374151;
+    background: #F8FAFC;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .cl-select:focus, .cl-input:focus { border-color: #93C5FD; }
+
+  .cl-sort-btn {
+    padding: 7px 10px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    background: #F8FAFC;
+    cursor: pointer;
+    color: #64748B;
+    line-height: 1;
+    transition: background 0.1s, border-color 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cl-sort-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
+
+  .cl-refresh-btn {
+    padding: 7px 14px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    background: #F8FAFC;
+    cursor: pointer;
+    font-size: 12px;
+    color: #64748B;
+    font-weight: 500;
+    font-family: inherit;
+    transition: background 0.1s, border-color 0.1s;
+  }
+  .cl-refresh-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
 `;
 
-const btnStyle = (bg: string, color: string): React.CSSProperties => ({
-  padding: '3px 9px',
-  background: bg,
-  color,
-  border: 'none',
-  borderRadius: 5,
-  fontSize: 11,
-  fontWeight: 600,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-});
+interface CandidatesListProps {
+  // When rendered inside AdminDashboard, the parent swaps in <CandidateDetail>
+  // for the same tab (keeping the sidebar visible) instead of navigating to the
+  // standalone /admin/candidate/:userId route, which has no sidebar at all.
+  onSelectCandidate?: (userId: string) => void;
+}
 
-export const CandidatesList: React.FC = () => {
+export const CandidatesList: React.FC<CandidatesListProps> = ({ onSelectCandidate }) => {
   const navigate = useNavigate();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +116,7 @@ export const CandidatesList: React.FC = () => {
     }
     r.sort((a, b) => {
       let av: any, bv: any;
-      if (sortField === 'bestScore') { av = parseFloat(a.summary?.bestScore || '0'); bv = parseFloat(b.summary?.bestScore || '0'); }
+      if (sortField === 'bestScore') { av = parseFloat(a.bestScore || '0'); bv = parseFloat(b.bestScore || '0'); }
       else if (sortField === 'createdAt') { av = new Date(a.createdAt || 0).getTime(); bv = new Date(b.createdAt || 0).getTime(); }
       else { av = a.name || ''; bv = b.name || ''; }
       return sortOrder === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
@@ -80,175 +128,157 @@ export const CandidatesList: React.FC = () => {
   if (error) return <ErrorState message={error} onRetry={fetchCandidates} />;
 
   const total = candidates.length;
-  const selected = candidates.filter(c => c.summary?.bestResult === 'Selected').length;
-  const notSelected = candidates.filter(c => c.summary?.bestResult === 'Not Selected').length;
+  const selected = candidates.filter(c => c.examStatus === 'selected').length;
+  const notSelected = candidates.filter(c => c.examStatus === 'completed').length;
+
+  const statCards = [
+    { label: 'Total', value: total, accent: '#0F172A' },
+    { label: 'Selected', value: selected, accent: '#15803D' },
+    { label: 'Not Selected', value: notSelected, accent: '#B91C1C' },
+  ];
 
   return (
-    <div style={{ padding: '20px 24px', fontFamily: "'Inter','Segoe UI',sans-serif", color: '#111827' }}>
+    <div style={{ padding: '28px 28px', fontFamily: "'Inter', 'Segoe UI', sans-serif", color: '#0F172A', minHeight: '100vh', background: '#F8FAFC' }}>
       <style>{CSS}</style>
 
-      {/* Header */}
-      <div style={{ marginBottom: 18 }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 3px' }}>Candidates</h1>
-        <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>All interview candidates</p>
-      </div>
+      {/* Header: title + stats + search + sort + refresh — all in one row */}
+      <div style={{ marginBottom: 14, borderBottom: '1px solid #E2E8F0', paddingBottom: 12, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', rowGap: 10 }}>
+        <div style={{ flexShrink: 0 }}>
+          <h1 style={{ fontSize: 17, fontWeight: 700, margin: '0 0 2px', color: '#0F172A', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>Candidates</h1>
+          <p style={{ fontSize: 12.5, color: '#94A3B8', margin: 0, fontWeight: 400, whiteSpace: 'nowrap' }}>Interview candidate records</p>
+        </div>
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 16 }}>
-        {[
-          { label: 'Total', value: total, color: '#111827' },
-          { label: 'Showing', value: list.length, color: '#2563eb' },
-          { label: 'Selected', value: selected, color: '#16a34a' },
-          { label: 'Not Selected', value: notSelected, color: '#dc2626' },
-        ].map(s => (
-          <div key={s.label} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 9, padding: '12px 16px' }}>
-            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 5px' }}>{s.label}</p>
-            <p style={{ fontSize: 22, fontWeight: 700, color: s.color, margin: 0 }}>{s.value}</p>
+        {/* Stats — compact inline pills, but with enough contrast/weight to stand out */}
+        {statCards.map(s => (
+          <div key={s.label} style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.md, boxShadow: SHADOW.sm, height: 36, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 7, boxSizing: 'border-box', flexShrink: 0 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: s.accent, flexShrink: 0 }} />
+            <span style={{ fontSize: 15, fontWeight: 800, color: COLORS.textPrimary, letterSpacing: '-0.02em' }}>{s.value}</span>
+            <span style={{ fontSize: 10.5, color: COLORS.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{s.label}</span>
           </div>
         ))}
-      </div>
 
-      {/* Search + controls */}
-      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 9, padding: '12px 14px', marginBottom: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
-          <svg style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }} width={14} height={14} fill="none" stroke="#94a3b8" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        {/* Search */}
+        <div style={{ width: 190, flexShrink: 0, position: 'relative' }}>
+          <svg style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width={13} height={13} fill="none" stroke="#94A3B8" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input type="text" placeholder="Search by name or skill…" value={search} onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', paddingLeft: 32, paddingRight: search ? 32 : 10, paddingTop: 7, paddingBottom: 7, border: '1px solid #e2e8f0', borderRadius: 7, fontSize: 13, outline: 'none', color: '#111827', background: '#f8fafc', boxSizing: 'border-box' }} />
+          <input
+            type="text"
+            placeholder="Search name or skill…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="cl-input"
+            style={{ width: '100%', paddingLeft: 32, paddingRight: search ? 30 : 10, boxSizing: 'border-box' }}
+          />
           {search && (
-            <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', lineHeight: 1 }}>✕</button>
+            <button
+              onClick={() => setSearch('')}
+              style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', lineHeight: 1, fontSize: 14 }}
+            >
+              ×
+            </button>
           )}
         </div>
-        <select value={sortField} onChange={e => setSortField(e.target.value as SortField)}
-          style={{ padding: '7px 10px', border: '1px solid #e2e8f0', borderRadius: 7, fontSize: 13, color: '#374151', background: '#f8fafc', outline: 'none', cursor: 'pointer' }}>
-          <option value="createdAt">Date</option>
-          <option value="bestScore">Score</option>
-          <option value="name">Name</option>
+
+        <select value={sortField} onChange={e => setSortField(e.target.value as SortField)} className="cl-select" style={{ flexShrink: 0 }}>
+          <option value="createdAt">Sort: Date</option>
+          <option value="bestScore">Sort: Score</option>
+          <option value="name">Sort: Name</option>
         </select>
-        <button onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}
-          style={{ padding: '7px 10px', border: '1px solid #e2e8f0', borderRadius: 7, background: '#f8fafc', cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>
-          <svg width={14} height={14} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'none', display: 'block' }}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+
+        <button onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')} className="cl-sort-btn" title={sortOrder === 'asc' ? 'Ascending' : 'Descending'} style={{ flexShrink: 0 }}>
+          <svg width={13} height={13} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', display: 'block' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 11l5-5m0 0l5 5m-5-5v12" />
           </svg>
         </button>
-        <button onClick={fetchCandidates}
-          style={{ padding: '7px 12px', border: '1px solid #e2e8f0', borderRadius: 7, background: '#f8fafc', cursor: 'pointer', fontSize: 12, color: '#64748b', fontWeight: 500 }}>
-          Refresh
-        </button>
+
+        <button onClick={fetchCandidates} className="cl-refresh-btn" style={{ flexShrink: 0 }}>Refresh</button>
       </div>
 
       {/* Table */}
       {list.length === 0 ? (
         <EmptyState message={search ? 'No candidates match your search' : 'No candidates found'} />
       ) : (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 9, overflow: 'hidden' }}>
+        <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table className="cl-table" style={{ width: '100%', minWidth: 780, borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  {['Candidate', 'Skills', 'Exp', 'Score', 'Violations', 'Result', 'Actions'].map(h => (
-                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
+                  {['Candidate', 'Skills', 'Experience', 'Actions'].map(h => (
+                    <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 10.5, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {list.map((c) => {
-                  const copyPasteCount = (c as any).copyPasteViolations ?? (c as any).copyPasteCount ?? 0;
-                  const rs = resultStyle(c.summary?.bestResult || '');
-                  const ss = scoreStyle(c.summary?.bestScore || '0');
-                  return (
-                    <tr key={c.userId} className="cl-row" style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', background: '#fff' }}
-                      onClick={() => navigate(`/admin/candidate/${c.userId}`)}>
+                {list.map((c, i) => {
+                  const copyPasteCount = c.copyPasteViolations ?? 0;
+                  const initials = c.name?.charAt(0).toUpperCase() || '?';
 
+                  // Deterministic avatar color from name
+                  const avatarColors = ['#1E40AF', '#065F46', '#6B21A8', '#9A3412', '#1E3A5F'];
+                  const avatarBg = avatarColors[(c.name?.charCodeAt(0) || 0) % avatarColors.length];
+
+                  return (
+                    <tr
+                      key={c.userId}
+                      style={{ borderBottom: i < list.length - 1 ? '1px solid #F1F5F9' : 'none', cursor: 'pointer', background: '#fff' }}
+                      onClick={() => onSelectCandidate ? onSelectCandidate(c.userId) : navigate(`/admin/candidate/${c.userId}`)}
+                    >
                       {/* Candidate */}
-                      <td style={{ padding: '11px 14px' }}>
+                      <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#667eea,#764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
-                            {c.name?.charAt(0).toUpperCase() || '?'}
+                          <div style={{ width: 30, height: 30, borderRadius: 7, background: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, flexShrink: 0, letterSpacing: 0 }}>
+                            {initials}
                           </div>
                           <div>
-                            <p style={{ margin: 0, fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{c.name || 'N/A'}</p>
-                            <p style={{ margin: 0, fontSize: 10.5, color: '#94a3b8', fontFamily: 'monospace' }}>{c.userId?.slice(0, 10)}…</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <p style={{ margin: 0, fontWeight: 600, color: '#1D4ED8', fontSize: 13 }}>{c.name || 'N/A'}</p>
+                              {copyPasteCount > 0 && (
+                                <span title={`${copyPasteCount} copy-paste violation${copyPasteCount !== 1 ? 's' : ''} detected during proctoring`}
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '1px 7px', background: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA', borderRadius: 20, fontSize: 10.5, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                                  ⚠ {copyPasteCount}
+                                </span>
+                              )}
+                            </div>
+                            <p style={{ margin: 0, fontSize: 10.5, color: '#CBD5E1', fontFamily: "'JetBrains Mono', 'Fira Code', monospace", letterSpacing: '0.03em' }}>{c.userId?.slice(0, 10)}…</p>
                           </div>
                         </div>
                       </td>
 
                       {/* Skills */}
-                      <td style={{ padding: '11px 14px' }}>
+                      <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                           {c.skills?.slice(0, 3).map((s, idx) => (
-                            <span key={idx} style={{ padding: '1px 7px', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{s}</span>
+                            <span key={idx} style={{ padding: '2px 7px', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', borderRadius: 4, fontSize: 11, fontWeight: 500, letterSpacing: '0.01em' }}>{s}</span>
                           ))}
                           {(c.skills?.length || 0) > 3 && (
-                            <span style={{ padding: '1px 7px', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 11 }}>+{c.skills!.length - 3}</span>
+                            <span style={{ padding: '2px 7px', background: '#F8FAFC', color: '#94A3B8', border: '1px solid #E2E8F0', borderRadius: 4, fontSize: 11 }}>+{c.skills!.length - 3} more</span>
                           )}
-                          {!c.skills?.length && <span style={{ fontSize: 12, color: '#cbd5e1' }}>—</span>}
+                          {!c.skills?.length && <span style={{ fontSize: 12, color: '#CBD5E1' }}>—</span>}
                         </div>
                       </td>
 
                       {/* Experience */}
-                      <td style={{ padding: '11px 14px', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: 12, color: '#374151' }}>
+                      <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 12.5, color: '#374151', fontWeight: 500 }}>
                           {c.experience > 0 ? `${c.experience} yr${c.experience !== 1 ? 's' : ''}` : 'Fresher'}
                         </span>
                       </td>
 
-                      {/* Score */}
-                      <td style={{ padding: '11px 14px' }}>
-                        {c.summary?.bestScore && c.summary.bestScore !== 'N/A' ? (
-                          <span style={{ ...ss, padding: '2px 9px', borderRadius: 5, fontSize: 12, fontWeight: 700 }}>{c.summary.bestScore}%</span>
-                        ) : (
-                          <span style={{ fontSize: 12, color: '#cbd5e1' }}>—</span>
-                        )}
-                      </td>
-
-                      {/* Violations */}
-                      <td style={{ padding: '11px 14px' }}>
-                        {copyPasteCount > 0 ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: 5, fontSize: 11, fontWeight: 700 }}>
-                            <svg width={10} height={10} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
-                            </svg>
-                            {copyPasteCount}
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: 12, color: '#cbd5e1' }}>—</span>
-                        )}
-                      </td>
-
-                      {/* Result */}
-                      <td style={{ padding: '11px 14px' }}>
-                        <span style={{ ...rs, padding: '2px 9px', borderRadius: 5, fontSize: 11, fontWeight: 700 }}>
-                          {c.summary?.bestResult || 'Pending'}
-                        </span>
-                      </td>
-
                       {/* Actions */}
-                      <td style={{ padding: '11px 14px' }} onClick={e => e.stopPropagation()}>
+                      <td style={{ padding: '12px 14px' }} onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', gap: 5, flexWrap: 'nowrap' }}>
-                          <button className="act-btn" style={btnStyle('#eff6ff', '#2563eb')}
-                            onClick={() => {
-                              const sub = encodeURIComponent(`Interview Update - ${c.name}`);
-                              const body = encodeURIComponent(`Dear ${c.name},\n\nThank you for attending the interview.\n\nRegards,\nRecruiter Team`);
-                              window.open(`mailto:?subject=${sub}&body=${body}`);
-                            }}>
-                            📧 Mail
+                          <button
+                            className="act-btn act-btn-reject"
+                            onClick={() => { if (window.confirm(`Reject ${c.name}?`)) alert(`${c.name} marked as Rejected.`); }}
+                          >
+                            Reject
                           </button>
-                          <button className="act-btn" style={btnStyle('#f5f3ff', '#7c3aed')}
-                            onClick={() => {
-                              if (c.resumePath) window.open(c.resumePath, '_blank');
-                              else alert('No resume uploaded.');
-                            }}>
-                            📄 Resume
-                          </button>
-                          <button className="act-btn" style={btnStyle('#fef2f2', '#dc2626')}
-                            onClick={() => { if (window.confirm(`Reject ${c.name}?`)) alert(`${c.name} marked as Rejected.`); }}>
-                            ✕ Reject
-                          </button>
-                          <button className="act-btn" style={btnStyle('#f0fdf4', '#16a34a')}
-                            onClick={() => { if (window.confirm(`Hire ${c.name}?`)) alert(`${c.name} marked as Hired! 🎉`); }}>
-                            ✓ Hired
+                          <button
+                            className="act-btn act-btn-hire"
+                            onClick={() => { if (window.confirm(`Hire ${c.name}?`)) alert(`${c.name} marked as Hired.`); }}
+                          >
+                            Hire
                           </button>
                         </div>
                       </td>
@@ -258,8 +288,12 @@ export const CandidatesList: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: '9px 14px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', fontSize: 11, color: '#94a3b8' }}>
-            {list.length} of {candidates.length} candidates
+
+          {/* Footer */}
+          <div style={{ padding: '9px 14px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11.5, color: '#94A3B8', fontWeight: 500 }}>
+              Showing <strong style={{ color: '#374151' }}>{list.length}</strong> of <strong style={{ color: '#374151' }}>{candidates.length}</strong> candidates
+            </span>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 
 interface FeedbackFormProps {
   userId: string;
@@ -17,11 +17,16 @@ export const FeedbackFormEnhanced: React.FC<FeedbackFormProps> = ({ userId, sess
     setLoading(true);
 
     try {
-      await fetch('/api/interview/feedback', {
+      const response = await fetch('/api/interview/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, sessionId, rating, comments })
       });
+
+      if (!response.ok) {
+        throw new Error(`Feedback submission failed with status ${response.status}`);
+      }
+
       setSubmitted(true);
       onSubmit?.();
     } catch (error) {

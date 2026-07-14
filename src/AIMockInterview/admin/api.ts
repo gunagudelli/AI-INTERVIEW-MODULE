@@ -44,8 +44,14 @@ export const candidateApi = {
     return data;
   },
 
-  updateInterviewConfig: async (rounds: Array<{round: number, questions: number, time_limit: number, label: string}>) => {
-    const { data } = await axios.post(`${API_BASE}/interview-config`, { rounds });
+  updateInterviewConfig: async (
+    rounds?: Array<{round: number, questions: number, time_limit: number, label: string}>,
+    copyPasteBlocked?: boolean,
+  ) => {
+    const body: Record<string, unknown> = {};
+    if (rounds !== undefined) body.rounds = rounds;
+    if (copyPasteBlocked !== undefined) body.copyPasteBlocked = copyPasteBlocked;
+    const { data } = await axios.post(`${API_BASE}/interview-config`, body);
     return data;
   }
 };

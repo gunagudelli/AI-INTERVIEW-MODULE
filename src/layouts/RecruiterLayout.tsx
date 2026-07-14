@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, FileText, BarChart3,
-  LogOut, Users, Database, ChevronDown, Bell, Menu, X,
+  LogOut, Users, Database, ChevronDown, Bell, Menu, X, Layers,
+  CheckCircle2, XCircle,
 } from 'lucide-react';
+import { jdApprovalAPI } from '../services/recruiterAPI';
 
 const NAV = [
   { path: '/recruiter/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
@@ -11,7 +14,8 @@ const NAV = [
   { path: '/recruiter/applications', icon: FileText,        label: 'Applications' },
   { path: '/recruiter/referrals',    icon: Users,           label: 'Referrals' },
   { path: '/recruiter/analytics',    icon: BarChart3,       label: 'Analytics' },
-  { path: '/recruiter/resume-pool',  icon: Database,        label: 'Resume Pool', badge: 'AI' },
+  { path: '/recruiter/resume-pool',  icon: Database,        label: 'Resume Pool' },
+  { path: '/recruiter/bulk-pool',    icon: Layers,          label: 'AI Bulk Pool', badge: 'AI' },
 ];
 
 const CSS = `
@@ -48,14 +52,96 @@ const CSS = `
   }
 `;
 
+interface JdNotification {
+  id: number;
+  job_title: string;
+  status: 'approved' | 'rejected';
+  rejection_reason: string | null;
+  recruiter_seen: boolean;
+}
+
+const NotificationDropdown: React.FC<{
+  items: JdNotification[];
+  onClose: () => void;
+  onItemClick: (id: number) => void;
+}> = ({ items, onClose, onItemClick }) => createPortal(
+  <>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
+    <div style={{ position: 'fixed', top: 60, right: 16, width: 320, maxHeight: 420, overflowY: 'auto', background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, boxShadow: '0 12px 32px rgba(15,23,42,0.15)', zIndex: 91 }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid #f1f5f9', fontSize: 12, fontWeight: 700, color: '#0F172A' }}>
+        JD Approval Updates
+      </div>
+      {items.length === 0 ? (
+        <div style={{ padding: '24px 14px', fontSize: 12, color: '#94A3B8', textAlign: 'center' }}>No new updates</div>
+      ) : items.map(n => (
+        <div key={n.id} onClick={() => onItemClick(n.id)} style={{ padding: '10px 14px', borderBottom: '1px solid #f8fafc', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          {n.status === 'approved'
+            ? <CheckCircle2 size={14} style={{ color: '#15803d', marginTop: 2, flexShrink: 0 }} />
+            : <XCircle size={14} style={{ color: '#b91c1c', marginTop: 2, flexShrink: 0 }} />}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
+              {n.status === 'approved' ? 'JD approval request approved' : 'JD approval request rejected'}
+            </div>
+            <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>{n.job_title}</div>
+            {n.status === 'rejected' && n.rejection_reason && (
+              <div style={{ fontSize: 11, color: '#B91C1C', marginTop: 2 }}>Reason: {n.rejection_reason}</div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </>,
+  document.body
+);
+
 const RecruiterLayout: React.FC = () => {
   const location  = useLocation();
   const navigate  = useNavigate();
   const [menuOpen,   setMenuOpen]   = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [unseenCount, setUnseenCount] = useState(0);
+  const [notifOpen,   setNotifOpen]   = useState(false);
+  const [notifItems,  setNotifItems]  = useState<JdNotification[]>([]);
 
   const user     = JSON.parse(localStorage.getItem('recruiter_user') || '{}');
   const initials = (user.name || 'R').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+
+  const loadBadge = useCallback(async () => {
+    try { setUnseenCount(await jdApprovalAPI.getBadge()); } catch { /* not logged in yet, or offline */ }
+  }, []);
+
+  useEffect(() => {
+    loadBadge();
+    const t = setInterval(loadBadge, 30000);
+    return () => clearInterval(t);
+  }, [loadBadge]);
+
+  const openNotifications = async () => {
+    if (notifOpen) { setNotifOpen(false); return; }
+    try {
+      const all: JdNotification[] = await jdApprovalAPI.listMine();
+      setNotifItems(all.filter(r => (r.status === 'approved' || r.status === 'rejected') && !r.recruiter_seen));
+    } catch { setNotifItems([]); }
+    setNotifOpen(true);
+  };
+
+  const handleNotifClick = async (id: number) => {
+    try { await jdApprovalAPI.markSeen(id); } catch { /* best-effort */ }
+    setNotifOpen(false);
+    setUnseenCount(c => Math.max(0, c - 1));
+    navigate('/recruiter/jd-approval-requests');
+  };
+
+  const BellButton: React.FC<{ size: number }> = ({ size }) => (
+    <div onClick={openNotifications} style={{ position: 'relative', cursor: 'pointer', display: 'flex' }}>
+      <Bell size={size} style={{ color: unseenCount > 0 ? '#8B0000' : '#CBD5E1' }} />
+      {unseenCount > 0 && (
+        <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 14, height: 14, padding: '0 3px', borderRadius: 7, background: '#8B0000', color: 'white', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+          {unseenCount > 9 ? '9+' : unseenCount}
+        </span>
+      )}
+    </div>
+  );
 
   const handleLogout = () => {
     if (!window.confirm('Sign out?')) return;
@@ -91,7 +177,7 @@ const RecruiterLayout: React.FC = () => {
             {badge && (
               <span style={{
                 fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 4,
-                background: active ? '#1D4ED8' : '#F1F5F9',
+                background: active ? '#8B0000' : '#F1F5F9',
                 color: active ? '#fff' : '#64748B',
               }}>{badge}</span>
             )}
@@ -104,10 +190,11 @@ const RecruiterLayout: React.FC = () => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
       <style>{CSS}</style>
+      {notifOpen && <NotificationDropdown items={notifItems} onClose={() => setNotifOpen(false)} onItemClick={handleNotifClick} />}
 
       {/* ── Desktop Sidebar ─────────────────────────────── */}
       <aside className="rl-sidebar" style={{
-        width: 232, minWidth: 232, background: '#FFFFFF',
+        width: 232, minWidth: 232, background: '#FAFAFA',
         borderRight: '1px solid #F0F0F0',
         flexDirection: 'column',
         position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 40,
@@ -122,7 +209,7 @@ const RecruiterLayout: React.FC = () => {
               <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.3px', lineHeight: 1.2 }}>ASKOXY</div>
               <div style={{ fontSize: 9.5, color: '#94A3B8', fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', marginTop: 1 }}>Recruiter Platform</div>
             </div>
-            <div style={{ marginLeft: 'auto' }}><Bell size={15} style={{ color: '#CBD5E1', cursor: 'pointer' }} /></div>
+            <div style={{ marginLeft: 'auto' }}><BellButton size={15} /></div>
           </div>
         </div>
 
@@ -166,7 +253,7 @@ const RecruiterLayout: React.FC = () => {
           </div>
           <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>ASKOXY</span>
         </div>
-        <Bell size={18} style={{ color: '#CBD5E1', cursor: 'pointer' }} />
+        <BellButton size={18} />
       </header>
 
       {/* ── Mobile Drawer Overlay ────────────────────────── */}
@@ -175,7 +262,7 @@ const RecruiterLayout: React.FC = () => {
           <div className="rl-overlay" onClick={() => setDrawerOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 60 }} />
           <aside className="rl-drawer" style={{
             position: 'fixed', top: 0, left: 0, bottom: 0, width: 260,
-            background: '#FFFFFF', zIndex: 70,
+            background: '#FAFAFA', zIndex: 70,
             flexDirection: 'column', boxShadow: '4px 0 20px rgba(0,0,0,0.12)',
           }}>
             {/* Drawer Header */}

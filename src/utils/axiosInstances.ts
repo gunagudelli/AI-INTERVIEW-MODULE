@@ -54,7 +54,7 @@ const LOGIN_ROUTES = {
   admin: "/admin",
   partner: "/partnerlogin",
   employee: "/userlogin",
-  freelancer: "/employee-login",
+  freelancer: "/referral/login",
 } as const;
 
 // ─── Token resolvers ─────────────────────────────────────────────────────────
@@ -256,7 +256,7 @@ export const employeeApi = createInstance({
     if (eodDraft) sessionStorage.setItem("eod_draft", eodDraft);
   },
 });
-/** Freelance Marketplace portal — redirects to /employee-login on 401 */
+/** Freelance Marketplace portal — redirects to /referral/login on 401 */
 export const freelanceApi = createInstance({
   getToken: employeeToken,
   on401: "redirect",

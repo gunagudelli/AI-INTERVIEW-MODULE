@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import BASE_URL from "../../Config";
 
 const VALID_EMAIL = "interviewAI@askoxy.ai";
 const VALID_PASSWORD = "Test@123";
+const ADMIN_PHONE = "0000000000";  // fixed phone for admin account
 
 const BG_IMAGE =
   "https://img.freepik.com/premium-photo/robot-meeting-with-human-office-desk_215372-7909.jpg";
@@ -15,20 +18,28 @@ export default function LoginAdmin() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-    setTimeout(() => {
-      if (email === VALID_EMAIL && password === VALID_PASSWORD) {
-        sessionStorage.setItem("isAdminAuthenticated", "true");
-        sessionStorage.setItem("adminEmail", email);
-        navigate("/admin/interviewdashboard");
-      } else {
-        setError("Invalid email or password. Please try again.");
-      }
+    if (email !== VALID_EMAIL || password !== VALID_PASSWORD) {
+      setError("Invalid email or password. Please try again.");
       setIsLoading(false);
-    }, 800);
+      return;
+    }
+    try {
+      const { data } = await axios.post(`${BASE_URL}/api/auth/login`, {
+        phone: ADMIN_PHONE, name: "Super Admin", role: "admin",
+      });
+      const token = data.token;
+      localStorage.setItem("admin_token", token);
+      sessionStorage.setItem("isAdminAuthenticated", "true");
+      sessionStorage.setItem("adminEmail", email);
+      navigate("/admin/interviewdashboard");
+    } catch {
+      setError("Backend unreachable. Please ensure the server is running.");
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -487,13 +498,22 @@ export default function LoginAdmin() {
               }}
             />
 
-            {/* Form content */}
+            {/* Form content — a subtle backdrop panel sits behind the heading/fields so
+                the floating background chips are masked as they drift past instead of
+                appearing to collide with "Sign in" / field labels. */}
+            <div
+              className="relative z-10 rounded-2xl -mx-4 -my-6 px-4 py-6"
+              style={{
+                background: "rgba(4,14,28,0.42)",
+                backdropFilter: "blur(3px)",
+              }}
+            >
             <h1 className="text-5xl font-bold text-white tracking-tight mb-7 relative z-10">
               Sign in
               <span
                 className="block w-10 h-0.5 mt-2.5 rounded"
                 style={{
-                  background: "linear-gradient(90deg, #00d4ff, #0055ff)",
+                  background: "linear-gradient(90deg, #2563EB, #1D4ED8)",
                 }}
               />
             </h1>
@@ -599,7 +619,7 @@ export default function LoginAdmin() {
                 className="w-full mt-1 py-3 rounded-lg font-semibold text-white text-sm tracking-wide flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed hover:-translate-y-0.5"
                 style={{
                   background:
-                    "linear-gradient(90deg, #1a4fd8 0%, #3b82f6 100%)",
+                    "linear-gradient(90deg, #1D4ED8 0%, #2563EB 100%)",
                   boxShadow: "0 4px 20px rgba(59,130,246,0.45)",
                 }}
               >
@@ -612,6 +632,7 @@ export default function LoginAdmin() {
                 )}
               </button>
             </form>
+            </div>
           </div>
 
           {/* RIGHT — Image panel */}
@@ -632,7 +653,7 @@ export default function LoginAdmin() {
               <div
                 className="w-10 h-0.5 rounded"
                 style={{
-                  background: "linear-gradient(90deg, #00d4ff, #0055ff)",
+                  background: "linear-gradient(90deg, #2563EB, #1D4ED8)",
                 }}
               />
               <p className="text-xs font-semibold text-slate-900 tracking-widest uppercase font-mono">

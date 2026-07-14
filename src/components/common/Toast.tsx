@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { NotificationType } from '../../hooks/useNotification';
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 interface ToastProps {
   id: string;
@@ -20,62 +21,48 @@ const Toast: React.FC<ToastProps> = ({ id, type, message, onClose, duration = 30
   }, [id, duration, onClose]);
 
   const getStyles = () => {
-    const baseStyles = 'flex items-center gap-3 p-4 rounded-lg shadow-lg min-w-[300px] max-w-[500px] animate-slideIn';
+    const baseStyles =
+      'pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3.5 shadow-[0_18px_40px_rgba(15,23,42,0.16)] backdrop-blur-md animate-toastIn w-[min(92vw,420px)]';
     
     switch (type) {
       case 'success':
-        return `${baseStyles} bg-green-50 border border-green-200 text-green-800`;
+        return `${baseStyles} bg-emerald-50/95 border-emerald-200 text-emerald-950`;
       case 'error':
-        return `${baseStyles} bg-red-50 border border-red-200 text-red-800`;
+        return `${baseStyles} bg-rose-50/95 border-rose-200 text-rose-950`;
       case 'warning':
-        return `${baseStyles} bg-yellow-50 border border-yellow-200 text-yellow-800`;
+        return `${baseStyles} bg-amber-50/95 border-amber-200 text-amber-950`;
       case 'info':
-        return `${baseStyles} bg-blue-50 border border-blue-200 text-blue-800`;
+        return `${baseStyles} bg-sky-50/95 border-sky-200 text-sky-950`;
       default:
-        return `${baseStyles} bg-gray-50 border border-gray-200 text-gray-800`;
+        return `${baseStyles} bg-slate-50/95 border-slate-200 text-slate-950`;
     }
   };
 
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return (
-          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        );
+        return <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" />;
       case 'error':
-        return (
-          <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-          </svg>
-        );
+        return <AlertCircle className="mt-0.5 h-5 w-5 text-rose-600" />;
       case 'warning':
-        return (
-          <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-        );
+        return <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />;
       case 'info':
-        return (
-          <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-        );
+        return <Info className="mt-0.5 h-5 w-5 text-sky-600" />;
     }
   };
 
   return (
-    <div className={getStyles()}>
-      {getIcon()}
-      <p className="flex-1 text-sm font-medium">{message}</p>
+    <div className={getStyles()} role="status" aria-live="polite">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/70 ring-1 ring-black/5">
+        {getIcon()}
+      </div>
+      <p className="flex-1 pt-0.5 text-sm font-medium leading-6">{message}</p>
       <button
         onClick={() => onClose(id)}
-        className="text-gray-400 hover:text-gray-600 transition-colors"
+        className="rounded-full p-1 text-slate-400 transition-colors hover:bg-black/5 hover:text-slate-700"
+        aria-label="Dismiss notification"
       >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-        </svg>
+        <X className="h-4 w-4" />
       </button>
     </div>
   );
@@ -83,7 +70,7 @@ const Toast: React.FC<ToastProps> = ({ id, type, message, onClose, duration = 30
 
 export const ToastContainer: React.FC<{ toasts: any[]; onClose: (id: string) => void }> = ({ toasts, onClose }) => {
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed left-1/2 top-4 z-[9999] flex w-full -translate-x-1/2 flex-col items-center gap-3 px-4 sm:left-auto sm:right-4 sm:translate-x-0 sm:items-end sm:px-0">
       {toasts.map(toast => (
         <Toast key={toast.id} {...toast} onClose={onClose} />
       ))}

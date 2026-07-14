@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import MonacoEditor from "@monaco-editor/react";
 import { api } from "./lib/api";
 import { ExamImageType } from "./lib/examImageTypes";
 import { Modal } from "antd";
@@ -98,10 +97,8 @@ const GLOBAL_CSS = `
 .btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
 .btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
 
-.btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;position:relative;overflow:hidden;}
-.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#764ba2,#667eea);opacity:0;transition:opacity .3s ease;}
-.btn-primary:not(:disabled):hover::before{opacity:1;}
-.btn-primary > *{position:relative;z-index:1;}
+.btn-primary{background:var(--brand);color:#fff;border-color:transparent;}
+.btn-primary:not(:disabled):hover{background:var(--brand-hover);}
 .btn-primary-lg{padding:9px 20px;font-size:13.5px;border-radius:var(--r-lg);}
 
 .btn-outline{background:var(--surface);color:var(--t2);border-color:var(--border-strong);}
@@ -152,7 +149,7 @@ const GLOBAL_CSS = `
 
 /* ── Progress ── */
 .progress-wrap{width:100%;height:3px;background:var(--s2);border-radius:var(--r-full);overflow:hidden;}
-.progress-fill{height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:var(--r-full);transition:width .6s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2563EB,#1D4ED8);border-radius:var(--r-full);transition:width .6s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
 .progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shimmer 2s infinite;}
 @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 
@@ -187,7 +184,7 @@ const GLOBAL_CSS = `
   line-height:1.12;color:var(--t1);letter-spacing:-1px;margin-bottom:12px;
   animation:fadeInUp .8s ease;
 }
-.welcome-title strong{font-weight:600;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.welcome-title strong{font-weight:600;background:linear-gradient(135deg,#2563EB,#1D4ED8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .welcome-sub{font-size:15.5px;color:var(--t3);line-height:1.65;max-width:500px;margin-bottom:26px;font-weight:400;}
 
@@ -483,7 +480,7 @@ const GLOBAL_CSS = `
 .ai-user-chip{display:flex;align-items:center;gap:9px;padding:6px 14px 6px 6px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r-full);transition:all .3s ease;}
 .ai-user-chip:hover{background:var(--s2);border-color:var(--border-strong);transform:translateY(-1px);box-shadow:0 2px 4px rgba(0,0,0,0.08);}
 .theme-dark .ai-user-chip:hover{box-shadow:0 2px 4px rgba(0,0,0,0.4);}
-.ai-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(102,126,234,0.3);}
+.ai-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2563EB,#1D4ED8);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,0.3);}
 .theme-dark .ai-avatar{box-shadow:0 2px 8px rgba(102,126,234,0.5);}
 .ai-user-name{font-size:13.5px;font-weight:500;color:var(--t1);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
@@ -505,6 +502,85 @@ const GLOBAL_CSS = `
 /* ── Coding Split Layout ── */
 .coding-split{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 120px);min-height:560px;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;background:var(--surface);}
 @media(max-width:860px){.coding-split{grid-template-columns:1fr;height:auto;}}
+.mobile-question-shell{width:100%;}
+@media(max-width:720px){
+  .ai-main{padding:20px 12px 72px;}
+  .card{border-radius:18px;}
+  .card-header{padding:13px 14px;gap:9px;}
+  .card-body{padding:16px 14px;}
+  .q-header{
+    align-items:flex-start;
+    gap:10px;
+    padding:14px;
+  }
+  .q-header > div:nth-child(2){
+    min-width:0;
+  }
+  .timer-chip{
+    margin-left:auto;
+  }
+  .round-desc-bar{
+    padding:8px 14px;
+    line-height:1.5;
+  }
+  .q-box{
+    padding:14px 14px 12px;
+  }
+  .mcq-option{
+    padding:10px 11px;
+  }
+  .mcq-text{
+    font-size:12.5px;
+  }
+  .camera-wrap{
+    max-width:100%;
+    margin:18px auto;
+    padding:0 4px;
+  }
+  .camera-header{
+    margin-bottom:12px;
+  }
+  .camera-actions{
+    gap:10px;
+  }
+  .exam-proctor-camera{
+    right:10px;
+    bottom:10px;
+    width:112px;
+  }
+  .exam-proctor-status{
+    padding:4px 6px;
+    font-size:9px;
+  }
+}
+@media(max-width:560px){
+  .q-header{
+    flex-direction:column;
+  }
+  .q-header > div{
+    width:100%;
+  }
+  .timer-chip{
+    margin-left:0;
+    align-self:flex-start;
+  }
+  .q-round-badge{
+    width:26px;height:26px;font-size:11px;
+  }
+  .mcq-option{
+    align-items:flex-start;
+  }
+  .mcq-radio{
+    margin-top:2px;
+  }
+  .exam-proctor-camera{
+    width:96px;
+  }
+  .exam-proctor-status{
+    gap:4px;
+    line-height:1.2;
+  }
+}
 .coding-left{overflow-y:auto;border-right:1px solid var(--border);display:flex;flex-direction:column;}
 .coding-right{display:flex;flex-direction:column;background:#1e1e1e;}
 .coding-editor-bar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#252526;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
@@ -546,6 +622,7 @@ export default function InterviewPage() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [timePerQuestion, setTimePerQuestion] = useState(30);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [assessmentDone, setAssessmentDone] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [showAnalyzing, setShowAnalyzing] = useState(false);
   const [showAnalysisMessage, setShowAnalysisMessage] = useState(false);
@@ -559,18 +636,24 @@ export default function InterviewPage() {
   const getQuestionCount = (r: number) => ({ 1: 12, 2: 5, 3: 3 }[r] || 5);
 
   const isNonTechnical = (skills: string[], domains: string[], isTechnicalFlag?: boolean | null) => {
-    // If backend explicitly set is_technical, trust it
-    if (isTechnicalFlag === true)  return false;
-    if (isTechnicalFlag === false) return true;
-    const kw = [
-      "hr", "human resource", "marketing", "sales", "finance", "accounting",
-      "business", "management", "admin", "operations", "customer service", "support",
+    // Backend explicitly set is_technical — always trust it
+    if (isTechnicalFlag === true)  return false;  // technical → Coding Round
+    if (isTechnicalFlag === false) return true;   // non-technical → Paragraph Round
+    // Fallback: keyword detection only when flag is null/undefined
+    const techKw = [
+      'javascript', 'typescript', 'react', 'angular', 'vue', 'node', 'python',
+      'java', 'spring', 'django', 'flask', 'php', 'laravel', 'aws', 'docker',
+      'kubernetes', 'sql', 'mongodb', 'postgresql', 'devops', 'fullstack',
+      'full stack', 'full-stack', 'web development', 'software', 'developer',
+      'programming', 'coding', 'mern', 'mean', 'html', 'css', 'git',
     ];
-    return [...(skills || []), ...(domains || [])]
-      .join(" ")
-      .toLowerCase()
-      .split(" ")
-      .some((w) => kw.includes(w));
+    const allText = [...(skills || []), ...(domains || [])].join(' ').toLowerCase();
+    if (techKw.some(kw => allText.includes(kw))) return false; // technical
+    const nonTechKw = [
+      'hr', 'human resource', 'marketing', 'sales', 'finance', 'accounting',
+      'business', 'management', 'admin', 'operations', 'customer service',
+    ];
+    return nonTechKw.some(kw => allText.includes(kw));
   };
 
   const [roundType, setRoundType] = useState<string>("");
@@ -640,6 +723,11 @@ export default function InterviewPage() {
       .then(r => r.json())
       .then(data => {
         setInterviewConfig(data.rounds || data);
+        // Copy/paste protection is admin-controlled only (Round Settings) — the
+        // candidate has no way to change this during their own exam.
+        if (typeof data.copyPasteBlocked === "boolean") {
+          setCopyPasteBlocked(data.copyPasteBlocked);
+        }
         setConfigLoading(false);
       })
       .catch(() => setConfigLoading(false));
@@ -1047,8 +1135,14 @@ export default function InterviewPage() {
     if (!user || !capturedImage) return;
     setUploadingExamImage(true);
     try {
-      const localSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-      setSessionStatsId(localSessionId);
+      let sessionId: string;
+      try {
+        sessionId = await createExamSession();
+      } catch (sessionErr) {
+        console.warn('createExamSession failed, falling back to local-only session id (non-blocking):', sessionErr);
+        sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        setSessionStatsId(sessionId);
+      }
 
       // Upload the captured image to backend
       try {
@@ -1056,7 +1150,7 @@ export default function InterviewPage() {
         const formData = new FormData();
         formData.append('file', imageFile);
         formData.append('userId', user.id);
-        formData.append('sessionStatsId', localSessionId);
+        formData.append('sessionStatsId', sessionId);
         formData.append('type', ExamImageType.CANDIDATE_IMAGE);
         await api.uploadExamImage(formData);
       } catch (uploadErr) {
@@ -1337,96 +1431,6 @@ export default function InterviewPage() {
     setTimeout(() => setViolationMsg(''), 3000);
   };
 
-  async function runCode() {
-    const code =
-      monacoValueRef.current?.trim() ||
-      answerRef.current?.value?.trim() ||
-      "";
-    if (!code) {
-      setCodeError("Please write your code before running.");
-      setCodeOutput("");
-      return;
-    }
-    setLoading(true);
-    setCodeOutput("");
-    setCodeError("");
-    setCodeEvalResult(null);
-    try {
-      const result = await api.codeRunner({ code, language: selectedLanguage });
-      if (result?.success) {
-        setCodeOutput(result.output || "Code executed successfully.");
-        setCodeError("");
-      } else {
-        setCodeOutput("");
-        setCodeError(result?.error || "Code execution failed.");
-      }
-    } catch (error: any) {
-      setCodeError(error?.message || "Code runner error.");
-      setCodeOutput("");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function evaluateCode() {
-    const code =
-      monacoValueRef.current?.trim() ||
-      answerRef.current?.value?.trim() ||
-      "";
-    if (!code) {
-      setCodeError("Please write your code before submitting.");
-      return;
-    }
-    if (!currentCodingQuestion?.questionId) {
-      submitAnswer();
-      return;
-    }
-    setCodePerQuestion((prev) => ({
-      ...prev,
-      [currentCodingQuestion.questionId]: code,
-    }));
-    setEvaluating(true);
-    setSubmitting(true);
-    setLoading(true);
-    setCodeEvalResult(null);
-    setCodeOutput("");
-    setCodeError("");
-    setEvalSteps([]);
-    const steps = [
-      "Compiling your code...",
-      "Running hidden test cases...",
-      "Comparing outputs...",
-      "Generating score...",
-    ];
-    let si = 0;
-    const stepTimer = setInterval(() => {
-      if (si < steps.length) {
-        setEvalSteps((s) => [...s, steps[si]]);
-        si++;
-      } else {
-        clearInterval(stepTimer);
-      }
-    }, 600);
-    try {
-      const result = await api.evaluateCode({
-        code,
-        language: selectedLanguage,
-        questionId: currentCodingQuestion.questionId,
-      });
-      clearInterval(stepTimer);
-      setEvalSteps(steps);
-      setCodeEvalResult(result);
-      await submitAnswer(result.score);
-    } catch (err: any) {
-      clearInterval(stepTimer);
-      setCodeError(err?.message || "Evaluation failed.");
-    } finally {
-      setLoading(false);
-      setSubmitting(false);
-      setEvaluating(false);
-    }
-  }
-
   useEffect(() => {
     if (question && round === 3) {
       if (answerRef.current) {
@@ -1522,7 +1526,10 @@ export default function InterviewPage() {
     setSubmitting(false);
     setShowWelcome(false);
     setRound3Done(false);
+    // Use is_technical from parsed (set by backend after resume upload)
+    // true = technical → Coding Round, false/null = non-technical → Paragraph
     const nt = isNonTechnical(parsed?.skills || [], parsed?.domains || [], parsed?.is_technical);
+    console.log('[goToRound3] is_technical=', parsed?.is_technical, '→ nt=', nt);
     setModal({
       show: true,
       type: 'success',
@@ -1939,7 +1946,9 @@ export default function InterviewPage() {
               <button
                 onClick={verifyAssessmentCode}
                 disabled={codeVerifying}
-                style={{ width: '100%', padding: '12px', background: codeVerifying ? '#e0e7ff' : 'linear-gradient(135deg,#667eea,#764ba2)', color: codeVerifying ? '#4f46e5' : 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: codeVerifying ? 'not-allowed' : 'pointer' }}
+                onMouseEnter={e => { if (!codeVerifying) e.currentTarget.style.background = '#1D4ED8'; }}
+                onMouseLeave={e => { if (!codeVerifying) e.currentTarget.style.background = '#2563EB'; }}
+                style={{ width: '100%', padding: '12px', background: codeVerifying ? '#e0e7ff' : '#2563EB', color: codeVerifying ? '#4f46e5' : 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: codeVerifying ? 'not-allowed' : 'pointer', transition: 'background .15s ease' }}
               >
                 {codeVerifying ? 'Verifying...' : 'Start Assessment →'}
               </button>
@@ -1988,7 +1997,7 @@ export default function InterviewPage() {
     );
   }
 
-  const roundColors = ["", "#0F7B3A", "#2563EB", "#B45309", "#7B4DFF", "#E91E8C"];
+  const roundColors = ["", "#2563EB", "#2563EB", "#2563EB", "#2563EB", "#2563EB"];
   const languageOptions = [
     { value: "python", label: "Python" },
     { value: "javascript", label: "JavaScript" },
@@ -2034,7 +2043,6 @@ export default function InterviewPage() {
             onToggleTheme={() => setTheme(p => p === 'light' ? 'dark' : 'light')}
             onLogout={handleLogout}
             copyPasteBlocked={copyPasteBlocked}
-            onToggleCopyPaste={() => setCopyPasteBlocked(p => !p)}
           />
           <div style={{ maxWidth: 840, margin: '0 auto', padding: '28px 20px 80px' }}>
             <Round3ParagraphPage
@@ -2042,6 +2050,7 @@ export default function InterviewPage() {
               sessionId={sessionId}
               parsed={parsed}
               onComplete={() => { setShowRound3(false); goToRound4(); }}
+              copyPasteBlocked={copyPasteBlocked}
             />
           </div>
         </div>
@@ -2089,7 +2098,11 @@ export default function InterviewPage() {
             }
             onLogout={handleLogout}
             copyPasteBlocked={copyPasteBlocked}
-            onToggleCopyPaste={() => setCopyPasteBlocked(p => !p)}
+          />
+          <ExamProctorCamera
+            active
+            userId={user?.id || localStorage.getItem("userId") || ""}
+            sessionStatsId={sessionStatsId || ""}
           />
           <div
             style={{ maxWidth: 840, margin: "0 auto", padding: "28px 20px 80px" }}
@@ -2123,7 +2136,11 @@ export default function InterviewPage() {
             }
             onLogout={handleLogout}
             copyPasteBlocked={copyPasteBlocked}
-            onToggleCopyPaste={() => setCopyPasteBlocked(p => !p)}
+          />
+          <ExamProctorCamera
+            active
+            userId={user?.id || localStorage.getItem("userId") || ""}
+            sessionStatsId={sessionStatsId || ""}
           />
           <div
             style={{ maxWidth: 840, margin: "0 auto", padding: "28px 20px 80px" }}
@@ -2167,7 +2184,8 @@ export default function InterviewPage() {
                     "Thank you for completing this assessment.\n\nWe have received your responses and our team will review them shortly.\n\nYou will be notified about the results soon.\n\nThank you for your time and effort.",
                   onClose: () => {
                     sessionStorage.removeItem(FLOW_STATE_KEY);
-                    setShowWelcome(true);
+                    setShowWelcome(false);
+                    setAssessmentDone(true);
                     setParsed(null);
                     setCandidateId(null);
                     setSessionStatsId(null);
@@ -2587,7 +2605,6 @@ export default function InterviewPage() {
           }
           onLogout={handleLogout}
           copyPasteBlocked={copyPasteBlocked}
-          onToggleCopyPaste={() => setCopyPasteBlocked(p => !p)}
         />
 
         {/* ── Proctor cam ── */}
@@ -2604,7 +2621,7 @@ export default function InterviewPage() {
           {/* ══════════════════════════════════════
               CAMERA VERIFICATION
           ══════════════════════════════════════ */}
-          {showCameraVerification && !capturedImage && (
+          {showCameraVerification && !capturedImage && !assessmentDone && (
             <CameraVerification
               onCapture={(imageData: string) => {
                 setCapturedImage(imageData);
@@ -2612,9 +2629,27 @@ export default function InterviewPage() {
             />
           )}
 
-          {showCameraVerification && capturedImage && (
+          {showCameraVerification && capturedImage && !assessmentDone && (
             <div className="camera-wrap">
               <div className="camera-header">
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "4px 12px",
+                    borderRadius: 20,
+                    background: "var(--success-tint)",
+                    border: "1px solid rgba(5,150,105,.2)",
+                    color: "var(--success)",
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    marginBottom: 10,
+                  }}
+                >
+                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+                  Single face verified
+                </div>
                 <h2
                   style={{
                     fontSize: 18,
@@ -2687,9 +2722,26 @@ export default function InterviewPage() {
           )}
 
           {/* ══════════════════════════════════════
+              ASSESSMENT ALREADY COMPLETED
+          ══════════════════════════════════════ */}
+          {assessmentDone && (
+            <div className="welcome-root" style={{ textAlign: "center", padding: "60px 20px" }}>
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--success-tint)", border: "1px solid rgba(5,150,105,.18)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+                <svg width="26" height="26" fill="none" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+              </div>
+              <h1 className="welcome-title" style={{ fontSize: "clamp(24px,3.5vw,34px)" }}>
+                Assessment already <strong>completed</strong>
+              </h1>
+              <p className="welcome-sub" style={{ margin: "0 auto 8px" }}>
+                Thanks for completing your assessment. Your responses have been submitted and our team will review them shortly — you'll be notified about the results soon.
+              </p>
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════
               WELCOME SCREEN
           ══════════════════════════════════════ */}
-          {showWelcome && !round3Done && !showRound4 && !showRound5 && (
+          {showWelcome && !assessmentDone && !round3Done && !showRound4 && !showRound5 && (
             <div className="welcome-root">
 
               {/* Hero */}
@@ -2805,7 +2857,7 @@ export default function InterviewPage() {
                       1: {
                         name: "Skill Check",
                         desc: "Core technical MCQs on your fundamentals and role knowledge.",
-                        color: "#0F7B3A",
+                        color: "#2563EB",
                       },
                       2: {
                         name: "Scenario Round",
@@ -2815,17 +2867,17 @@ export default function InterviewPage() {
                       3: {
                         name: "Coding Challenge",
                         desc: "Live coding with execution, I/O validation, and constraints.",
-                        color: "#B45309",
+                        color: "#2563EB",
                       },
                       4: {
                         name: "Communication",
                         desc: "Behavioural MCQs read aloud via voice — listen and select.",
-                        color: "#7B4DFF",
+                        color: "#2563EB",
                       },
                       5: {
                         name: "HR Interview",
                         desc: "Voice-based open HR questions with AI feedback.",
-                        color: "#E91E8C",
+                        color: "#2563EB",
                       },
                     };
                     const info = roundInfo[r.round] || {
@@ -2903,7 +2955,7 @@ export default function InterviewPage() {
           {/* ══════════════════════════════════════
               UPLOAD SCREEN
           ══════════════════════════════════════ */}
-          {showUpload && (
+          {showUpload && !assessmentDone && (
             <div className="upload-card">
               <div className="card">
                 <div className="card-header">
@@ -3005,7 +3057,7 @@ export default function InterviewPage() {
           {/* ══════════════════════════════════════
               ANALYSING
           ══════════════════════════════════════ */}
-          {(showAnalyzing || showAnalysisMessage) && (
+          {(showAnalyzing || showAnalysisMessage) && !assessmentDone && (
             <div className="analyzing-wrap">
               <div className="analyzing-card">
                 <div className="spin-bot">🤖</div>
@@ -3080,6 +3132,7 @@ export default function InterviewPage() {
               PRE-INTERVIEW — Resume + Structure
           ══════════════════════════════════════ */}
           {!showWelcome &&
+            !assessmentDone &&
             !showUpload &&
             !showAnalyzing &&
             !showAnalysisMessage &&

@@ -6,6 +6,8 @@ import {
   Link as LinkIcon, ChevronRight, UserCheck,
 } from 'lucide-react';
 import recruiterAPI, { referralAPI } from '../../services/recruiterAPI';
+import { ToastContainer } from '../../components/common/Toast';
+import { useNotification } from '../../hooks/useNotification';
 
 const CSS = `
   @keyframes spin   { to { transform: rotate(360deg); } }
@@ -83,6 +85,7 @@ const RecruiterDashboard: React.FC = () => {
   const [linksModal, setLinksModal] = useState(false);
   const [linksData,  setLinksData]  = useState<any>(null);
   const [copiedKey,  setCopiedKey]  = useState<string | null>(null);
+  const { toasts, success: notifySuccess, error: notifyError, info: notifyInfo, removeNotification } = useNotification();
 
   const recruiterUser = JSON.parse(localStorage.getItem('recruiter_user') || localStorage.getItem('recruiter') || '{}');
   const recruiterId = recruiterUser?.id ?? null;
@@ -103,8 +106,8 @@ const RecruiterDashboard: React.FC = () => {
   }, [navigate, recruiterId]);
 
   const openLinks = async (jobId: string) => {
-    try { const r = await recruiterAPI.generateLinks(jobId); setLinksData(r); setLinksModal(true); }
-    catch { alert('Failed to generate links'); }
+    try { const r = await recruiterAPI.generateLinks(jobId); setLinksData(r); setLinksModal(true); notifyInfo('Links generated successfully'); }
+    catch { notifyError('Failed to generate links'); }
   };
 
   const copy = (text: string, key: string) => {
@@ -121,7 +124,7 @@ const RecruiterDashboard: React.FC = () => {
 
   const pl = dash?.pipeline || {};
   const kpis = [
-    { label:'Active Jobs',  value: dash?.totalJobs ?? jobs.length,           icon:<Briefcase size={16}/>, iBg:'#EFF6FF', iCol:'#1D4ED8'  },
+    { label:'Active Jobs',  value: dash?.totalJobs ?? jobs.length,           icon:<Briefcase size={16}/>, iBg:'#FDF2F2', iCol:'#8B0000'  },
     { label:'Applications', value: dash?.totalCandidates ?? pl.applied ?? 0, icon:<Users size={16}/>,     iBg:'#f0fdf4', iCol:'#15803d'  },
     { label:'Screened',     value: pl.in_progress ?? 0,                      icon:<Target size={16}/>,    iBg:'#fffbeb', iCol:'#92400e'  },
     { label:'Shortlisted',  value: pl.shortlisted ?? 0,                      icon:<Clock size={16}/>,     iBg:'#eff6ff', iCol:'#1d4ed8'  },
@@ -147,9 +150,10 @@ const RecruiterDashboard: React.FC = () => {
   return (
     <div style={{ minHeight:'100vh', background:'#ffffff', fontFamily:"'Inter',-apple-system,sans-serif" }}>
       <style>{CSS}</style>
+      <ToastContainer toasts={toasts} onClose={removeNotification} />
 
       {/* Header */}
-      <div style={{ background:'white', borderBottom:'1px solid #e2e8f0', padding:'14px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:30 }}>
+      <div style={{ background:'#FAFAFA', borderBottom:'1px solid #e2e8f0', padding:'14px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:30 }}>
         <div>
           <h1 style={{ fontSize:18, fontWeight:700, color:'#0f172a', margin:0, letterSpacing:'-0.3px' }}>Dashboard</h1>
           <p style={{ fontSize:12, color:'#94a3b8', margin:'1px 0 0' }}>Hiring overview</p>
@@ -157,7 +161,7 @@ const RecruiterDashboard: React.FC = () => {
         <div style={{ display:'flex', gap:8 }}>
           <button onClick={() => navigate('/recruiter/jobs/create?ai=true')}
             style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:7, border:'1px solid #e2e8f0', background:'white', color:'#475569', fontSize:12.5, fontWeight:500, cursor:'pointer' }}>
-            <Wand2 size={13}/> AI Job
+            <Wand2 size={13}/> AI JD GENERATOR
           </button>
           <button onClick={() => navigate('/recruiter/jobs/create')}
             style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 16px', borderRadius:7, border:'none', background:'#8B0000', color:'white', fontSize:12.5, fontWeight:600, cursor:'pointer' }}>
@@ -278,7 +282,7 @@ const RecruiterDashboard: React.FC = () => {
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'13px 20px', borderBottom:'1px solid #ffffff' }}>
             <span style={{ fontSize:13, fontWeight:700, color:'#0f172a' }}>Recent Jobs</span>
             <button onClick={() => navigate('/recruiter/jobs')}
-              style={{ display:'flex', alignItems:'center', gap:4, fontSize:12.5, color:'#1D4ED8', background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>
+              style={{ display:'flex', alignItems:'center', gap:4, fontSize:12.5, color:'#8B0000', background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>
               View all <ArrowRight size={12}/>
             </button>
           </div>
@@ -286,7 +290,7 @@ const RecruiterDashboard: React.FC = () => {
           {jobs.length === 0 ? (
             <div style={{ padding:'48px', textAlign:'center' }}>
               <div style={{ width:44, height:44, background:'#FDF2F2', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 10px' }}>
-                <Briefcase size={20} style={{ color:'#1D4ED8' }}/>
+                <Briefcase size={20} style={{ color:'#8B0000' }}/>
               </div>
               <p style={{ fontSize:13, color:'#94a3b8', margin:'0 0 14px' }}>No jobs posted yet</p>
               <button onClick={() => navigate('/recruiter/jobs/create')}
@@ -315,7 +319,7 @@ const RecruiterDashboard: React.FC = () => {
                         <div style={{ display:'flex', gap:6 }}>
                           <button className="rd-btn"
                             onClick={() => navigate(`/recruiter/jobs/${job.id}/applications`)}
-                            style={{ padding:'4px 12px', fontSize:12, fontWeight:600, color:'#1D4ED8', background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:6, cursor:'pointer' }}>
+                            style={{ padding:'4px 12px', fontSize:12, fontWeight:600, color:'#8B0000', background:'#FDF2F2', border:'1px solid #FECDD3', borderRadius:6, cursor:'pointer' }}>
                             View
                           </button>
                           <button className="rd-btn" onClick={() => openLinks(job.id)}

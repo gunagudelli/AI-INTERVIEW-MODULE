@@ -9,7 +9,7 @@ interface Round5Props {
 }
 
 /* ─── Brand colour (matches Round 4 purple style but pink for R5) ─── */
-const PINK = "#E91E8C";
+const PINK = "#2563EB";
 const GREEN = "#16a34a";   // active mic / voice detected
 const GREEN_BG = "#dcfce7";
 const GREEN_BORDER = "#86efac";
@@ -17,13 +17,13 @@ const GREEN_BORDER = "#86efac";
 /* ─── Keyframes ─── */
 const STYLES = `
 :root {
-  --color-background-primary: var(--surface-0);
-  --color-background-secondary: var(--surface-1);
-  --color-border-tertiary: var(--border-1);
-  --color-border-secondary: var(--border-2);
-  --color-text-primary: var(--text-1);
-  --color-text-secondary: var(--text-2);
-  --color-text-tertiary: var(--text-3);
+  --color-background-primary: var(--surface);
+  --color-background-secondary: var(--s1);
+  --color-border-tertiary: var(--border);
+  --color-border-secondary: var(--border-strong);
+  --color-text-primary: var(--t1);
+  --color-text-secondary: var(--t2);
+  --color-text-tertiary: var(--t3);
   --color-text-success: var(--success);
   --color-text-danger: var(--danger);
 }
@@ -638,7 +638,10 @@ export default function Round5({ userId, sessionId, onComplete }: Round5Props) {
       <style>{STYLES}</style>
       <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 16, padding: 32, textAlign: "center" }}>
         <div style={{ fontSize: 14, color: "#E24B4A", marginBottom: 16 }}>{error}</div>
-        <button onClick={loadQuestion} style={{ padding: "10px 26px", background: PINK, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>Retry</button>
+        <button onClick={loadQuestion}
+          onMouseEnter={e => { e.currentTarget.style.background = "#C71678"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(233,30,140,.35)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = PINK; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+          style={{ padding: "10px 26px", background: PINK, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", transition: "background .15s, transform .15s, box-shadow .15s" }}>Retry</button>
       </div>
     </div>
   );
@@ -659,7 +662,7 @@ export default function Round5({ userId, sessionId, onComplete }: Round5Props) {
             <div style={{ fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)" }}>Round 5 — HR Interview</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
               <div style={{ flex: 1, height: 3, background: "var(--color-border-tertiary)", borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${progPct}%`, background: `linear-gradient(90deg,${PINK},#ff80b4,${PINK})`, backgroundSize: "200% 100%", borderRadius: 2, transition: "width .6s ease", animation: "r5pgshim 2s linear infinite" }} />
+                <div style={{ height: "100%", width: `${progPct}%`, background: `linear-gradient(90deg,${PINK},#5B8DEF,${PINK})`, backgroundSize: "200% 100%", borderRadius: 2, transition: "width .6s ease", animation: "r5pgshim 2s linear infinite" }} />
               </div>
               <span style={{ fontSize: 11, color: "var(--color-text-tertiary)", flexShrink: 0 }}>Q {questionNo}/{totalQ}</span>
             </div>
@@ -775,7 +778,9 @@ export default function Round5({ userId, sessionId, onComplete }: Round5Props) {
                     setReplayCount(c => c + 1);
                     speak(question);
                   }}
-                  style={{ marginLeft: "auto", fontSize: 11, color: PINK, background: "none", border: `1px solid ${PINK}40`, borderRadius: 99, padding: "2px 10px", cursor: "pointer", flexShrink: 0 }}>
+                  onMouseEnter={e => { e.currentTarget.style.background = `${PINK}14`; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "none"; }}
+                  style={{ marginLeft: "auto", fontSize: 11, color: PINK, background: "none", border: `1px solid ${PINK}40`, borderRadius: 99, padding: "2px 10px", cursor: "pointer", flexShrink: 0, transition: "background .15s" }}>
                   🔊 Replay
                 </button>
               )}
@@ -814,7 +819,9 @@ export default function Round5({ userId, sessionId, onComplete }: Round5Props) {
                 {/* Retry mic button — shown when mic not active */}
                 {!micActive && !voiceDetected && (
                   <button onClick={() => { stopMic(); setTimeout(() => { restartRef.current = true; startMic(); }, 100); }}
-                    style={{ fontSize: 11, padding: "3px 10px", borderRadius: 6, background: PINK, color: "#fff", border: "none", cursor: "pointer", flexShrink: 0 }}>
+                    onMouseEnter={e => { e.currentTarget.style.background = "#C71678"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = PINK; }}
+                    style={{ fontSize: 11, padding: "3px 10px", borderRadius: 6, background: PINK, color: "#fff", border: "none", cursor: "pointer", flexShrink: 0, transition: "background .15s" }}>
                     🎙 Retry Mic
                   </button>
                 )}
@@ -919,13 +926,17 @@ export default function Round5({ userId, sessionId, onComplete }: Round5Props) {
                 }
                 handleStopRecording();
               }}
-              style={{ width: "100%", padding: 12, background: PINK, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              onMouseEnter={e => { e.currentTarget.style.background = "#C71678"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(233,30,140,.35)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = PINK; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ width: "100%", padding: 12, background: PINK, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background .15s, transform .15s, box-shadow .15s" }}>
               Done Speaking → Submit Answer
             </button>
           )}
           {phase === "done" && !roundComplete && questionNo < totalQ && (
             <button onClick={loadQuestion}
-              style={{ width: "100%", padding: 12, background: "#16a34a", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              onMouseEnter={e => { e.currentTarget.style.background = "#15803d"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(22,163,74,.35)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#16a34a"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ width: "100%", padding: 12, background: "#16a34a", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background .15s, transform .15s, box-shadow .15s" }}>
               Next Question → ({questionNo + 1}/{totalQ})
             </button>
           )}

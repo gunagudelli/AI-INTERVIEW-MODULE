@@ -27,20 +27,36 @@ const decodeJWT = (token: string) => {
 
 const EmployeeProtectedRoutes: React.FC<EmployeeProtectedRoute> = ({ children }) => {
   const location = useLocation();
-  const accessToken = getEmployeeAccessToken();
+  const accessToken = getEmployeeAccessToken() || localStorage.getItem('employee_ref_token');
   const [sessionData, setSessionData] = useState({
-    primaryType: sessionStorage.getItem('primaryType'),
-    userId: sessionStorage.getItem('userId'),
-    userName: sessionStorage.getItem('Name')
+    primaryType: sessionStorage.getItem('primaryType') || 'COMPANY',
+    userId: sessionStorage.getItem('userId') || localStorage.getItem('employee_ref_user_id'),
+    userName:
+      sessionStorage.getItem('Name') ||
+      (() => {
+        try {
+          return JSON.parse(localStorage.getItem('employee_ref_user') || '{}')?.name || null;
+        } catch {
+          return null;
+        }
+      })()
   });
   const [isRestoring, setIsRestoring] = useState(false);
 
   useEffect(() => {
     // Update session data state when storage changes
     const currentData = {
-      primaryType: sessionStorage.getItem('primaryType'),
-      userId: sessionStorage.getItem('userId'),
-      userName: sessionStorage.getItem('Name')
+      primaryType: sessionStorage.getItem('primaryType') || 'COMPANY',
+      userId: sessionStorage.getItem('userId') || localStorage.getItem('employee_ref_user_id'),
+      userName:
+        sessionStorage.getItem('Name') ||
+        (() => {
+          try {
+            return JSON.parse(localStorage.getItem('employee_ref_user') || '{}')?.name || 'Employee';
+          } catch {
+            return 'Employee';
+          }
+        })()
     };
     setSessionData(currentData);
 
@@ -64,13 +80,30 @@ const EmployeeProtectedRoutes: React.FC<EmployeeProtectedRoute> = ({ children })
     try {
       if (accessToken) {
         const tokenData = decodeJWT(accessToken);
+        const storedUser = (() => {
+          try {
+            return JSON.parse(localStorage.getItem('employee_ref_user') || '{}');
+          } catch {
+            return {};
+          }
+        })();
         
-        if (tokenData) {
-          // Restore all session data at once to avoid null states
-          const restoredData = {
-            primaryType: tokenData.primaryType || 'COMPANY',
-            userId: tokenData.userId || tokenData.id || tokenData.sub || '',
-            userName: tokenData.name || tokenData.username || tokenData.firstName || 'Employee'
+          if (tokenData) {
+            // Restore all session data at once to avoid null states
+            const restoredData = {
+              primaryType: tokenData.primaryType || storedUser.primaryType || 'COMPANY',
+            userId:
+              tokenData.userId ||
+              tokenData.id ||
+              tokenData.sub ||
+              storedUser.id ||
+              '',
+            userName:
+              tokenData.name ||
+              tokenData.username ||
+              tokenData.firstName ||
+              storedUser.name ||
+              'Employee'
           };
 
           // Set all data at once
@@ -86,9 +119,9 @@ const EmployeeProtectedRoutes: React.FC<EmployeeProtectedRoute> = ({ children })
 
           // Update state immediately
           setSessionData({
-            primaryType: sessionStorage.getItem('primaryType'),
-            userId: sessionStorage.getItem('userId'),
-            userName: sessionStorage.getItem('Name')
+            primaryType: sessionStorage.getItem('primaryType') || 'COMPANY',
+            userId: sessionStorage.getItem('userId') || localStorage.getItem('employee_ref_user_id'),
+            userName: sessionStorage.getItem('Name') || 'Employee'
           });
         }
       }
@@ -103,9 +136,9 @@ const EmployeeProtectedRoutes: React.FC<EmployeeProtectedRoute> = ({ children })
       }
       // Update state
       setSessionData({
-        primaryType: sessionStorage.getItem('primaryType'),
-        userId: sessionStorage.getItem('userId'),
-        userName: sessionStorage.getItem('Name')
+        primaryType: sessionStorage.getItem('primaryType') || 'COMPANY',
+        userId: sessionStorage.getItem('userId') || localStorage.getItem('employee_ref_user_id'),
+        userName: sessionStorage.getItem('Name') || 'Employee'
       });
     } finally {
       if (needsRestore) {
@@ -116,7 +149,7 @@ const EmployeeProtectedRoutes: React.FC<EmployeeProtectedRoute> = ({ children })
 
   // If no token, redirect to login
   if (!accessToken) {
-    return <Navigate to="/employee-login" replace />;
+    return <Navigate to="/referral/login" replace />;
   }
 
   // Check if token is expired (basic check)
@@ -125,11 +158,11 @@ const EmployeeProtectedRoutes: React.FC<EmployeeProtectedRoute> = ({ children })
       const tokenData = decodeJWT(accessToken);
       if (tokenData && tokenData.exp && tokenData.exp * 1000 < Date.now()) {
         // Token is expired
-        return <Navigate to="/employee-login" replace />;
+        return <Navigate to="/referral/login" replace />;
       }
     } catch (error) {
       // If token is malformed, redirect to login
-      return <Navigate to="/employee-login" replace />;
+      return <Navigate to="/referral/login" replace />;
     }
   }
 

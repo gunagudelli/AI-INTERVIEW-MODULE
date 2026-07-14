@@ -5,11 +5,12 @@ interface InterviewHeaderProps {
   user: { id: string; name: string } | null;
   onToggleTheme: () => void;
   onLogout?: () => void;
+  // Set by the admin (Round Settings), not by the candidate — this is a
+  // read-only status indicator, not a control.
   copyPasteBlocked?: boolean;
-  onToggleCopyPaste?: () => void;
 }
 
-export function InterviewHeader({ theme, user, onToggleTheme, onLogout, copyPasteBlocked = true, onToggleCopyPaste }: InterviewHeaderProps) {
+export function InterviewHeader({ theme, user, onToggleTheme, onLogout, copyPasteBlocked = true }: InterviewHeaderProps) {
   return (
     <header className="ai-header">
       <div className="ai-header-inner">
@@ -22,25 +23,20 @@ export function InterviewHeader({ theme, user, onToggleTheme, onLogout, copyPast
           </div>
         </div>
         <div className="ai-header-actions">
-          {onToggleCopyPaste && (
-            <button
-              type="button"
-              onClick={onToggleCopyPaste}
-              title={copyPasteBlocked ? "Copy-paste is BLOCKED (click to allow)" : "Copy-paste is ALLOWED (click to block)"}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '6px 12px',
-                background: copyPasteBlocked ? '#fef2f2' : '#f0fdf4',
-                border: `1px solid ${copyPasteBlocked ? '#fca5a5' : '#86efac'}`,
-                borderRadius: 6, fontSize: 12, fontWeight: 600,
-                color: copyPasteBlocked ? '#dc2626' : '#16a34a',
-                cursor: 'pointer', transition: 'all .2s',
-              }}
-            >
-              <span style={{ fontSize: 14 }}>{copyPasteBlocked ? '🔒' : '🔓'}</span>
-              <span>{copyPasteBlocked ? 'Copy OFF' : 'Copy ON'}</span>
-            </button>
-          )}
+          <div
+            title={copyPasteBlocked ? "Copy-paste is blocked during this exam (set by the recruiter, not changeable here)" : "Copy-paste is currently allowed for this exam"}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '6px 12px',
+              background: copyPasteBlocked ? '#f0fdf4' : '#fffbeb',
+              border: `1px solid ${copyPasteBlocked ? '#86efac' : '#fcd34d'}`,
+              borderRadius: 6, fontSize: 12, fontWeight: 600,
+              color: copyPasteBlocked ? '#16a34a' : '#b45309',
+            }}
+          >
+            <span style={{ fontSize: 14 }}>{copyPasteBlocked ? '🔒' : '🔓'}</span>
+            <span>{copyPasteBlocked ? 'Copy Protected' : 'Copy Allowed'}</span>
+          </div>
           <button type="button" className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
             {theme === "light" ? "🌙" : "☀️"}
             <span>{theme === "light" ? "Dark" : "Light"}</span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { recruiterAuth } from '../../services/recruiterAPI';
 
@@ -37,9 +37,8 @@ const RecruiterRegister: React.FC = () => {
         phone_number: form.phone, phone: form.phone,
         company_name: form.company, company: form.company,
       });
-      if (res.success) {
-        setShowSuccess(true);
-      } else setError('Registration failed. Please try again.');
+      if (res.success) setShowSuccess(true);
+      else setError('Registration failed. Please try again.');
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.message || 'Registration failed');
     } finally { setLoading(false); }
@@ -52,37 +51,13 @@ const RecruiterRegister: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      padding: '24px 16px',
-    }}>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
-        .rr-in:focus { outline: none; border-color: #8B0000 !important; background: #fff !important; }
-        .rr-btn:hover:not(:disabled) { background: #6B0000 !important; }
-        @media (max-width: 720px) { .rr-left { display: none !important; } }
-      `}</style>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", padding: '24px 16px' }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } } .rr-in:focus { outline: none; border-color: #8B0000 !important; background: #fff !important; } .rr-btn:hover:not(:disabled) { background: #6B0000 !important; } @media (max-width: 720px) { .rr-left { display: none !important; } .rr-card { max-width: 460px !important; } }`}</style>
 
       {showSuccess && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: 16, animation: 'fadeIn 0.18s ease',
-        }}>
-          <div style={{
-            background: 'white', borderRadius: 14, padding: '36px 32px',
-            maxWidth: 400, width: '100%', textAlign: 'center',
-            border: '1px solid #e5e7eb',
-            animation: 'scaleIn 0.22s ease',
-          }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%', background: '#f0fdf4',
-              border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', margin: '0 auto 16px',
-            }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16, animation: 'fadeIn 0.18s ease' }}>
+          <div style={{ background: 'white', borderRadius: 14, padding: '36px 32px', maxWidth: 400, width: '100%', textAlign: 'center', border: '1px solid #e5e7eb', animation: 'scaleIn 0.22s ease' }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#f0fdf4', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
               <svg width="22" height="22" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
@@ -92,109 +67,67 @@ const RecruiterRegister: React.FC = () => {
               Your recruiter account has been created successfully.<br />
               Please sign in with your credentials to continue.
             </p>
-            <button
-              onClick={() => navigate('/RecruiterLogin')}
-              style={{
-                width: '100%', padding: '10px', background: '#8B0000', color: 'white',
-                border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
+            <button onClick={() => navigate('/RecruiterLogin')} style={{ width: '100%', padding: '10px', background: '#8B0000', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               Go to Sign In →
             </button>
           </div>
         </div>
       )}
 
-      <div style={{
-        display: 'flex', width: '100%', maxWidth: 900,
-        background: 'white', border: '1px solid #e5e7eb',
-        borderRadius: 14, overflow: 'hidden',
-      }}>
-
-        {/* LEFT */}
+      <div className="rr-card" style={{ display: 'flex', width: '100%', maxWidth: 840, background: 'white', border: '1px solid #e5e7eb', borderRadius: 14, overflow: 'hidden' }}>
         <div className="rr-left" style={{
-          width: 320, flexShrink: 0, background: '#ffffff',
-          borderRight: '1px solid #e5e7eb', padding: '36px 30px',
-          display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24,
+          width: 320, flexShrink: 0, position: 'relative', overflow: 'hidden',
+          background: 'radial-gradient(circle at 15% 15%, rgba(255,255,255,0.08) 0%, transparent 45%), radial-gradient(circle at 85% 85%, rgba(255,255,255,0.06) 0%, transparent 50%), linear-gradient(150deg, #8B0000 0%, #6B0000 45%, #3a0000 100%)',
+          borderRight: '1px solid #e5e7eb', padding: '36px 30px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 24,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 7, background: '#8B0000', flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.14)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
               </svg>
             </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>ASKOXY RECRUITER</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>ASKOXY RECRUITER</span>
           </div>
-
           <div>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: '#ffffff', border: '1px solid #e2e8f0',
-              borderRadius: 5, padding: '3px 8px', marginBottom: 10,
-            }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#475569' }} />
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 5, padding: '3px 8px', marginBottom: 10 }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#ffffff' }} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#fecdd3', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
             </div>
-            <h2 style={{ fontSize: 19, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, letterSpacing: '-0.4px', margin: '0 0 7px' }}>
-              AI-Powered Hiring Platform
-            </h2>
-            <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
-              Intelligent candidate screening, automated interviews, and referral management in one place.
-            </p>
+            <h2 style={{ fontSize: 19, fontWeight: 800, color: '#ffffff', lineHeight: 1.25, letterSpacing: '-0.4px', margin: '0 0 7px' }}>AI-Powered Hiring Platform</h2>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)', lineHeight: 1.6, margin: 0 }}>Intelligent candidate screening, automated interviews, and referral management in one place.</p>
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
             {FEATURES.map(f => (
               <div key={f.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <div style={{
-                  width: 18, height: 18, borderRadius: '50%', background: '#FDF2F2',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
-                }}>
-                  <svg width="9" height="9" fill="none" stroke="#8B0000" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                  <svg width="9" height="9" fill="none" stroke="#ffffff" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#0f172a', margin: '0 0 1px' }}>{f.label}</p>
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{f.desc}</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', margin: '0 0 1px' }}>{f.label}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{f.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div style={{
-          flex: 1, padding: '36px 40px',
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          overflowY: 'auto',
-        }}>
-          <div style={{ maxWidth: 380, margin: '0 auto', width: '100%' }}>
-
+        <div style={{ flex: 1, padding: '36px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflowY: 'auto' }}>
+          <div style={{ maxWidth: 420, margin: '0 auto', width: '100%' }}>
             <div style={{ marginBottom: 22 }}>
               <h2 style={{ fontSize: 19, fontWeight: 700, color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.3px' }}>Create your account</h2>
               <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Get started with your organization's hiring platform</p>
             </div>
 
             {error && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 7, fontSize: 12,
-                background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c',
-                padding: '8px 12px', borderRadius: 7, marginBottom: 14,
-              }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '8px 12px', borderRadius: 7, marginBottom: 14 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                 {error}
               </div>
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Full name</label>
@@ -205,12 +138,10 @@ const RecruiterRegister: React.FC = () => {
                   <input type="text" placeholder="Acme Corp" value={form.company} onChange={set('company')} required className="rr-in" style={inp} />
                 </div>
               </div>
-
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Work email</label>
                 <input type="email" placeholder="you@company.com" value={form.email} onChange={set('email')} required className="rr-in" style={inp} />
               </div>
-
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Phone</label>
@@ -226,25 +157,14 @@ const RecruiterRegister: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              <button
-                type="submit" disabled={loading} className="rr-btn"
-                style={{
-                  padding: '9px', background: loading ? '#94a3b8' : '#8B0000',
-                  color: 'white', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 600,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  transition: 'background 0.15s', marginTop: 3,
-                }}
-              >
+              <button type="submit" disabled={loading} className="rr-btn" style={{ padding: '9px', background: loading ? '#94a3b8' : '#8B0000', color: 'white', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, transition: 'background 0.15s', marginTop: 3 }}>
                 {loading && <div style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />}
-                {loading ? 'Creating account…' : 'Create account'}
+                {loading ? 'Creating account...' : 'Create account'}
               </button>
             </form>
 
             <p style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', margin: '14px 0 0' }}>
-              Already have an account?{' '}
-              <span onClick={() => navigate('/RecruiterLogin')} style={{ color: '#1D4ED8', fontWeight: 600, cursor: 'pointer' }}>Sign in</span>
+              Already have an account? <span onClick={() => navigate('/RecruiterLogin')} style={{ color: '#8B0000', fontWeight: 600, cursor: 'pointer' }}>Sign in</span>
             </p>
             <p style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', margin: '8px 0 0' }}>
               By creating an account you agree to our <span style={{ color: '#475569', cursor: 'pointer', textDecoration: 'underline' }}>Terms</span> & <span style={{ color: '#475569', cursor: 'pointer', textDecoration: 'underline' }}>Privacy Policy</span>

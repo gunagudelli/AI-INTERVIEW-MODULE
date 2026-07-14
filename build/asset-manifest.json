@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/static/css/main.f43f0aa2.css",
-    "main.js": "/static/js/main.ce132635.js",
+    "main.css": "/static/css/main.b726cc4c.css",
+    "main.js": "/static/js/main.7ed4a0cd.js",
     "static/media/askoxylogonew.png": "/static/media/askoxylogonew.c34f3429a1c63f5f261b.png",
     "index.html": "/index.html",
-    "main.f43f0aa2.css.map": "/static/css/main.f43f0aa2.css.map",
-    "main.ce132635.js.map": "/static/js/main.ce132635.js.map"
+    "main.b726cc4c.css.map": "/static/css/main.b726cc4c.css.map",
+    "main.7ed4a0cd.js.map": "/static/js/main.7ed4a0cd.js.map"
   },
   "entrypoints": [
-    "static/css/main.f43f0aa2.css",
-    "static/js/main.ce132635.js"
+    "static/css/main.b726cc4c.css",
+    "static/js/main.7ed4a0cd.js"
   ]
 }

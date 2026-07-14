@@ -54,7 +54,7 @@ const RecruiterLogin: React.FC = () => {
         .rl-in:focus { outline: none; border-color: #8B0000 !important; background: #fff !important; }
         .rl-btn:hover:not(:disabled) { background: #6B0000 !important; }
         .rl-ghost:hover { border-color: #8B0000 !important; color: #8B0000 !important; }
-        @media (max-width: 720px) { .rl-left { display: none !important; } .rl-card { border-radius: 12px !important; } }
+        @media (max-width: 720px) { .rl-left { display: none !important; } .rl-card { border-radius: 12px !important; max-width: 420px !important; } }
       `}</style>
 
       {showSuccess && (
@@ -87,41 +87,42 @@ const RecruiterLogin: React.FC = () => {
       )}
 
       <div className="rl-card" style={{
-        display: 'flex', width: '100%', maxWidth: 860,
+        display: 'flex', width: '100%', maxWidth: 760,
         background: 'white', border: '1px solid #e5e7eb',
         borderRadius: 14, overflow: 'hidden',
       }}>
         {/* LEFT */}
         <div className="rl-left" style={{
-          width: 340, flexShrink: 0, background: '#ffffff',
+          width: 340, flexShrink: 0, position: 'relative', overflow: 'hidden',
+          background: 'radial-gradient(circle at 15% 15%, rgba(255,255,255,0.08) 0%, transparent 45%), radial-gradient(circle at 85% 85%, rgba(255,255,255,0.06) 0%, transparent 50%), linear-gradient(150deg, #8B0000 0%, #6B0000 45%, #3a0000 100%)',
           borderRight: '1px solid #e5e7eb', padding: '36px 32px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 28,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
             <div style={{
-              width: 28, height: 28, borderRadius: 7, background: '#8B0000', flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.14)', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.2)',
             }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
               </svg>
             </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.1px' }}>ASKOXY RECRUITER</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.1px' }}>ASKOXY RECRUITER</span>
           </div>
 
           <div>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: '#FDF2F2', border: '1px solid #FECDD3',
+              background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)',
               borderRadius: 5, padding: '3px 8px', marginBottom: 10,
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#475569' }} />
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#ffffff' }} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#fecdd3', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Talent Acquisition</span>
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, letterSpacing: '-0.5px', margin: '0 0 8px' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#ffffff', lineHeight: 1.25, letterSpacing: '-0.5px', margin: '0 0 8px' }}>
               AI-Powered Hiring Platform
             </h2>
-            <p style={{ fontSize: 12.5, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.72)', lineHeight: 1.6, margin: 0 }}>
               Streamline hiring with intelligent screening, automated interviews, and recruitment analytics.
             </p>
           </div>
@@ -130,16 +131,16 @@ const RecruiterLogin: React.FC = () => {
             {FEATURES.map(f => (
               <div key={f.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <div style={{
-                  width: 18, height: 18, borderRadius: '50%', background: '#FDF2F2',
+                  width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,255,255,0.14)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
                 }}>
-                  <svg width="9" height="9" fill="none" stroke="#8B0000" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="9" height="9" fill="none" stroke="#ffffff" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#0f172a', margin: '0 0 1px' }}>{f.label}</p>
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{f.desc}</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', margin: '0 0 1px' }}>{f.label}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -151,7 +152,7 @@ const RecruiterLogin: React.FC = () => {
           flex: 1, padding: '36px 40px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
-          <div style={{ maxWidth: 320, margin: '0 auto', width: '100%' }}>
+          <div style={{ maxWidth: 340, margin: '0 auto', width: '100%' }}>
             <div style={{ marginBottom: 24 }}>
               <h2 style={{ fontSize: 19, fontWeight: 700, color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.3px' }}>Sign in</h2>
               <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Enter your credentials to continue</p>

@@ -33,7 +33,7 @@ const C = {
   red:'#dc2626',   redBg:'#fef2f2',   redBd:'#fecaca',
   amber:'#d97706', amberBg:'#fffbeb',
   blue:'#1d4ed8',  blueBg:'#eff6ff',  blueBd:'#bfdbfe',
-  indigo:'#4f46e5',indigoBg:'#eef2ff',indigoBd:'#c7d2fe',
+  indigo:'#2563EB',indigoBg:'#eff6ff',indigoBd:'#bfdbfe',
   slate:'#475569', dim:'#94a3b8', bg:'#f8fafc',
   bd:'#e2e8f0',    white:'#ffffff',   text:'#0f172a',
 };
@@ -676,7 +676,7 @@ const JDListPage = ({data,onSelect,onReanalyze,onRefresh,search,setSearch,totalM
           <div style={{fontSize:13,fontWeight:700,color:C.text,display:'flex',alignItems:'center',gap:7}}>
             AI Pool Analysis — All Recruiters
             <span style={{fontSize:8,fontWeight:700,padding:'2px 6px',borderRadius:3,
-              background:'linear-gradient(135deg,#4f46e5,#7c3aed)',color:'#fff'}}>
+              background:'linear-gradient(135deg,#2563EB,#1D4ED8)',color:'#fff'}}>
               AI
             </span>
           </div>
@@ -709,7 +709,7 @@ const JDListPage = ({data,onSelect,onReanalyze,onRefresh,search,setSearch,totalM
           </button>
           <button onClick={onReanalyze}
             style={{display:'flex',alignItems:'center',gap:4,padding:'5px 13px',
-              background:'linear-gradient(135deg,#4f46e5,#7c3aed)',color:'#fff',
+              background:'linear-gradient(135deg,#2563EB,#1D4ED8)',color:'#fff',
               border:'none',borderRadius:5,fontSize:11,fontWeight:600,cursor:'pointer'}}>
             <svg width={10} height={10} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

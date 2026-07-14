@@ -1,7 +1,8 @@
 
 
 export const setEmployeePreviousPath = (path: string): void => {
-  if (path && !path.includes('/employee-login') && !path.includes('/employee-register')) {
+  const blockedPaths = ['/employee-login', '/employee-register', '/referral/login', '/referral/register'];
+  if (path && !blockedPaths.some((blockedPath) => path.includes(blockedPath))) {
     sessionStorage.setItem('employee_previous_path', path);
   }
 };

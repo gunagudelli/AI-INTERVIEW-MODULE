@@ -17,15 +17,15 @@ const CSS = `
   .jrow:hover   { background:#FFFFFF!important; }
   .ra-kpi { animation:ra-in .2s ease both; }
   .ra-section { animation:ra-in .25s ease both; }
-  .ra-btn:hover { background:#DBEAFE!important; }
+  .ra-btn:hover { background:#FDF2F2!important; }
 `;
 
 /* ── tiny helpers ─────────────────────────────────────── */
 const STAGE_MAP: Record<string,[string,string,string]> = {
   pending:           ['#FFFFFF','#6B7280','Pending'],
-  applied:           ['#EFF6FF','#2563EB','Applied'],
+  applied:           ['#FDF2F2','#8B0000','Applied'],
   screened:          ['#FEF9C3','#A16207','Screened'],
-  shortlisted:       ['#DBEAFE','#1D4ED8','Shortlisted'],
+  shortlisted:       ['#FFF1F2','#9F1239','Shortlisted'],
   interview_sent:    ['#FDF2F2','#6B0000','Email Sent'],
   interview_scheduled:['#FAE8FF','#A21CAF','Scheduled'],
   rejected:          ['#FEF2F2','#DC2626','Rejected'],
@@ -34,9 +34,9 @@ const STAGE_MAP: Record<string,[string,string,string]> = {
 const stStyle = (s:string)=> STAGE_MAP[s?.toLowerCase()] ?? STAGE_MAP.pending;
 
 const Avatar:React.FC<{name:string;size?:number}> = ({name,size=28}) => (
-  <div style={{width:size,height:size,borderRadius:'50%',background:'#EFF6FF',
+  <div style={{width:size,height:size,borderRadius:'50%',background:'#FDF2F2',
     display:'flex',alignItems:'center',justifyContent:'center',
-    color:'#2563EB',fontWeight:700,fontSize:size*0.38,flexShrink:0}}>
+    color:'#8B0000',fontWeight:700,fontSize:size*0.38,flexShrink:0}}>
     {(name||'?')[0].toUpperCase()}
   </div>
 );
@@ -201,7 +201,7 @@ const RecruiterAnalytics:React.FC = () => {
   const shortlistRate = Math.round((shortlisted / Math.max(screened||1,1))*100);
 
   const pipeSegs = [
-    {v:shortlisted,c:'#2563EB',l:'Shortlisted'},
+    {v:shortlisted,c:'#9F1239',l:'Shortlisted'},
     {v:hired,      c:'#16A34A',l:'Hired'},
     {v:rejected,   c:'#DC2626',l:'Rejected'},
     {v:screened,   c:'#F59E0B',l:'Screened'},
@@ -210,13 +210,13 @@ const RecruiterAnalytics:React.FC = () => {
 
   if(loading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#ffffff'}}>
-      <div style={{width:28,height:28,border:'3px solid #E5E7EB',borderTop:'3px solid #2563EB',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
+      <div style={{width:28,height:28,border:'3px solid #E5E7EB',borderTop:'3px solid #8B0000',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
     </div>
   );
   if(error) return (
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100vh',gap:10}}>
       <p style={{color:'#DC2626',fontSize:14}}>{error}</p>
-      <button onClick={()=>window.location.reload()} style={{padding:'8px 18px',background:'#2563EB',color:'white',border:'none',borderRadius:7,cursor:'pointer',fontSize:13,fontWeight:600}}>Retry</button>
+      <button onClick={()=>window.location.reload()} style={{padding:'8px 18px',background:'#8B0000',color:'white',border:'none',borderRadius:7,cursor:'pointer',fontSize:13,fontWeight:600}}>Retry</button>
     </div>
   );
 
@@ -225,7 +225,7 @@ const RecruiterAnalytics:React.FC = () => {
       <style>{CSS}</style>
 
       {/* Header */}
-      <div style={{background:'#FFF',borderBottom:'1px solid #E5E7EB',padding:'16px 28px'}}>
+      <div style={{background:'#FAFAFA',borderBottom:'1px solid #E5E7EB',padding:'16px 28px'}}>
         <h1 style={{fontSize:20,fontWeight:700,color:'#111827',margin:0,letterSpacing:'-0.01em'}}>Analytics</h1>
         <p style={{fontSize:13,color:'#6B7280',margin:'2px 0 0'}}>Recruiter performance · pipeline metrics · hiring funnel</p>
       </div>
@@ -235,10 +235,10 @@ const RecruiterAnalytics:React.FC = () => {
         {/* KPIs */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:11}}>
           {[
-            {label:'Total Jobs',   value:totalJobs,  icon:<Briefcase size={17}/>, iBg:'#EFF6FF',iCol:'#2563EB'},
+            {label:'Total Jobs',   value:totalJobs,  icon:<Briefcase size={17}/>, iBg:'#FDF2F2',iCol:'#8B0000'},
             {label:'Applications', value:totalApps,  icon:<Users size={17}/>,     iBg:'#F0FDF4',iCol:'#16A34A'},
             {label:'Email Sent',   value:emailSent,  icon:<Mail size={17}/>,      iBg:'#FDF2F2',iCol:'#6B0000'},
-            {label:'Shortlisted',  value:shortlisted,icon:<Target size={17}/>,    iBg:'#DBEAFE',iCol:'#1D4ED8'},
+            {label:'Shortlisted',  value:shortlisted,icon:<Target size={17}/>,    iBg:'#FFF1F2',iCol:'#9F1239'},
             {label:'Hired',        value:hired,       icon:<UserCheck size={17}/>, iBg:'#F0FDF4',iCol:'#16A34A'},
           ].map((k,i)=><div key={k.label} className="ra-kpi" style={{animationDelay:`${i*0.07}s`}}><KPI {...k}/></div>)}
         </div>
@@ -249,7 +249,7 @@ const RecruiterAnalytics:React.FC = () => {
           {/* Pipeline donut */}
           <div style={{background:'#FFF',borderRadius:8,border:'1px solid #E5E7EB',padding:'20px 24px'}}>
             <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:16}}>
-              <Activity size={14} style={{color:'#2563EB'}}/>
+              <Activity size={14} style={{color:'#8B0000'}}/>
               <h2 style={{fontSize:14,fontWeight:600,color:'#111827',margin:0}}>Pipeline Breakdown</h2>
             </div>
             <Donut segs={pipeSegs} sz={130} label={`${applied}`} sub="Total"/>
@@ -258,12 +258,12 @@ const RecruiterAnalytics:React.FC = () => {
           {/* Conversion circles */}
           <div style={{background:'#FFF',borderRadius:8,border:'1px solid #E5E7EB',padding:'20px 24px'}}>
             <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:16}}>
-              <TrendingUp size={14} style={{color:'#2563EB'}}/>
+              <TrendingUp size={14} style={{color:'#8B0000'}}/>
               <h2 style={{fontSize:14,fontWeight:600,color:'#111827',margin:0}}>Conversion Metrics</h2>
             </div>
             <div style={{display:'flex',gap:28,justifyContent:'center',flexWrap:'wrap'}}>
               <StatCircle pct={screenRate}    color="#F59E0B" label="Screen Rate"    sub={`${screened}/${applied}`}/>
-              <StatCircle pct={shortlistRate} color="#1D4ED8" label="Shortlist Rate" sub={`${shortlisted}/${screened||0}`}/>
+              <StatCircle pct={shortlistRate} color="#9F1239" label="Shortlist Rate" sub={`${shortlisted}/${screened||0}`}/>
               <StatCircle pct={hireRate}      color="#16A34A" label="Hire Rate"      sub={`${hired}/${applied}`}/>
             </div>
           </div>
@@ -272,15 +272,15 @@ const RecruiterAnalytics:React.FC = () => {
         {/* Funnel bars */}
         <div className="ra-section" style={{background:'#FFF',borderRadius:8,border:'1px solid #E5E7EB',padding:'20px 24px',animationDelay:'.18s'}}>
           <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:16}}>
-            <BarChart2 size={14} style={{color:'#2563EB'}}/>
+            <BarChart2 size={14} style={{color:'#8B0000'}}/>
             <h2 style={{fontSize:14,fontWeight:600,color:'#111827',margin:0}}>Hiring Funnel</h2>
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {[
-              {label:'Applied',     count:applied,     color:'#2563EB',bg:'#EFF6FF'},
+              {label:'Applied',     count:applied,     color:'#8B0000',bg:'#FDF2F2'},
               {label:'Screened',    count:screened,    color:'#F59E0B',bg:'#FFFBEB'},
               {label:'Email Sent',  count:emailSent,   color:'#6B0000',bg:'#FDF2F2'},
-              {label:'Shortlisted', count:shortlisted, color:'#1D4ED8',bg:'#DBEAFE'},
+              {label:'Shortlisted', count:shortlisted, color:'#9F1239',bg:'#FFF1F2'},
               {label:'Hired',       count:hired,       color:'#16A34A',bg:'#F0FDF4'},
               {label:'Rejected',    count:rejected,    color:'#DC2626',bg:'#FEF2F2'},
             ].map((f,i,arr)=>{
@@ -309,7 +309,7 @@ const RecruiterAnalytics:React.FC = () => {
         {/* ══ RECRUITER PERFORMANCE TABLE ══ */}
         <div className="ra-section" style={{background:'#FFF',borderRadius:8,border:'1px solid #E5E7EB',overflow:'hidden',animationDelay:'.24s'}}>
           <div style={{padding:'16px 22px',borderBottom:'1px solid #F3F4F6',display:'flex',alignItems:'center',gap:8}}>
-            <Users size={15} style={{color:'#2563EB'}}/>
+            <Users size={15} style={{color:'#8B0000'}}/>
             <h2 style={{fontSize:14,fontWeight:600,color:'#111827',margin:0}}>Recruiter Performance</h2>
             <span style={{marginLeft:'auto',fontSize:12,color:'#9CA3AF'}}>{recruiterGroups.length} recruiters</span>
           </div>
@@ -374,7 +374,7 @@ const RecruiterAnalytics:React.FC = () => {
                     {/* Summary numbers */}
                     <div style={{display:'flex',gap:16,flexShrink:0,textAlign:'center'}}>
                       <div>
-                        <div style={{fontSize:16,fontWeight:700,color:'#2563EB',letterSpacing:'-0.02em'}}>{totalRecApps}</div>
+                        <div style={{fontSize:16,fontWeight:700,color:'#8B0000',letterSpacing:'-0.02em'}}>{totalRecApps}</div>
                         <div style={{fontSize:10,color:'#9CA3AF',fontWeight:500}}>Total</div>
                       </div>
                       <div>
@@ -406,8 +406,8 @@ const RecruiterAnalytics:React.FC = () => {
                               onClick={()=>setOpenJob(jOpen?null:jKey)}
                               style={{display:'flex',alignItems:'center',gap:12,padding:'11px 16px',cursor:'pointer',transition:'background .12s'}}
                             >
-                              <div style={{width:28,height:28,borderRadius:6,background:'#EFF6FF',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                                <Briefcase size={13} style={{color:'#2563EB'}}/>
+                              <div style={{width:28,height:28,borderRadius:6,background:'#FDF2F2',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                                <Briefcase size={13} style={{color:'#8B0000'}}/>
                               </div>
                               <div style={{flex:1,minWidth:0}}>
                                 <span style={{fontSize:13,fontWeight:500,color:'#111827'}}>{job.title}</span>
@@ -444,7 +444,7 @@ const RecruiterAnalytics:React.FC = () => {
 
                               <button
                                 onClick={e=>{e.stopPropagation();navigate(`/recruiter/jobs/${job.id}/applications`);}}
-                                style={{display:'flex',alignItems:'center',gap:4,padding:'4px 10px',fontSize:11,fontWeight:500,color:'#2563EB',background:'#EFF6FF',border:'none',borderRadius:5,cursor:'pointer',flexShrink:0,fontFamily:'inherit'}}
+                                style={{display:'flex',alignItems:'center',gap:4,padding:'4px 10px',fontSize:11,fontWeight:500,color:'#8B0000',background:'#FDF2F2',border:'none',borderRadius:5,cursor:'pointer',flexShrink:0,fontFamily:'inherit'}}
                               >
                                 <ExternalLink size={10}/> View All
                               </button>
@@ -496,7 +496,7 @@ const RecruiterAnalytics:React.FC = () => {
                                             {a.appliedAt?new Date(a.appliedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'}
                                           </td>
                                           <td style={{padding:'9px 14px'}}>
-                                            <span style={{fontSize:11,color:'#2563EB',fontWeight:500,display:'flex',alignItems:'center',gap:3}}>
+                                            <span style={{fontSize:11,color:'#8B0000',fontWeight:500,display:'flex',alignItems:'center',gap:3}}>
                                               <ArrowRight size={11}/> Open
                                             </span>
                                           </td>
@@ -528,7 +528,7 @@ const RecruiterAnalytics:React.FC = () => {
               {label:'Post New Job',     path:'/recruiter/jobs/create'},
             ].map(a=>(
               <button key={a.path} onClick={()=>navigate(a.path)} className="ra-btn"
-                style={{display:'flex',alignItems:'center',gap:5,padding:'7px 14px',background:'#EFF6FF',color:'#2563EB',border:'none',borderRadius:6,fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'inherit',transition:'background .15s'}}>
+                style={{display:'flex',alignItems:'center',gap:5,padding:'7px 14px',background:'#FDF2F2',color:'#8B0000',border:'none',borderRadius:6,fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'inherit',transition:'background .15s'}}>
                 {a.label}<ArrowRight size={11}/>
               </button>
             ))}

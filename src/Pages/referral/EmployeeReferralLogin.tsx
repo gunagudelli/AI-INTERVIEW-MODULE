@@ -58,10 +58,10 @@ const EmployeeReferralLogin: React.FC = () => {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
-        .erl-in:focus { outline: none; border-color: #0ea5e9 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(14,165,233,0.09) !important; }
+        .erl-in:focus { outline: none; border-color: #0ea5e9 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(14,165,233,0.1) !important; }
         .erl-btn:hover:not(:disabled) { background: #0284c7 !important; }
         .erl-ghost:hover { border-color: #0ea5e9 !important; color: #0ea5e9 !important; }
-        @media (max-width: 720px) { .erl-left { display: none !important; } }
+        @media (max-width: 720px) { .erl-left { display: none !important; } .erl-card { max-width: 420px !important; } }
       `}</style>
 
       {showSuccess && (
@@ -78,11 +78,11 @@ const EmployeeReferralLogin: React.FC = () => {
             animation: 'scaleIn 0.22s ease',
           }}>
             <div style={{
-              width: 52, height: 52, borderRadius: '50%', background: '#e0f2fe',
-              border: '1px solid #bae6fd', display: 'flex', alignItems: 'center',
+              width: 52, height: 52, borderRadius: '50%', background: '#eef0f5',
+              border: '1px solid #d8dce6', display: 'flex', alignItems: 'center',
               justifyContent: 'center', margin: '0 auto 16px',
             }}>
-              <svg width="22" height="22" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" stroke="#2b3550" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
@@ -94,8 +94,8 @@ const EmployeeReferralLogin: React.FC = () => {
         </div>
       )}
 
-      <div style={{
-        display: 'flex', width: '100%', maxWidth: 860,
+      <div className="erl-card" style={{
+        display: 'flex', width: '100%', maxWidth: 760,
         background: 'white', border: '1px solid #e5e7eb',
         borderRadius: 14, overflow: 'hidden',
         boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
@@ -103,36 +103,37 @@ const EmployeeReferralLogin: React.FC = () => {
 
         {/* LEFT */}
         <div className="erl-left" style={{
-          width: 340, flexShrink: 0, background: '#f8fafc',
+          width: 340, flexShrink: 0, position: 'relative', overflow: 'hidden',
+          background: 'radial-gradient(circle at 15% 15%, rgba(255,255,255,0.09) 0%, transparent 45%), radial-gradient(circle at 85% 85%, rgba(255,255,255,0.07) 0%, transparent 50%), linear-gradient(150deg, #0ea5e9 0%, #0369a1 55%, #0c2d48 100%)',
           borderRight: '1px solid #e5e7eb', padding: '36px 32px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 28,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
             <div style={{
-              width: 28, height: 28, borderRadius: 7, background: '#0ea5e9', flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.16)', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.22)',
             }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
                 <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
               </svg>
             </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>ASKOXY EMPLOYEE PORTAL</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>ASKOXY EMPLOYEE PORTAL</span>
           </div>
 
           <div>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: '#e0f2fe', border: '1px solid #bae6fd',
+              background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.22)',
               borderRadius: 5, padding: '3px 8px', marginBottom: 10,
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#0ea5e9' }} />
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#0369a1', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Referral Program</span>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#ffffff' }} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#e0f2fe', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Referral Program</span>
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, letterSpacing: '-0.5px', margin: '0 0 8px' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#ffffff', lineHeight: 1.25, letterSpacing: '-0.5px', margin: '0 0 8px' }}>
               Employee Referral Platform
             </h2>
-            <p style={{ fontSize: 12.5, color: '#64748b', lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: 0 }}>
               Refer top talent, track referral progress, and earn rewards through a transparent process.
             </p>
           </div>
@@ -141,16 +142,16 @@ const EmployeeReferralLogin: React.FC = () => {
             {FEATURES.map(f => (
               <div key={f.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <div style={{
-                  width: 18, height: 18, borderRadius: '50%', background: '#e0f2fe',
+                  width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,255,255,0.16)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
                 }}>
-                  <svg width="9" height="9" fill="none" stroke="#0ea5e9" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="9" height="9" fill="none" stroke="#ffffff" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', margin: '0 0 1px' }}>{f.label}</p>
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{f.desc}</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', margin: '0 0 1px' }}>{f.label}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.62)', margin: 0 }}>{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -164,7 +165,7 @@ const EmployeeReferralLogin: React.FC = () => {
           flex: 1, padding: '36px 40px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
-          <div style={{ maxWidth: 320, margin: '0 auto', width: '100%' }}>
+          <div style={{ maxWidth: 340, margin: '0 auto', width: '100%' }}>
 
             <div style={{ marginBottom: 24 }}>
               <h2 style={{ fontSize: 19, fontWeight: 700, color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.3px' }}>Welcome back</h2>

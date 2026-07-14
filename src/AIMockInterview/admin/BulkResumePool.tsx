@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 
 import BASE_URL from '../../Config';
 const BASE = BASE_URL;
@@ -25,6 +25,11 @@ interface BulkCandidate {
   isDuplicate?: boolean;
   alreadyAssigned?: boolean;
   dbStatus?: string;
+  assignedJobTitle?: string;
+  // AI Assessment fields
+  interview_score?: number | null;
+  exam_completed?: boolean;
+  interview_result?: string | null;
 }
 
 interface BulkPoolResult {
@@ -42,11 +47,12 @@ type Phase = 'upload' | 'processing' | 'done' | 'error';
 const C = {
   bg: '#F8FAFC', card: '#FFFFFF', border: '#E5E7EB', borderLt: '#F1F5F9',
   text: '#0F172A', textSec: '#475569', dim: '#94A3B8',
-  indigo: '#4F46E5', indigoBg: '#EEF2FF', indigoBd: '#C7D2FE',
+  indigo: '#2563EB', indigoBg: '#EFF6FF', indigoBd: '#BFDBFE',
   green: '#16A34A', greenBg: '#DCFCE7', greenBd: '#BBF7D0',
   amber: '#D97706', amberBg: '#FEF3C7', amberBd: '#FDE68A',
   red: '#DC2626', redBg: '#FEE2E2', redBd: '#FECACA',
   blue: '#2563EB', blueBg: '#DBEAFE', blueBd: '#BFDBFE',
+  slate: '#334155', slateBg: '#F1F5F9', slateBd: '#E2E8F0',
 };
 
 const matchColor = (pct: number) => pct >= 80 ? C.green : pct >= 60 ? C.amber : C.red;
@@ -55,7 +61,6 @@ const matchBg    = (pct: number) => pct >= 80 ? C.greenBg : pct >= 60 ? C.amberB
 const CSS = `
   @keyframes bp-spin { to { transform: rotate(360deg); } }
   @keyframes bp-in   { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-  @keyframes bp-ping { 0%{transform:scale(1);opacity:.7} 100%{transform:scale(2.2);opacity:0} }
   @keyframes bp-shimmer { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
   .bp-row:hover td { background:#F9FAFB !important; }
   .bp-btn:hover { filter: brightness(0.93); }
@@ -117,16 +122,15 @@ const UploadScreen = ({ onUpload, uploading }: { onUpload: (files: File[]) => vo
       {/* Title */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width={18} height={18} fill="none" stroke="#fff" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: 0 }}>AI Bulk Resume Pool</h1>
-          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', color: '#fff' }}>AI</span>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: 0 }}>Bulk Resume Pool</h1>
         </div>
         <p style={{ fontSize: 13, color: C.dim, margin: 0 }}>
-          Upload multiple resumes — AI extracts data & matches against all active JDs automatically
+          Upload multiple resumes to extract candidate data and match against all active job descriptions
         </p>
       </div>
 
@@ -171,8 +175,8 @@ const UploadScreen = ({ onUpload, uploading }: { onUpload: (files: File[]) => vo
         <div style={{ width: '100%', maxWidth: 520, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, marginBottom: 16, maxHeight: 160, overflowY: 'auto' }}>
           {selected.map((f, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', borderBottom: i < selected.length - 1 ? `1px solid ${C.borderLt}` : 'none' }}>
-              <div style={{ width: 20, height: 20, borderRadius: 4, background: C.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width={10} height={10} fill="none" stroke={C.green} viewBox="0 0 24 24">
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: C.slateBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width={10} height={10} fill="none" stroke={C.slate} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
@@ -190,7 +194,7 @@ const UploadScreen = ({ onUpload, uploading }: { onUpload: (files: File[]) => vo
         onClick={() => onUpload(selected)}
         style={{
           display: 'flex', alignItems: 'center', gap: 8, padding: '10px 28px',
-          background: selected.length === 0 ? '#E2E8F0' : 'linear-gradient(135deg,#4F46E5,#7C3AED)',
+          background: selected.length === 0 ? '#E2E8F0' : C.indigo,
           color: selected.length === 0 ? C.dim : '#fff',
           border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600,
           cursor: selected.length === 0 ? 'not-allowed' : 'pointer',
@@ -202,14 +206,14 @@ const UploadScreen = ({ onUpload, uploading }: { onUpload: (files: File[]) => vo
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
         )}
-        {uploading ? 'Processing…' : `Analyze ${selected.length > 0 ? selected.length + ' Resumes' : 'Resumes'} with AI`}
+        {uploading ? 'Processing…' : `Analyze ${selected.length > 0 ? selected.length + ' Resumes' : 'Resumes'}`}
       </button>
 
       {/* Info chips */}
       <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
-        {['AI skill extraction', 'JD auto-matching', 'Duplicate detection', 'Bulk actions'].map(t => (
+        {['Skill extraction', 'JD auto-matching', 'Duplicate detection', 'Bulk actions'].map(t => (
           <span key={t} style={{ fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: C.indigoBg, color: C.indigo, border: `1px solid ${C.indigoBd}` }}>
-            ✓ {t}
+            {t}
           </span>
         ))}
       </div>
@@ -219,12 +223,12 @@ const UploadScreen = ({ onUpload, uploading }: { onUpload: (files: File[]) => vo
 
 // ── Processing Screen ───────────────────────────────────────────
 const PS_STAGES = [
-  { label: 'Reading',     text: 'Reading Resume...' },
-  { label: 'Extracting',  text: 'Extracting Skills & Experience...' },
-  { label: 'Analyzing',   text: 'Analyzing Candidate Profile...' },
-  { label: 'Matching JD', text: 'Matching Against JDs...' },
-  { label: 'Scoring',     text: 'Calculating Match Score...' },
-  { label: 'Ranking',     text: 'Ranking Candidate...' },
+  { label: 'Reading',     text: 'Reading resume…' },
+  { label: 'Extracting',  text: 'Extracting skills & experience…' },
+  { label: 'Analyzing',   text: 'Analyzing candidate profile…' },
+  { label: 'Matching JD', text: 'Matching against job descriptions…' },
+  { label: 'Scoring',     text: 'Calculating match score…' },
+  { label: 'Ranking',     text: 'Ranking candidate…' },
 ];
 
 const PS_JD_LIST = ['React Developer', 'ML Engineer', 'Backend Dev', 'Data Analyst'];
@@ -242,17 +246,14 @@ function psCountUp(setter: React.Dispatch<React.SetStateAction<number>>, target:
 }
 
 const PS_CSS = `
-  @keyframes ps-floatIn  { 0%{transform:translateY(-20px) scale(.9);opacity:0} 70%{transform:translateY(2px) scale(1.01)} 100%{transform:none;opacity:1} }
+  @keyframes ps-floatIn  { 0%{transform:translateY(-12px);opacity:0} 100%{transform:none;opacity:1} }
   @keyframes ps-scan     { 0%{top:-10%;} 100%{top:110%;} }
   @keyframes ps-flowDot  { 0%{left:0%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{left:92%;opacity:0} }
-  @keyframes ps-chipIn   { 0%{transform:scale(.7) translateY(4px);opacity:0} 100%{transform:none;opacity:1} }
-  @keyframes ps-glow     { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} 50%{box-shadow:0 0 16px 4px rgba(34,197,94,.3)} }
+  @keyframes ps-chipIn   { 0%{opacity:0;transform:translateY(2px)} 100%{transform:none;opacity:1} }
+  @keyframes ps-glow     { 0%,100%{box-shadow:0 0 0 0 rgba(139,0,0,0)} 50%{box-shadow:0 0 0 3px rgba(139,0,0,.15)} }
   @keyframes ps-shine    { 0%{left:-40%} 100%{left:110%} }
-  @keyframes ps-stageIn  { 0%{opacity:0;transform:translateX(12px)} 100%{opacity:1;transform:none} }
-  @keyframes ps-orb-rot  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-  @keyframes ps-orb-rrev { from{transform:rotate(0deg)} to{transform:rotate(-360deg)} }
-  @keyframes ps-orb-pulse{ 0%,100%{box-shadow:0 0 0 2px #fde68a,0 4px 18px rgba(245,158,11,.28)} 50%{box-shadow:0 0 0 4px #fcd34d,0 6px 26px rgba(245,158,11,.48)} }
-  @keyframes ps-ping-o   { 0%{transform:scale(1);opacity:.55} 100%{transform:scale(2.1);opacity:0} }
+  @keyframes ps-stageIn  { 0%{opacity:0;transform:translateX(8px)} 100%{opacity:1;transform:none} }
+  @keyframes ps-spin-slow{ from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 `;
 
 const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: number; fileNames: string[]; currentStage: string }) => {
@@ -261,12 +262,12 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
 
   const [activeStage,   setActiveStage]   = React.useState(-1);
   const [doneStages,    setDoneStages]    = React.useState<number[]>([]);
-  const [stageText,     setStageText]     = React.useState('Initializing AI...');
+  const [stageText,     setStageText]     = React.useState('Initializing…');
   const [matchedSkills, setMatchedSkills] = React.useState<string[]>([]);
   const [missingSkills, setMissingSkills] = React.useState<string[]>([]);
   const [score,         setScore]         = React.useState<number | null>(null);
   const [scoreDisp,     setScoreDisp]     = React.useState(0);
-  const [bestJD,        setBestJD]        = React.useState('Analyzing...');
+  const [bestJD,        setBestJD]        = React.useState('Analyzing…');
   const [expYears,      setExpYears]      = React.useState<number | null>(null);
   const [statusLabel,   setStatusLabel]   = React.useState('—');
   const [matchedJDs,    setMatchedJDs]    = React.useState<number[]>([]);
@@ -285,7 +286,7 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
       if (stopRef.current) return;
       const c = PS_DEMO[ci % PS_DEMO.length];
       setActiveStage(-1); setDoneStages([]); setMatchedSkills([]); setMissingSkills([]);
-      setScore(null); setScoreDisp(0); setBestJD('Analyzing...'); setExpYears(null);
+      setScore(null); setScoreDisp(0); setBestJD('Analyzing…'); setExpYears(null);
       setStatusLabel('—'); setCardGlow(false);
       const ri = ci % 3;
       setVisibleCards(p => Array.from(new Set([...p, ri])));
@@ -308,7 +309,7 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
           setStatusLabel(c.status); setCardGlow(true); await sleep(600);
         } else { await sleep(600); }
       }
-      setDoneStages(p => [...p, 5]); setStageText(`${c.name} processed!`); setScanCard(-1);
+      setDoneStages(p => [...p, 5]); setStageText(`${c.name} processed`); setScanCard(-1);
       await sleep(1200);
     }
     async function loop() {
@@ -323,21 +324,21 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
     return () => { stopRef.current = true; };
   }, []);
 
-  const scoreColor = score === null ? '#4f46e5' : score >= 80 ? '#16a34a' : score >= 60 ? '#d97706' : '#dc2626';
+  const scoreColor = score === null ? C.indigo : score >= 80 ? C.green : score >= 60 ? C.amber : C.red;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', height: '100%', background: 'linear-gradient(135deg,#fff7ed 0%,#fff3e0 50%,#fef9f0 100%)', padding: '20px 16px', gap: 14, fontFamily: "'Inter',-apple-system,sans-serif", overflowY: 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', height: '100%', background: C.bg, padding: '20px 16px', gap: 14, fontFamily: "'Inter',-apple-system,sans-serif", overflowY: 'auto' }}>
       <style>{`${CSS}${PS_CSS}`}</style>
 
       {/* Header */}
       <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: 15, fontWeight: 700, color: '#92400e', margin: '0 0 3px' }}>AI Analyzing Resumes</p>
-        <p style={{ fontSize: 11, color: '#b45309', margin: 0 }}>
-          <span style={{ color: '#d97706', fontWeight: 600 }}>{done}</span> of <span style={{ color: '#d97706', fontWeight: 600 }}>{total > 0 ? total : '—'}</span> processed
+        <p style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: '0 0 3px' }}>Analyzing Resumes</p>
+        <p style={{ fontSize: 11, color: C.textSec, margin: 0 }}>
+          <span style={{ color: C.indigo, fontWeight: 600 }}>{done}</span> of <span style={{ color: C.indigo, fontWeight: 600 }}>{total > 0 ? total : '—'}</span> processed
         </p>
       </div>
 
-      {/* Pipeline row: Resume cards → AI Engine → JD panel */}
+      {/* Pipeline row: Resume cards → Engine → JD panel */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', maxWidth: 560 }}>
 
         {/* Resume cards */}
@@ -349,24 +350,24 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
             const scanning = scanCard === i;
             return (
               <div key={i} style={{
-                width: 88, background: active ? '#fffbeb' : '#fff7ed',
-                border: `1px solid ${active ? '#f59e0b' : '#fde68a'}`,
+                width: 88, background: active ? C.indigoBg : C.card,
+                border: `1px solid ${active ? C.indigoBd : C.border}`,
                 borderRadius: 7, padding: '6px 8px', position: 'relative', overflow: 'hidden',
                 opacity: visible ? 1 : 0,
-                animation: visible ? 'ps-floatIn .5s cubic-bezier(.34,1.4,.64,1) forwards' : 'none',
+                animation: visible ? 'ps-floatIn .35s ease forwards' : 'none',
                 transition: 'border-color .3s, background .3s',
               }}>
                 {scanning && (
-                  <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,#f59e0b,transparent)', top: 0, animation: 'ps-scan .9s ease-in-out infinite' }} />
+                  <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${C.indigo},transparent)`, top: 0, animation: 'ps-scan .9s ease-in-out infinite' }} />
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                  <svg width={9} height={9} fill="none" stroke={active ? '#d97706' : '#f59e0b'} viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg width={9} height={9} fill="none" stroke={active ? C.indigo : C.dim} viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span style={{ fontSize: 8, fontWeight: 600, color: active ? '#92400e' : '#b45309', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{name}</span>
+                  <span style={{ fontSize: 8, fontWeight: 600, color: active ? C.text : C.textSec, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{name}</span>
                 </div>
                 {[80, 55, 90].map((w, li) => (
-                  <div key={li} style={{ height: 3, borderRadius: 2, marginBottom: 2, background: scanning ? (li % 2 === 0 ? '#f59e0b' : '#fbbf24') : '#fde68a', width: `${w}%`, transition: 'background .3s' }} />
+                  <div key={li} style={{ height: 3, borderRadius: 2, marginBottom: 2, background: scanning ? C.indigo : C.borderLt, width: `${w}%`, transition: 'background .3s' }} />
                 ))}
               </div>
             );
@@ -374,53 +375,39 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
         </div>
 
         {/* Flow arrow 1 */}
-        <div style={{ flex: 1, height: 2, background: 'linear-gradient(90deg,#fde68a,#f59e0b,#fde68a)', borderRadius: 1, position: 'relative', overflow: 'visible', flexShrink: 0, minWidth: 20 }}>
-          <div style={{ position: 'absolute', width: 7, height: 7, borderRadius: '50%', background: '#f59e0b', top: -2.5, animation: 'ps-flowDot 1.8s ease-in-out infinite', boxShadow: '0 0 6px #d97706' }} />
+        <div style={{ flex: 1, height: 2, background: C.borderLt, borderRadius: 1, position: 'relative', overflow: 'visible', flexShrink: 0, minWidth: 20 }}>
+          <div style={{ position: 'absolute', width: 6, height: 6, borderRadius: '50%', background: C.indigo, top: -2, animation: 'ps-flowDot 1.8s ease-in-out infinite' }} />
         </div>
 
-        {/* AI Engine orb */}
+        {/* Engine indicator */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          <div style={{ position: 'relative', width: 60, height: 60 }}>
-            {/* rotating dashed outer ring */}
-            <svg width={60} height={60} style={{ position: 'absolute', inset: 0, animation: 'ps-orb-rot 5s linear infinite' }}>
-              <circle cx={30} cy={30} r={27} fill="none" stroke="#fcd34d" strokeWidth={1.5} strokeDasharray="6 5" strokeLinecap="round" opacity={0.7}/>
+          <div style={{ position: 'relative', width: 48, height: 48 }}>
+            <svg width={48} height={48} style={{ position: 'absolute', inset: 0, animation: 'ps-spin-slow 4s linear infinite' }}>
+              <circle cx={24} cy={24} r={21} fill="none" stroke={C.indigoBd} strokeWidth={2} strokeDasharray="4 4" strokeLinecap="round" />
             </svg>
-            {/* counter-rotating inner ring */}
-            <svg width={60} height={60} style={{ position: 'absolute', inset: 0, animation: 'ps-orb-rrev 8s linear infinite' }}>
-              <circle cx={30} cy={30} r={21} fill="none" stroke="#f59e0b" strokeWidth={1} strokeDasharray="3 9" strokeLinecap="round" opacity={0.45}/>
-            </svg>
-            {/* ping rings */}
-            {[0, 1].map(i => (
-              <div key={i} style={{ position: 'absolute', inset: -(i * 6 + 3), borderRadius: '50%', border: '1px solid #f59e0b', opacity: 0, animation: `ps-ping-o ${1.8 + i * 0.7}s ease-out infinite`, animationDelay: `${i * 0.65}s` }} />
-            ))}
-            {/* inner filled orb */}
-            <div style={{ position: 'absolute', inset: 8, borderRadius: '50%', background: 'linear-gradient(135deg,#fef3c7,#fbbf24,#f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'ps-orb-pulse 2.2s ease-in-out infinite' }}>
-              {/* scan line */}
-              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', pointerEvents: 'none' }}>
-                <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent)', animation: 'ps-scan 1.5s linear infinite' }} />
-              </div>
-              <svg width={18} height={18} fill="none" stroke="#92400e" viewBox="0 0 24 24" strokeWidth={2}>
+            <div style={{ position: 'absolute', inset: 7, borderRadius: '50%', background: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width={16} height={16} fill="none" stroke="#fff" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
           </div>
-          <span style={{ fontSize: 7, fontWeight: 700, color: '#d97706', letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>AI Engine</span>
+          <span style={{ fontSize: 7, fontWeight: 700, color: C.indigo, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Engine</span>
         </div>
 
         {/* Flow arrow 2 */}
-        <div style={{ flex: 1, height: 2, background: 'linear-gradient(90deg,#fde68a,#f59e0b,#fde68a)', borderRadius: 1, position: 'relative', overflow: 'visible', flexShrink: 0, minWidth: 20 }}>
-          <div style={{ position: 'absolute', width: 7, height: 7, borderRadius: '50%', background: '#f59e0b', top: -2.5, animation: 'ps-flowDot 1.8s ease-in-out infinite', animationDelay: '.6s', boxShadow: '0 0 6px #d97706' }} />
+        <div style={{ flex: 1, height: 2, background: C.borderLt, borderRadius: 1, position: 'relative', overflow: 'visible', flexShrink: 0, minWidth: 20 }}>
+          <div style={{ position: 'absolute', width: 6, height: 6, borderRadius: '50%', background: C.indigo, top: -2, animation: 'ps-flowDot 1.8s ease-in-out infinite', animationDelay: '.6s' }} />
         </div>
 
         {/* JD Panel */}
-        <div style={{ width: 92, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '7px', flexShrink: 0 }}>
-          <div style={{ fontSize: 7, fontWeight: 700, color: '#b45309', textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Active JDs</div>
+        <div style={{ width: 92, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '7px', flexShrink: 0 }}>
+          <div style={{ fontSize: 7, fontWeight: 700, color: C.textSec, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Active JDs</div>
           {PS_JD_LIST.map((jd, i) => (
             <div key={i} style={{
               fontSize: 7, padding: '3px 5px', borderRadius: 4, marginBottom: 2,
-              color:      matchedJDs.includes(i) ? '#065f46' : '#b45309',
-              background: matchedJDs.includes(i) ? '#d1fae5' : 'transparent',
-              border:     `1px solid ${matchedJDs.includes(i) ? '#6ee7b7' : 'transparent'}`,
+              color:      matchedJDs.includes(i) ? C.green : C.textSec,
+              background: matchedJDs.includes(i) ? C.greenBg : 'transparent',
+              border:     `1px solid ${matchedJDs.includes(i) ? C.greenBd : 'transparent'}`,
               whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis',
               transition: 'all .3s',
             }}>{jd}</div>
@@ -429,7 +416,7 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
       </div>
 
       {/* Stage text */}
-      <div style={{ fontSize: 11, fontWeight: 600, color: '#d97706', textAlign: 'center', animation: 'ps-stageIn .3s ease', minHeight: 16 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: C.indigo, textAlign: 'center', animation: 'ps-stageIn .3s ease', minHeight: 16 }}>
         {stageText}
       </div>
 
@@ -440,14 +427,14 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
               <div style={{
                 width: 9, height: 9, borderRadius: '50%', transition: 'all .3s',
-                background:  doneStages.includes(i) ? '#16a34a' : activeStage === i ? '#f59e0b' : '#fde68a',
-                border:      `1px solid ${doneStages.includes(i) ? '#15803d' : activeStage === i ? '#d97706' : '#fcd34d'}`,
-                boxShadow:   activeStage === i ? '0 0 0 3px rgba(245,158,11,.25)' : 'none',
+                background:  doneStages.includes(i) ? C.green : activeStage === i ? C.indigo : C.borderLt,
+                border:      `1px solid ${doneStages.includes(i) ? C.green : activeStage === i ? C.indigo : C.border}`,
+                boxShadow:   activeStage === i ? `0 0 0 3px ${C.indigoBg}` : 'none',
               }} />
-              <span style={{ fontSize: 7, color: doneStages.includes(i) ? '#15803d' : activeStage === i ? '#d97706' : '#b45309', fontWeight: activeStage === i ? 700 : 400, transition: 'color .3s', textAlign: 'center' as const }}>{st.label}</span>
+              <span style={{ fontSize: 7, color: doneStages.includes(i) ? C.green : activeStage === i ? C.indigo : C.dim, fontWeight: activeStage === i ? 700 : 400, transition: 'color .3s', textAlign: 'center' as const }}>{st.label}</span>
             </div>
             {i < PS_STAGES.length - 1 && (
-              <div style={{ flex: 1, height: 1, background: doneStages.includes(i) ? '#16a34a' : '#fde68a', transition: 'background .3s', marginBottom: 12, minWidth: 4 }} />
+              <div style={{ flex: 1, height: 1, background: doneStages.includes(i) ? C.green : C.borderLt, transition: 'background .3s', marginBottom: 12, minWidth: 4 }} />
             )}
           </React.Fragment>
         ))}
@@ -456,14 +443,14 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
       {/* Skills row */}
       <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 560 }}>
         {[
-          { title: 'Matched Skills', chips: matchedSkills, bg: '#d1fae5', color: '#065f46', bd: '#6ee7b7' },
-          { title: 'Missing Skills',  chips: missingSkills, bg: '#fee2e2', color: '#991b1b', bd: '#fca5a5' },
+          { title: 'Matched Skills', chips: matchedSkills, bg: C.greenBg, color: C.green, bd: C.greenBd },
+          { title: 'Missing Skills',  chips: missingSkills, bg: C.redBg, color: C.red, bd: C.redBd },
         ].map(({ title, chips, bg, color, bd }) => (
-          <div key={title} style={{ flex: 1, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', minHeight: 60 }}>
-            <div style={{ fontSize: 7, fontWeight: 700, color: '#b45309', textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 5 }}>{title}</div>
+          <div key={title} style={{ flex: 1, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 10px', minHeight: 60 }}>
+            <div style={{ fontSize: 7, fontWeight: 700, color: C.textSec, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 5 }}>{title}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 3 }}>
               {chips.map((sk, i) => (
-                <span key={sk + i} style={{ fontSize: 8, fontWeight: 600, padding: '2px 6px', borderRadius: 8, background: bg, color, border: `1px solid ${bd}`, animation: 'ps-chipIn .3s cubic-bezier(.34,1.56,.64,1) forwards' }}>{sk}</span>
+                <span key={sk + i} style={{ fontSize: 8, fontWeight: 600, padding: '2px 6px', borderRadius: 8, background: bg, color, border: `1px solid ${bd}`, animation: 'ps-chipIn .25s ease forwards' }}>{sk}</span>
               ))}
             </div>
           </div>
@@ -472,42 +459,42 @@ const ProcessingScreen = ({ total, done, fileNames }: { total: number; done: num
 
       {/* Score / JD / Exp row */}
       <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 560 }}>
-        <div style={{ flex: 1, background: '#fffbeb', borderRadius: 8, padding: '10px 12px', border: `1px solid ${cardGlow ? scoreColor : '#fde68a'}`, animation: cardGlow ? 'ps-glow 1.5s ease 2' : 'none', transition: 'border-color .3s' }}>
-          <div style={{ fontSize: 7, fontWeight: 700, color: '#b45309', textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Match Score</div>
+        <div style={{ flex: 1, background: C.card, borderRadius: 8, padding: '10px 12px', border: `1px solid ${cardGlow ? scoreColor : C.border}`, animation: cardGlow ? 'ps-glow 1.5s ease 2' : 'none', transition: 'border-color .3s' }}>
+          <div style={{ fontSize: 7, fontWeight: 700, color: C.textSec, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Match Score</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 5 }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: score !== null ? scoreColor : '#92400e', transition: 'color .3s' }}>{score !== null ? scoreDisp : '--'}</span>
-            <span style={{ fontSize: 9, color: '#b45309' }}>/100</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: score !== null ? scoreColor : C.text, transition: 'color .3s' }}>{score !== null ? scoreDisp : '--'}</span>
+            <span style={{ fontSize: 9, color: C.dim }}>/100</span>
           </div>
-          <div style={{ height: 4, background: '#fde68a', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{ height: 4, background: C.borderLt, borderRadius: 3, overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: 3, background: scoreColor, width: score !== null ? `${scoreDisp}%` : '0%', transition: 'width 1.2s ease, background .3s' }} />
           </div>
         </div>
-        <div style={{ flex: 1, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 12px' }}>
-          <div style={{ fontSize: 7, fontWeight: 700, color: '#b45309', textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Best JD Match</div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#92400e', marginBottom: 3 }}>{bestJD}</div>
-          <div style={{ fontSize: 8, color: statusLabel === 'Matched' ? '#15803d' : statusLabel === 'Partially Matched' ? '#d97706' : '#b45309' }}>{statusLabel}</div>
+        <div style={{ flex: 1, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+          <div style={{ fontSize: 7, fontWeight: 700, color: C.textSec, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Best JD Match</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.text, marginBottom: 3 }}>{bestJD}</div>
+          <div style={{ fontSize: 8, color: statusLabel === 'Matched' ? C.green : statusLabel === 'Partially Matched' ? C.amber : C.dim }}>{statusLabel}</div>
         </div>
-        <div style={{ flex: 1, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 12px' }}>
-          <div style={{ fontSize: 7, fontWeight: 700, color: '#b45309', textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Experience</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#92400e', marginBottom: 2 }}>{expYears !== null ? expYears : '--'}</div>
-          <div style={{ fontSize: 8, color: '#b45309' }}>years detected</div>
+        <div style={{ flex: 1, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+          <div style={{ fontSize: 7, fontWeight: 700, color: C.textSec, textTransform: 'uppercase' as const, letterSpacing: '0.07em', marginBottom: 4 }}>Experience</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 2 }}>{expYears !== null ? expYears : '--'}</div>
+          <div style={{ fontSize: 8, color: C.dim }}>years detected</div>
         </div>
       </div>
 
       {/* Real progress bar */}
       <div style={{ width: '100%', maxWidth: 560 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#b45309', marginBottom: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: C.textSec, marginBottom: 4 }}>
           <span>{done} of {total > 0 ? total : '—'} resumes</span>
-          <span style={{ color: '#d97706', fontWeight: 700 }}>{pct}%</span>
+          <span style={{ color: C.indigo, fontWeight: 700 }}>{pct}%</span>
         </div>
-        <div style={{ height: 4, background: '#fde68a', borderRadius: 3, overflow: 'hidden', border: '1px solid #fcd34d', position: 'relative' }}>
-          <div style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg,#f59e0b,#d97706,#b45309)', width: `${pct}%`, transition: 'width .6s ease', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ height: 4, background: C.borderLt, borderRadius: 3, overflow: 'hidden', border: `1px solid ${C.border}`, position: 'relative' }}>
+          <div style={{ height: '100%', borderRadius: 3, background: C.indigo, width: `${pct}%`, transition: 'width .6s ease', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, bottom: 0, width: '35%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)', animation: 'ps-shine 1.4s ease-in-out infinite' }} />
           </div>
         </div>
       </div>
 
-      <p style={{ fontSize: 9, color: '#d97706', margin: 0, letterSpacing: '0.05em' }}>Do not close this window</p>
+      <p style={{ fontSize: 9, color: C.dim, margin: 0, letterSpacing: '0.05em' }}>Do not close this window</p>
     </div>
   );
 };
@@ -517,7 +504,7 @@ const ResultsTable = ({
   results, onAssign, onTalentPool, onReject, onNewUpload, busy,
 }: {
   results: BulkPoolResult;
-  onAssign: (c: BulkCandidate) => void;
+  onAssign: (c: BulkCandidate, silent?: boolean) => Promise<boolean>;
   onTalentPool: (c: BulkCandidate) => void;
   onReject: (c: BulkCandidate) => void;
   onNewUpload: () => void;
@@ -531,10 +518,26 @@ const ResultsTable = ({
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
   const [bulkJD, setBulkJD] = useState('');
 
-  const jdOptions = useMemo(() => {
-    const jds = new Map<string, string>();
-    results.candidates.forEach(c => { if (c.bestMatchingJDId) jds.set(c.bestMatchingJDId, c.bestMatchingJD); });
-    return Array.from(jds.entries());
+  // All active JDs system-wide — not just the ones this batch happened to AI-match against,
+  // so the admin can assign to any active job. Falls back to the batch's own matches if the fetch fails.
+  const [jdOptions, setJdOptions] = useState<[string, string][]>([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = localStorage.getItem('recruiter_token') || localStorage.getItem('admin_token');
+        const res = await fetch(`${BASE}/api/admin/bulk-resume-pool/jobs`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.jobs) && data.jobs.length) {
+          setJdOptions(data.jobs.map((j: { id: number | string; title: string }) => [String(j.id), j.title]));
+          return;
+        }
+      } catch { /* fall back below */ }
+      const jds = new Map<string, string>();
+      results.candidates.forEach(c => { if (c.bestMatchingJDId) jds.set(c.bestMatchingJDId, c.bestMatchingJD); });
+      setJdOptions(Array.from(jds.entries()));
+    })();
   }, [results.candidates]);
 
   const filtered = useMemo(() => {
@@ -569,13 +572,19 @@ const ResultsTable = ({
     if (!bulkJD) return alert('Select a JD first');
     if (bulkAssigning) return;
     setBulkAssigning(true);
+    const bulkJDTitle = jdOptions.find(([id]) => id === bulkJD)?.[1] || '';
     const selected = filtered.filter(c => bulkSelected.has(c.id));
+    let ok = 0, failed = 0;
     for (const c of selected) {
-      await onAssign({ ...c, bestMatchingJDId: bulkJD });
+      const success = await onAssign({ ...c, bestMatchingJDId: bulkJD, bestMatchingJD: bulkJDTitle }, true);
+      success ? ok++ : failed++;
     }
     setBulkSelected(new Set());
     setBulkAssigning(false);
-  }, [bulkJD, bulkSelected, filtered, onAssign, bulkAssigning]);
+    if (failed > 0) {
+      alert(`Bulk assign finished: ${ok} assigned, ${failed} failed.\n\nCandidates below the required match threshold cannot be assigned — check each candidate's Match % (80%+ required) and use Talent Pool for lower scores instead.`);
+    }
+  }, [bulkJD, bulkSelected, filtered, jdOptions, onAssign, bulkAssigning]);
 
   const summaryCards = [
     { l: 'Processed',      v: results.totalProcessed,  c: C.indigo, bg: C.indigoBg },
@@ -593,10 +602,9 @@ const ResultsTable = ({
       <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>AI Bulk Resume Pool</span>
-            <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', color: '#fff' }}>AI</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Bulk Resume Pool</span>
           </div>
-          <div style={{ fontSize: 11, color: C.dim, marginTop: 2 }}>{results.totalProcessed} resumes analyzed · auto-ranked by match score</div>
+          <div style={{ fontSize: 11, color: C.dim, marginTop: 2 }}>{results.totalProcessed} resumes analyzed · ranked by match score</div>
         </div>
         <button onClick={onNewUpload} className="bp-btn"
           style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', background: C.indigoBg, color: C.indigo, border: `1px solid ${C.indigoBd}`, borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
@@ -690,7 +698,7 @@ const ResultsTable = ({
                   <input type="checkbox" checked={filtered.length > 0 && filtered.every(c => bulkSelected.has(c.id))} onChange={selectAll}
                     style={{ cursor: 'pointer' }} />
                 </th>
-                {['#', 'Candidate', 'Resume', 'Best Matching JD', 'Match %', 'Skills Match', 'Experience', 'Status', 'Actions'].map(h => (
+                {['#', 'Candidate', 'Resume', 'Best Matching JD', 'Match %', 'AI Score', 'Skills Match', 'Experience', 'Status', 'Actions'].map(h => (
                   <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: C.textSec, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', background: '#F1F5F9' }}>{h}</th>
                 ))}
               </tr>
@@ -708,25 +716,32 @@ const ResultsTable = ({
                       <td style={{ padding: '10px 8px', fontSize: 10, fontWeight: 700, color: idx < 3 ? C.amber : C.dim }}>#{idx + 1}</td>
                       <td style={{ padding: '10px 10px', minWidth: 140 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                          <div style={{ width: 28, height: 28, borderRadius: '50%', background: c.alreadyAssigned ? '#E2E8F0' : `linear-gradient(135deg,#4F46E5,#7C3AED)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.alreadyAssigned ? C.dim : '#fff', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+                          <div style={{ width: 28, height: 28, borderRadius: '50%', background: c.alreadyAssigned ? '#E2E8F0' : C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.alreadyAssigned ? C.dim : '#fff', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
                             {c.candidateName.charAt(0).toUpperCase() || '?'}
                           </div>
                           <div>
                             <div style={{ fontSize: 12, fontWeight: 600, color: c.alreadyAssigned ? C.dim : C.text }}>{c.candidateName}</div>
                             <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' as const, marginTop: 2 }}>
-                              {c.alreadyAssigned && (
-                                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', background:
-                                  c.dbStatus === 'shortlisted' ? '#16A34A' :
-                                  c.dbStatus === 'rejected'    ? '#DC2626' :
-                                  c.dbStatus === 'hired'       ? '#7C3AED' :
-                                  '#475569',
-                                  padding: '1px 5px', borderRadius: 3 }}>
-                                  {c.dbStatus === 'shortlisted' ? 'Assigned' :
-                                   c.dbStatus === 'rejected'    ? 'Rejected' :
-                                   c.dbStatus === 'hired'       ? 'Hired' :
-                                   'In DB'}
+                              {c.alreadyAssigned ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                              <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', background:
+                                c.dbStatus === 'shortlisted' ? '#16A34A' :
+                                c.dbStatus === 'rejected'    ? '#DC2626' :
+                                c.dbStatus === 'hired'       ? '#7C3AED' :
+                                '#475569',
+                                padding: '1px 5px', borderRadius: 3 }}>
+                                {c.dbStatus === 'shortlisted' ? 'Assigned' :
+                                 c.dbStatus === 'rejected'    ? 'Rejected' :
+                                 c.dbStatus === 'hired'       ? 'Hired' :
+                                 'In DB'}
+                              </span>
+                              {(c.assignedJobTitle || c.bestMatchingJD) && c.dbStatus === 'shortlisted' && (
+                                <span style={{ fontSize: 8, color: C.textSec, fontWeight: 500, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                                  {c.assignedJobTitle || c.bestMatchingJD}
                                 </span>
                               )}
+                            </div>
+                          ) : null}
                               {c.isDuplicate && !c.alreadyAssigned && (
                                 <span style={{ fontSize: 9, fontWeight: 600, color: C.amber, background: C.amberBg, padding: '1px 5px', borderRadius: 3 }}>Batch Dup</span>
                               )}
@@ -747,12 +762,25 @@ const ResultsTable = ({
                       </td>
                       <td style={{ padding: '10px 10px' }}><ScorePill pct={c.matchPct} /></td>
                       <td style={{ padding: '10px 10px' }}>
+                        {c.exam_completed && c.interview_score !== null && c.interview_score !== undefined
+                          ? <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: c.interview_score >= 60 ? C.greenBg : c.interview_score >= 50 ? C.amberBg : C.redBg, color: c.interview_score >= 60 ? C.green : c.interview_score >= 50 ? C.amber : C.red }}>
+                              {c.interview_score}%
+                            </span>
+                          : <span style={{ fontSize: 10, color: C.dim }}>—</span>
+                        }
+                      </td>
+                      <td style={{ padding: '10px 10px' }}>
                         <span style={{ fontSize: 11, color: C.textSec }}>{c.skillsMatched}/{c.totalSkills}</span>
                       </td>
                       <td style={{ padding: '10px 10px', fontSize: 11, color: C.textSec, whiteSpace: 'nowrap' }}>
                         {c.experienceYears > 0 ? `${c.experienceYears} yrs` : c.experienceMatched || '—'}
                       </td>
-                      <td style={{ padding: '10px 10px' }}><StatusPill status={c.status} /></td>
+                      <td style={{ padding: '10px 10px' }}>
+                        {c.exam_completed
+                          ? <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: C.greenBg, color: C.green, whiteSpace: 'nowrap' as const }}>Completed</span>
+                          : <StatusPill status={c.status} />
+                        }
+                      </td>
                       <td style={{ padding: '10px 10px' }} onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' as const }}>
                           {c.resumeUrl && (
@@ -762,28 +790,35 @@ const ResultsTable = ({
                             </a>
                           )}
                           {c.alreadyAssigned ? (
-                            <span style={{ fontSize: 9, fontWeight: 600, padding: '3px 7px', borderRadius: 3,
-                              background:
-                                c.dbStatus === 'shortlisted' ? C.greenBg :
-                                c.dbStatus === 'rejected'    ? C.redBg :
-                                c.dbStatus === 'hired'       ? '#EDE9FE' :
-                                C.borderLt,
-                              color:
-                                c.dbStatus === 'shortlisted' ? C.green :
-                                c.dbStatus === 'rejected'    ? C.red :
-                                c.dbStatus === 'hired'       ? '#7C3AED' :
-                                C.dim,
-                              border: `1px solid ${
-                                c.dbStatus === 'shortlisted' ? C.greenBd :
-                                c.dbStatus === 'rejected'    ? C.redBd :
-                                c.dbStatus === 'hired'       ? '#DDD6FE' :
-                                C.border
-                              }` }}>
-                              {c.dbStatus === 'shortlisted' ? '✓ Assigned' :
-                               c.dbStatus === 'rejected'    ? '✕ Rejected' :
-                               c.dbStatus === 'hired'       ? '★ Hired' :
-                               'In DB'}
-                            </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <span style={{ fontSize: 9, fontWeight: 600, padding: '3px 7px', borderRadius: 3,
+                                background:
+                                  c.dbStatus === 'shortlisted' ? C.greenBg :
+                                  c.dbStatus === 'rejected'    ? C.redBg :
+                                  c.dbStatus === 'hired'       ? '#EDE9FE' :
+                                  C.borderLt,
+                                color:
+                                  c.dbStatus === 'shortlisted' ? C.green :
+                                  c.dbStatus === 'rejected'    ? C.red :
+                                  c.dbStatus === 'hired'       ? '#7C3AED' :
+                                  C.dim,
+                                border: `1px solid ${
+                                  c.dbStatus === 'shortlisted' ? C.greenBd :
+                                  c.dbStatus === 'rejected'    ? C.redBd :
+                                  c.dbStatus === 'hired'       ? '#DDD6FE' :
+                                  C.border
+                                }` }}>
+                                {c.dbStatus === 'shortlisted' ? 'Assigned' :
+                                 c.dbStatus === 'rejected'    ? 'Rejected' :
+                                 c.dbStatus === 'hired'       ? 'Hired' :
+                                 'In DB'}
+                              </span>
+                              {c.dbStatus === 'shortlisted' && (c.assignedJobTitle || c.bestMatchingJD) && (
+                                <span style={{ fontSize: 8, color: C.textSec, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                                  {c.assignedJobTitle || c.bestMatchingJD}
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <>
                               <button disabled={isBusy} onClick={() => onAssign(c)} className="bp-btn"
@@ -804,10 +839,10 @@ const ResultsTable = ({
                       </td>
                     </tr>
 
-                    {/* Expanded AI reasoning row */}
+                    {/* Expanded reasoning row */}
                     {isExp && (
                       <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                        <td colSpan={10} style={{ padding: 0, background: '#FAFBFF' }}>
+                        <td colSpan={11} style={{ padding: 0, background: '#FAFBFF' }}>
                           <div style={{ padding: '12px 16px 14px 60px', borderLeft: `3px solid ${matchColor(c.matchPct)}`, animation: 'bp-in .15s ease' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: c.aiExplanation ? 10 : 0 }}>
                               {c.matchedSkills.length > 0 && (
@@ -834,7 +869,7 @@ const ResultsTable = ({
                             {c.aiExplanation && (
                               <div style={{ background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.indigo}`, borderRadius: 5, padding: '8px 12px' }}>
                                 <div style={{ fontSize: 8, fontWeight: 700, color: C.indigo, textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 3 }}>
-                                  AI Explanation
+                                  Explanation
                                 </div>
                                 <div style={{ fontSize: 11, color: C.textSec, lineHeight: 1.65 }}>{c.aiExplanation}</div>
                               </div>
@@ -879,15 +914,15 @@ export const BulkResumePool: React.FC = () => {
       const formData = new FormData();
       files.forEach(f => formData.append('resumes', f));
 
-      // Cycle through AI stages per resume to keep animation alive
+      // Cycle through stages per resume to keep animation alive
       const STAGES = [
-        'Reading Resume…',
-        'Extracting Skills…',
-        'Analyzing Experience…',
-        'Matching with Job Description…',
-        'Calculating Match Score…',
-        'Ranking Candidate…',
-        'Generating Recommendation…',
+        'Reading resume…',
+        'Extracting skills…',
+        'Analyzing experience…',
+        'Matching with job description…',
+        'Calculating match score…',
+        'Ranking candidate…',
+        'Generating recommendation…',
       ];
       const totalStages = files.length * STAGES.length;
       let stageIndex = 0;
@@ -909,7 +944,7 @@ export const BulkResumePool: React.FC = () => {
 
       clearInterval(stageInterval);
       setProcessedCount(files.length);
-      setCurrentStage('Done!');
+      setCurrentStage('Done');
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -925,7 +960,7 @@ export const BulkResumePool: React.FC = () => {
     }
   };
 
-  const handleAssign = async (c: BulkCandidate) => {
+  const handleAssign = async (c: BulkCandidate, silent = false): Promise<boolean> => {
     setBusy(c.id);
     try {
       const token = localStorage.getItem('recruiter_token') || localStorage.getItem('admin_token');
@@ -936,26 +971,38 @@ export const BulkResumePool: React.FC = () => {
           candidateId:     c.id,
           jobId:           c.bestMatchingJDId,
           resumeFileName:  c.resumeFileName,
+          resumeUrl:       c.resumeUrl || null,
           name:            c.candidateName,
           email:           c.email || null,
           phone:           c.phone || null,
           experienceYears: c.experienceYears || 0,
           skills:          c.matchedSkills || [],
+          matchPct:        Number(c.matchPct) || 0,
+          matchedSkills:   c.matchedSkills || [],
+          missingSkills:   c.missingSkills || [],
+          aiExplanation:   c.aiExplanation || '',
+          bestMatchingJD:  c.bestMatchingJD || '',
+          skillsMatched:   c.skillsMatched || 0,
+          totalSkills:     c.totalSkills || 0,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Assign failed');
-      showToast(`${c.candidateName} assigned to "${c.bestMatchingJD}"`);
+      if (!silent) showToast(`${c.candidateName} assigned to "${c.bestMatchingJD}"`);
       // Mark as assigned in local state so button changes immediately
       setResults(r => r ? {
         ...r,
         candidates: r.candidates.map(x =>
           x.id === c.id
-            ? { ...x, alreadyAssigned: true, dbStatus: 'shortlisted' }
+            ? { ...x, alreadyAssigned: true, dbStatus: 'shortlisted', assignedJobTitle: c.bestMatchingJD }
             : x
         ),
       } : r);
-    } catch (e: any) { showToast(e.message || 'Assign failed'); }
+      return true;
+    } catch (e: any) {
+      if (!silent) showToast(e.message || 'Assign failed');
+      return false;
+    }
     finally { setBusy(null); }
   };
 

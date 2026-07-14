@@ -57,8 +57,14 @@
     if (!fn || !sig) return BOILERPLATES[lang] || BOILERPLATES.python;
 
     if (lang === 'java') {
-      const hasImport = /import java/.test(sig);
-      return `import java.util.*;\n\nclass Solution {\n    ${sig} {\n        // Write your solution here\n        return null; // TODO: fix return type\n    }\n}`;
+      const retType = sig.match(/(?:public\s+)?(?:static\s+)?([\w<>\[\],\s]+?)\s+\w+\s*\(/)?.[1]?.trim();
+      const primitiveDefaults: Record<string, string> = {
+        int: 'return 0;', long: 'return 0L;', short: 'return 0;', byte: 'return 0;',
+        double: 'return 0.0;', float: 'return 0.0f;', boolean: 'return false;',
+        char: "return '\\0';", void: '',
+      };
+      const defaultReturn = retType && retType in primitiveDefaults ? primitiveDefaults[retType] : 'return null;';
+      return `import java.util.*;\n\nclass Solution {\n    ${sig} {\n        // Write your solution here\n        ${defaultReturn}\n    }\n}`;
     }
     if (lang === 'python') {
       const params = sig.match(/\(([^)]*)\)/)?.[1] || '';
@@ -145,9 +151,19 @@
     const exampleRaw = get("Example");
     const constsRaw  = get("Constraints");
 
-    const exInput  = (exampleRaw.match(/Input:\s*`?([^`\n]+)`?/i) || [])[1]?.trim() || "";
-    const exOutput = (exampleRaw.match(/Output:\s*`?([^`\n]+)`?/i) || [])[1]?.trim() || "";
-    const examples = exInput ? [{ input: exInput, output: exOutput }] : [];
+    // AI-generated questions often include several worked examples (Example 1, 2, 3…)
+    // under one "**Examples:**" section — extract every Input/Output pair, not just the first.
+    const collectAll = (re: RegExp): string[] => {
+      const out: string[] = [];
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(exampleRaw)) !== null) out.push(m[1].trim());
+      return out;
+    };
+    const exInputs  = collectAll(/Input:\s*`?([^`\n]+)`?/gi);
+    const exOutputs = collectAll(/Output:\s*`?([^`\n]+)`?/gi);
+    const examples = exInputs
+      .map((input, i) => ({ input, output: exOutputs[i] || "" }))
+      .filter(e => e.input);
 
     const constraints = constsRaw
       .split(/\n|•/)
@@ -568,12 +584,16 @@
           </div>
 
           <button onClick={handleRun} disabled={running || evaluating || !code.trim()}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", background: "#16a34a", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: running || evaluating || !code.trim() ? 0.45 : 1 }}>
+            onMouseEnter={e => { if (!(running || evaluating || !code.trim())) { e.currentTarget.style.background = "#15803d"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(22,163,74,.35)"; } }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#16a34a"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", background: "#16a34a", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: running || evaluating || !code.trim() ? 0.45 : 1, transition: "background .15s, transform .15s, box-shadow .15s" }}>
             {running ? <><SpinnerIcon /> Running</> : <>Run</>}
           </button>
 
           <button onClick={() => handleSubmit(false)} disabled={submitting || evaluating || running || !code.trim()}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", background: "#1d4ed8", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: submitting || evaluating || running || !code.trim() ? 0.45 : 1 }}>
+            onMouseEnter={e => { if (!(submitting || evaluating || running || !code.trim())) { e.currentTarget.style.background = "#1e40af"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 10px rgba(29,78,216,.35)"; } }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#1d4ed8"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 18px", background: "#1d4ed8", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: submitting || evaluating || running || !code.trim() ? 0.45 : 1, transition: "background .15s, transform .15s, box-shadow .15s" }}>
             {evaluating || submitting ? <><SpinnerIcon /> {evaluating ? "Evaluating" : "Submitting"}</> : <>Submit</>}
           </button>
         </div>
@@ -710,6 +730,9 @@
                         <span style={{ color: "#64748b" }}>exp: </span>
                         <span style={{ color: "#10b981" }}>{tc.expected}</span>
                         {!(tc.pass || tc.passed) && <><span style={{ color: "#64748b" }}>got: </span><span style={{ color: "#ef4444" }}>{tc.actual}</span></>}
+                        {tc.executionTimeMs != null && (
+                          <span style={{ color: "#64748b", marginLeft: "auto", flexShrink: 0, fontSize: 11 }}>{tc.executionTimeMs}ms{tc.memoryKB != null ? ` · ${tc.memoryKB}KB` : ""}</span>
+                        )}
                       </div>
                     ))}
                   </div>

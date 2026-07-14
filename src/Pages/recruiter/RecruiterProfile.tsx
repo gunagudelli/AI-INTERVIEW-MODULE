@@ -179,7 +179,7 @@ const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: '#ffffff', fontFamily: 'Inter, sans-serif' },
   center: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 12 },
   spinner: { width: 32, height: 32, border: '3px solid #ddd', borderTop: '3px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  header: { background: 'white', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 },
+  header: { background: '#FAFAFA', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 },
   back: { padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' },
   title: { fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 },
   body: { padding: 24, maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 },

@@ -7,6 +7,9 @@ interface Props {
   sessionId: string;
   parsed: any;
   onComplete: () => void;
+  // Admin-controlled (Round Settings) — when false, copy/paste is intentionally
+  // allowed and must not be blocked here either.
+  copyPasteBlocked?: boolean;
 }
 
 const TIME_LIMIT = 300;
@@ -20,7 +23,7 @@ function parsePassageQuestion(raw: string) {
   };
 }
 
-export default function Round3ParagraphPage({ userId, sessionId, parsed, onComplete }: Props) {
+export default function Round3ParagraphPage({ userId, sessionId, parsed, onComplete, copyPasteBlocked = true }: Props) {
   const [question,    setQuestion]    = useState<string>('');
   const [qNo,         setQNo]         = useState(1);
   const [totalQ,      setTotalQ]      = useState(3);
@@ -195,7 +198,9 @@ export default function Round3ParagraphPage({ userId, sessionId, parsed, onCompl
           disabled={stopped && !feedback}
           rows={8}
           placeholder={stopped ? 'Time expired — submitted automatically' : 'Write your response here based on the passage and task above…'}
-          onPaste={e => { e.preventDefault(); setViolations(v => v + 1); setWarnMsg('Paste detected! Write in your own words.'); setTimeout(() => setWarnMsg(''), 4000); }}
+          onPaste={e => { if (!copyPasteBlocked) return; e.preventDefault(); setViolations(v => v + 1); setWarnMsg('Paste detected! Write in your own words.'); setTimeout(() => setWarnMsg(''), 4000); }}
+          onCopy={e => { if (!copyPasteBlocked) return; e.preventDefault(); }}
+          onCut={e => { if (!copyPasteBlocked) return; e.preventDefault(); }}
           style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box' }}
         />
       </div>
@@ -204,7 +209,9 @@ export default function Round3ParagraphPage({ userId, sessionId, parsed, onCompl
       <button
         onClick={() => handleSubmit(false)}
         disabled={submitting || (stopped && !feedback) || answer.trim().length < 50}
-        style={{ width: '100%', padding: '13px', background: submitting ? '#a78bfa' : '#8b5cf6', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: answer.trim().length < 50 ? 0.5 : 1 }}
+        onMouseEnter={e => { if (!(submitting || (stopped && !feedback) || answer.trim().length < 50)) { e.currentTarget.style.background = '#7139D6'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 10px rgba(139,92,246,.35)'; } }}
+        onMouseLeave={e => { e.currentTarget.style.background = submitting ? '#a78bfa' : '#8b5cf6'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+        style={{ width: '100%', padding: '13px', background: submitting ? '#a78bfa' : '#8b5cf6', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: answer.trim().length < 50 ? 0.5 : 1, transition: 'background .15s, transform .15s, box-shadow .15s' }}
       >
         {submitting ? 'Submitting…' : feedback ? `Next Question ${qNo < totalQ ? '→' : '— Finish Round 3'}` : 'Submit Answer →'}
       </button>

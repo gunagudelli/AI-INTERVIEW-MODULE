@@ -82,7 +82,7 @@ export const SuperResumePool: React.FC = () => {
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setShowAnalyze(true)} style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '7px 14px', background: '#3b82f6', color: '#fff',
+            padding: '7px 14px', background: '#2563EB', color: '#fff',
             border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer',
           }}>
             <svg width={13} height={13} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@ export const SuperResumePool: React.FC = () => {
       {/* Summary strip */}
       <div style={{ display: 'flex', background: '#fff', borderBottom: '1px solid #e5e7eb', flexShrink: 0 }}>
         {[
-          { label: 'Recruiters', value: summary.totalRecruiters, color: '#3b82f6' },
+          { label: 'Recruiters', value: summary.totalRecruiters, color: '#2563EB' },
           { label: 'Total JDs', value: summary.totalJobs, color: '#111827' },
           { label: 'Active JDs', value: summary.activeJobs, color: '#15803d' },
           { label: 'Applications', value: summary.totalApplications, color: '#d97706' },
@@ -156,14 +156,14 @@ export const SuperResumePool: React.FC = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                         <div style={{
                           width: 28, height: 28, borderRadius: '50%',
-                          background: selectedRecruiterId === r.id ? '#3b82f6' : '#1e293b',
+                          background: selectedRecruiterId === r.id ? '#2563EB' : '#1e293b',
                           color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 10, fontWeight: 600, flexShrink: 0,
                         }}>{r.name?.charAt(0).toUpperCase() || '?'}</div>
                         <div>
                           <span style={{ fontSize: 12, fontWeight: 600, color: '#111827' }}>{r.name || '—'}</span>
                           {selectedRecruiterId === r.id && (
-                            <span style={{ fontSize: 10, color: '#3b82f6', marginLeft: 8 }}>showing jobs ↓</span>
+                            <span style={{ fontSize: 10, color: '#2563EB', marginLeft: 8 }}>showing jobs ↓</span>
                           )}
                         </div>
                       </div>
@@ -174,7 +174,7 @@ export const SuperResumePool: React.FC = () => {
                     <td style={{ padding: '10px 16px' }}>
                       <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 4, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>{r.activeJobs}</span>
                     </td>
-                    <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 600, color: '#3b82f6' }}>{r.totalApplications}</td>
+                    <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 600, color: '#2563EB' }}>{r.totalApplications}</td>
                   </tr>
                 ))}
               </tbody>
@@ -226,7 +226,7 @@ export const SuperResumePool: React.FC = () => {
                         {new Date(j.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                       <td style={{ padding: '10px 14px', fontSize: 12, fontWeight: 600, color: '#111827' }}>{a.total}</td>
-                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#3b82f6' }}>{a.screened}</td>
+                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#2563EB' }}>{a.screened}</td>
                       <td style={{ padding: '10px 14px', fontSize: 12, color: '#d97706' }}>{a.shortlisted}</td>
                       <td style={{ padding: '10px 14px', fontSize: 12, color: '#8b5cf6' }}>{a.interview_sent}</td>
                       <td style={{ padding: '10px 14px', fontSize: 12, fontWeight: 500, color: '#15803d' }}>{a.hired}</td>

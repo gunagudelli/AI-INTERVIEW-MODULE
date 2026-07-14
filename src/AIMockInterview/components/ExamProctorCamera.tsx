@@ -387,6 +387,13 @@ export function ExamProctorCamera({
         clearTimeout(alertClearTimerRef.current);
         alertClearTimerRef.current = null;
       }
+      if (cameraRef.current?.stop) {
+        cameraRef.current.stop();
+      }
+      cameraRef.current = null;
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
@@ -395,7 +402,6 @@ export function ExamProctorCamera({
         faceMeshRef.current.close();
         faceMeshRef.current = null;
       }
-      cameraRef.current = null;
       noFaceSinceRef.current = null;
       attentionViolationSinceRef.current = null;
       headTurnViolationSinceRef.current = null;

@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { recruiterAPI } from '../../services/recruiterAPI';
-import { Briefcase, MapPin, Clock, Calendar, Link2, Pencil, Trash2, Users, Search, X, Copy, Check, IndianRupee } from 'lucide-react';
+import { Briefcase, MapPin, Clock, Calendar, Link2, Pencil, Trash2, Users, Search, X, Copy, Check, IndianRupee, Power } from 'lucide-react';
+import { ToastContainer } from '../../components/common/Toast';
+import { useNotification } from '../../hooks/useNotification';
 
 interface Job {
   id: string; title: string; description: string; location: string;
   type: string; experience: number; salary: string; skills: string[];
   department: string; status: string; createdAt: string;
+  vacancies?: number; hired_count?: number | string;
 }
 
 const TYPE_BADGE: Record<string, string> = {
@@ -23,8 +27,10 @@ const JobsList: React.FC = () => {
   const [error, setError]       = useState('');
   const [search, setSearch]     = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [togglingStatus, setTogglingStatus] = useState<string | null>(null);
   const [linksModal, setLinksModal] = useState<any>(null);
   const [copied, setCopied]     = useState<string | null>(null);
+  const { toasts, success: notifySuccess, error: notifyError, info: notifyInfo, removeNotification } = useNotification();
 
   useEffect(() => { load(); }, []);
 
@@ -37,14 +43,27 @@ const JobsList: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this job?')) return;
     setDeleting(id);
-    try { await recruiterAPI.deleteJob(id); setJobs(p => p.filter(j => j.id !== id)); }
-    catch { alert('Failed to delete'); }
+    try { await recruiterAPI.deleteJob(id); setJobs(p => p.filter(j => j.id !== id)); notifySuccess('Job deleted successfully'); }
+    catch { notifyError('Failed to delete'); }
     finally { setDeleting(null); }
   };
 
   const handleLinks = async (id: string) => {
-    try { const r = await recruiterAPI.generateLinks(id); setLinksModal(r); }
-    catch { alert('Failed to generate links'); }
+    try { const r = await recruiterAPI.generateLinks(id); setLinksModal(r); notifyInfo('Links generated successfully'); }
+    catch { notifyError('Failed to generate links'); }
+  };
+
+  const handleToggleStatus = async (job: Job) => {
+    const nextStatus = job.status === 'active' ? 'inactive' : 'active';
+    const label = nextStatus === 'inactive' ? 'mark this job Inactive (hidden from candidates)' : 'mark this job Active (visible to candidates)';
+    if (!window.confirm(`Are you sure you want to ${label}?`)) return;
+    setTogglingStatus(job.id);
+    try {
+      await recruiterAPI.updateJob(job.id, { status: nextStatus });
+      setJobs(p => p.map(j => j.id === job.id ? { ...j, status: nextStatus } : j));
+      notifySuccess(nextStatus === 'inactive' ? 'Job marked Inactive' : 'Job marked Active');
+    } catch { notifyError('Failed to update job status'); }
+    finally { setTogglingStatus(null); }
   };
 
   const copy = (val: string, key: string) => {
@@ -71,19 +90,32 @@ const JobsList: React.FC = () => {
         .jl-card{animation:jl-in .18s ease both;transition:border-color .15s}
         .jl-card:hover{border-color:#cbd5e1!important}
       `}</style>
+      <ToastContainer toasts={toasts} onClose={removeNotification} />
 
       {/* Header */}
-      <div style={{ background:'white', borderBottom:'1px solid #e2e8f0', padding:'14px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10 }}>
+      <div style={{ background:'#FAFAFA', borderBottom:'1px solid #e2e8f0', padding:'14px 28px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap', position:'sticky', top:0, zIndex:10 }}>
         <div>
           <h1 style={{ fontSize:18, fontWeight:700, color:'#0f172a', margin:0 }}>Job Postings</h1>
           <p style={{ fontSize:12, color:'#94a3b8', margin:'2px 0 0' }}>{jobs.length} active position{jobs.length !== 1 ? 's' : ''}</p>
         </div>
-        <div style={{ display:'flex', gap:8 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          {jobs.length > 0 && (
+            <div style={{ position:'relative' }}>
+              <Search size={14} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#94a3b8' }}/>
+              <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search jobs..."
+                style={{ width:220, paddingLeft:30, paddingRight:search ? 30 : 12, paddingTop:8, paddingBottom:8, border:'1px solid #e2e8f0', borderRadius:7, fontSize:12.5, background:'white', outline:'none', boxSizing:'border-box' as any, color:'#0f172a' }}/>
+              {search && (
+                <button onClick={() => setSearch('')} style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#94a3b8', display:'flex' }}>
+                  <X size={13}/>
+                </button>
+              )}
+            </div>
+          )}
           <button
             onClick={() => navigate('/recruiter/jobs/create?ai=true')}
             style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', background:'white', border:'1px solid #e2e8f0', borderRadius:7, fontSize:12.5, fontWeight:500, color:'#475569', cursor:'pointer' }}
           >
-            ✨ Generate with AI
+            ? Generate with AI
           </button>
           <button
             onClick={() => navigate('/recruiter/jobs/create')}
@@ -104,19 +136,6 @@ const JobsList: React.FC = () => {
           </div>
         )}
 
-        {jobs.length > 0 && (
-          <div style={{ position:'relative', marginBottom:16 }}>
-            <Search size={14} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#94a3b8' }}/>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search jobs..."
-              style={{ width:'100%', paddingLeft:30, paddingRight:36, paddingTop:9, paddingBottom:9, border:'1px solid #e2e8f0', borderRadius:8, fontSize:13, background:'white', outline:'none', boxSizing:'border-box' as any, color:'#0f172a' }}/>
-            {search && (
-              <button onClick={() => setSearch('')} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#94a3b8', display:'flex' }}>
-                <X size={14}/>
-              </button>
-            )}
-          </div>
-        )}
-
         {/* Empty */}
         {jobs.length === 0 ? (
           <div style={{ background:'white', borderRadius:10, border:'2px dashed #e2e8f0', padding:'64px 24px', textAlign:'center' }}>
@@ -128,7 +147,7 @@ const JobsList: React.FC = () => {
             <div style={{ display:'flex', gap:8, justifyContent:'center' }}>
               <button onClick={() => navigate('/recruiter/jobs/create?ai=true')}
                 style={{ padding:'8px 18px', background:'white', border:'1px solid #e2e8f0', borderRadius:7, fontSize:13, fontWeight:500, color:'#475569', cursor:'pointer' }}>
-                ✨ Generate with AI
+                ? Generate with AI
               </button>
               <button onClick={() => navigate('/recruiter/jobs/create')}
                 style={{ padding:'8px 18px', background:'#8B0000', border:'none', borderRadius:7, fontSize:13, fontWeight:600, color:'white', cursor:'pointer' }}>
@@ -160,7 +179,7 @@ const JobsList: React.FC = () => {
                       <span style={{ fontSize:11, fontWeight:500, padding:'2px 8px', borderRadius:20, background:'#ffffff', color:'#475569', border:'1px solid #e2e8f0' }}>
                         {(job.type || 'full-time').replace('-', ' ')}
                       </span>
-                      <span style={{ fontSize:11, fontWeight:500, padding:'2px 8px', borderRadius:20, background: job.status === 'active' ? '#f0fdf4' : '#ffffff', color: job.status === 'active' ? '#15803d' : '#94a3b8', border:`1px solid ${job.status === 'active' ? '#bbf7d0' : '#e2e8f0'}` }}>
+                      <span style={{ fontSize:11, fontWeight:500, padding:'2px 8px', borderRadius:20, background: job.status === 'active' ? '#f0fdf4' : job.status === 'inactive' ? '#fef2f2' : '#ffffff', color: job.status === 'active' ? '#15803d' : job.status === 'inactive' ? '#b91c1c' : '#94a3b8', border:`1px solid ${job.status === 'active' ? '#bbf7d0' : job.status === 'inactive' ? '#fecaca' : '#e2e8f0'}` }}>
                         {job.status || 'active'}
                       </span>
                     </div>
@@ -171,6 +190,15 @@ const JobsList: React.FC = () => {
                       {job.location   && <span style={{ display:'flex', alignItems:'center', gap:4 }}><MapPin size={11}/>{job.location}</span>}
                       {job.experience > 0 && <span style={{ display:'flex', alignItems:'center', gap:4 }}><Clock size={11}/>{job.experience}+ yrs</span>}
                       {job.salary     && <span style={{ display:'flex', alignItems:'center', gap:4 }}><IndianRupee size={11}/>{job.salary}</span>}
+                      {job.vacancies != null && (() => {
+                        const hired = Number(job.hired_count || 0);
+                        const remaining = Math.max(job.vacancies - hired, 0);
+                        return (
+                          <span style={{ display:'flex', alignItems:'center', gap:4, fontWeight: remaining === 0 ? 600 : 400, color: remaining === 0 ? '#b91c1c' : '#94a3b8' }}>
+                            <Users size={11}/>{remaining} of {job.vacancies} position{job.vacancies !== 1 ? 's' : ''} remaining
+                          </span>
+                        );
+                      })()}
                       <span style={{ display:'flex', alignItems:'center', gap:4 }}><Calendar size={11}/>
                         {job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : 'Recently'}
                       </span>
@@ -205,6 +233,10 @@ const JobsList: React.FC = () => {
                         style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px', background:'white', color:'#475569', border:'1px solid #e2e8f0', borderRadius:6, fontSize:12, fontWeight:500, cursor:'pointer' }}>
                         <Pencil size={12}/> Edit
                       </button>
+                      <button onClick={() => handleToggleStatus(job)} disabled={togglingStatus === job.id}
+                        style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px', background: job.status === 'active' ? '#fff7ed' : '#f0fdf4', color: job.status === 'active' ? '#c2410c' : '#15803d', border:`1px solid ${job.status === 'active' ? '#fed7aa' : '#bbf7d0'}`, borderRadius:6, fontSize:12, fontWeight:500, cursor:'pointer', opacity: togglingStatus === job.id ? 0.5 : 1 }}>
+                        <Power size={12}/> {togglingStatus === job.id ? 'Updating...' : job.status === 'active' ? 'Mark Inactive' : 'Mark Active'}
+                      </button>
                       <button onClick={() => handleDelete(job.id)} disabled={deleting === job.id}
                         style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px', background:'#fef2f2', color:'#b91c1c', border:'1px solid #fecaca', borderRadius:6, fontSize:12, fontWeight:500, cursor:'pointer', marginLeft:'auto', opacity: deleting === job.id ? 0.5 : 1 }}>
                         <Trash2 size={12}/> {deleting === job.id ? 'Deleting...' : 'Delete'}
@@ -218,43 +250,98 @@ const JobsList: React.FC = () => {
         )}
       </div>
 
-      {/* Links Modal */}
-      {linksModal && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(15,23,42,.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:50, padding:16 }} onClick={() => setLinksModal(null)}>
-          <div style={{ background:'white', borderRadius:10, width:'100%', maxWidth:460, border:'1px solid #e2e8f0' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid #ffffff' }}>
+      {/* Links Modal — rendered via a portal directly on document.body so its
+          `position: fixed` centers relative to the actual viewport, not whichever
+          ancestor (e.g. RecruiterLayout's animated .rl-main wrapper) might otherwise
+          become its containing block and push it out of view. */}
+      {linksModal && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,.52)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+            padding: 16,
+            overflowY: 'auto',
+          }}
+          onClick={() => setLinksModal(null)}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: 16,
+              width: 'min(100%, 480px)',
+              maxHeight: 'calc(100vh - 32px)',
+              overflow: 'auto',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 24px 70px rgba(15,23,42,.22)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 18px', borderBottom:'1px solid #f1f5f9' }}>
               <div>
-                <h3 style={{ fontSize:14, fontWeight:600, color:'#0f172a', margin:0 }}>Share Links</h3>
-                <p style={{ fontSize:11, color:'#94a3b8', margin:'2px 0 0' }}>Copy and share with candidates</p>
+                <h3 style={{ fontSize:15, fontWeight:700, color:'#0f172a', margin:0 }}>Share Links</h3>
+                <p style={{ fontSize:12, color:'#94a3b8', margin:'3px 0 0' }}>Copy and share with candidates</p>
               </div>
-              <button onClick={() => setLinksModal(null)} style={{ background:'none', border:'none', color:'#94a3b8', cursor:'pointer', display:'flex' }}><X size={15}/></button>
+              <button onClick={() => setLinksModal(null)} style={{ background:'none', border:'none', color:'#94a3b8', cursor:'pointer', display:'flex', padding:4 }}>
+                <X size={16}/>
+              </button>
             </div>
-            <div style={{ padding:'18px 20px', display:'flex', flexDirection:'column', gap:16 }}>
-              {[
-                { label:'Application Link', sub:'Share with candidates to apply', val: linksModal.applicationLink || linksModal.applyLink || `${window.location.origin}/apply?jobId=${linksModal.jobId || ''}`, key:'apply' },
-                { label:'Interview Link',   sub:'For shortlisted candidates only', val: linksModal.link || linksModal.assessmentLink || '', key:'interview' },
-              ].map(({ label, sub, val, key }) => (
-                <div key={key}>
-                  <p style={{ fontSize:12, fontWeight:600, color:'#374151', margin:'0 0 2px' }}>{label}</p>
-                  <p style={{ fontSize:11, color:'#94a3b8', margin:'0 0 6px' }}>{sub}</p>
-                  <div style={{ display:'flex', gap:7 }}>
-                    <input readOnly value={val} style={{ flex:1, fontSize:11, fontFamily:'monospace', background:'#FFFFFF', border:'1px solid #e2e8f0', borderRadius:6, padding:'7px 10px', color:'#475569', outline:'none' }}/>
-                    <button onClick={() => copy(val, key)}
-                      style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 14px', borderRadius:6, border:'none', fontSize:12, fontWeight:600, cursor:'pointer', background: copied===key ? '#f0fdf4' : '#8B0000', color: copied===key ? '#15803d' : 'white' }}>
-                      {copied===key ? <><Check size={11}/> Copied</> : <><Copy size={11}/> Copy</>}
-                    </button>
-                  </div>
+            <div style={{ padding:'18px', display:'flex', flexDirection:'column', gap:14 }}>
+              <div>
+                <p style={{ fontSize:12, fontWeight:600, color:'#374151', margin:'0 0 4px' }}>Apply Link</p>
+                <p style={{ fontSize:11, color:'#94a3b8', margin:'0 0 8px' }}>Share with candidates to apply</p>
+                <div style={{ display:'flex', gap:7, alignItems:'stretch', flexWrap:'wrap' }}>
+                  <input
+                    readOnly
+                    value={linksModal.applicationLink || linksModal.applyLink || `${window.location.origin}/apply?jobId=${linksModal.jobId || ''}`}
+                    style={{
+                      flex: '1 1 260px',
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      background: '#FFFFFF',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      color: '#475569',
+                      outline: 'none',
+                      minWidth: 0,
+                    }}
+                  />
+                  <button
+                    onClick={() => copy(linksModal.applicationLink || linksModal.applyLink || `${window.location.origin}/apply?jobId=${linksModal.jobId || ''}`, 'apply')}
+                    style={{
+                      display:'inline-flex',
+                      alignItems:'center',
+                      justifyContent:'center',
+                      gap:6,
+                      padding:'10px 16px',
+                      borderRadius:10,
+                      border:'none',
+                      fontSize:12,
+                      fontWeight:700,
+                      cursor:'pointer',
+                      background: copied==='apply' ? '#f0fdf4' : '#8B0000',
+                      color: copied==='apply' ? '#15803d' : 'white',
+                      flex: '0 0 auto',
+                      minWidth: 92,
+                    }}>
+                    {copied==='apply' ? <><Check size={11}/> Copied</> : <><Copy size={11}/> Copy</>}
+                  </button>
                 </div>
-              ))}
-              <div style={{ background:'#ffffff', borderRadius:7, padding:'10px 13px', fontSize:12, color:'#64748b', border:'1px solid #ffffff' }}>
-                <strong>Tip:</strong> Application link is for public posts. Interview link is for shortlisted candidates only.
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
 };
 
 export default JobsList;
+

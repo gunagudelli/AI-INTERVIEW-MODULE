@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { recruiterAPI } from '../../services/recruiterAPI';
 
@@ -61,7 +61,6 @@ const RecruiterSettings: React.FC = () => {
       </div>
 
       <div style={s.body}>
-        {/* Account Info */}
         <div style={s.card}>
           <h2 style={s.cardTitle}>Account Information</h2>
           {msg && <div style={s.success}>{msg}</div>}
@@ -82,21 +81,11 @@ const RecruiterSettings: React.FC = () => {
             <div style={s.row}>
               <div style={s.field}>
                 <label style={s.label}>Full Name</label>
-                <input
-                  style={s.input}
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  required
-                />
+                <input style={s.input} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
               </div>
               <div style={s.field}>
                 <label style={s.label}>Phone Number</label>
-                <input
-                  style={s.input}
-                  value={form.phone_number}
-                  onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))}
-                  placeholder="+91 XXXXX XXXXX"
-                />
+                <input style={s.input} value={form.phone_number} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} placeholder="+91 XXXXX XXXXX" />
               </div>
             </div>
             <button style={saving ? s.btnDisabled : s.btn} type="submit" disabled={saving}>
@@ -105,7 +94,6 @@ const RecruiterSettings: React.FC = () => {
           </form>
         </div>
 
-        {/* Danger Zone */}
         <div style={{ ...s.card, border: '1px solid #fecaca' }}>
           <h2 style={{ ...s.cardTitle, color: '#dc2626' }}>Account Actions</h2>
           <div style={s.dangerRow}>
@@ -125,7 +113,7 @@ const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: '#ffffff', fontFamily: 'Inter, sans-serif' },
   center: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 12 },
   spinner: { width: 32, height: 32, border: '3px solid #ddd', borderTop: '3px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  header: { background: 'white', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 },
+  header: { background: '#FAFAFA', borderBottom: '1px solid #e2e8f0', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 },
   back: { padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' },
   title: { fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 },
   body: { padding: 24, maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 },

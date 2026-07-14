@@ -21,11 +21,17 @@ import RecruiterRegister from "./Pages/recruiter/RecruiterRegister";
 import RecruiterDashboard from "./Pages/recruiter/RecruiterDashboard";
 import CreateJob from "./Pages/recruiter/CreateJob";
 import JobsList from "./Pages/recruiter/JobsList";
+import JDApprovalRequests from "./Pages/recruiter/JDApprovalRequests";
 import JobApplications from "./Pages/recruiter/JobApplications";
 import RecruiterProfile from "./Pages/recruiter/RecruiterProfile";
 import RecruiterAnalytics from "./Pages/recruiter/RecruiterAnalytics";
 import RecruiterSettings from "./Pages/recruiter/RecruiterSettings";
 import ResumePool from "./Pages/recruiter/ResumePool";
+import PanelResponsePortal from "./Pages/recruiter/PanelResponsePortal";
+import PanelEvaluationPage from "./Pages/recruiter/PanelEvaluationPage";
+import EvaluationDetail from "./Pages/recruiter/EvaluationDetail";
+import EvaluationsList from "./Pages/recruiter/EvaluationsList";
+import { BulkResumePool } from "./AIMockInterview/admin/BulkResumePool";
 import EditJob from "./Pages/recruiter/EditJob";
 import CandidatesList from "./Pages/recruiter/CandidatesList";
 import ApplicationDetail from "./Pages/recruiter/ApplicationDetail";
@@ -38,6 +44,8 @@ import { MultiLevelSelection, ProctoredInterview } from "./AIMockInterview";
 import InterviewPage from "./AIMockInterview/interview";
 
 import LoginAdmin from "./AIMockInterview/admin/LoginAdmin";
+import AdminPanelMembers from "./Pages/admin/AdminPanelMembers";
+import RecruiterPanelMembers from "./Pages/recruiter/PanelMembers";
 
 
 // Simple centered loader component
@@ -212,6 +220,7 @@ const App: React.FC = () => {
             <Route path="dashboard" element={<RecruiterDashboard />} />
             <Route path="jobs" element={<JobsList />} />
             <Route path="jobs/create" element={<CreateJob />} />
+            <Route path="jd-approval-requests" element={<JDApprovalRequests />} />
             <Route
               path="jobs/:jobId/applications"
               element={<JobApplications />}
@@ -222,17 +231,26 @@ const App: React.FC = () => {
               path="applications/:applicationId"
               element={<ApplicationDetail />}
             />
+            <Route
+              path="applications/:applicationId/evaluation"
+              element={<EvaluationDetail />}
+            />
+            <Route path="evaluations" element={<EvaluationsList />} />
             <Route path="candidates" element={<CandidatesList />} />
             <Route path="referrals" element={<RecruiterReferrals />} />
             <Route path="analytics" element={<RecruiterAnalytics />} />
             <Route path="settings" element={<RecruiterSettings />} />
             <Route path="resume-pool" element={<ResumePool />} />
+            <Route path="bulk-pool" element={<BulkResumePool />} />
             <Route path="jobs/:jobId/edit" element={<EditJob />} />
+            <Route path="panel-members" element={<RecruiterPanelMembers />} />
           </Route>
 
           <Route path="/jobs" element={<JobListPage />} />
           <Route path="/apply" element={<ApplyPage />} />
           <Route path="/apply/:jobId" element={<ApplyPage />} />
+          <Route path="/panel/respond/:token" element={<PanelResponsePortal />} />
+          <Route path="/panel/evaluate/:token" element={<PanelEvaluationPage />} />
           <Route
             path="/application/status/:id"
             element={<ApplicationStatusPage />}
@@ -245,6 +263,7 @@ const App: React.FC = () => {
             path="/admin/interviewdashboard"
             element={<AdminDashboard />}
           />
+          <Route path="/admin/panel-members" element={<AdminPanelMembers />} />
 
           {/* ===================================================== */}
           {/* ✅ CANDIDATE MODULE ROUTES */}
@@ -261,9 +280,12 @@ const App: React.FC = () => {
             <Route path="notifications" element={<Notifications />} />
           </Route>
 
-          <Route path="/referral/login" element={<EmployeeReferralLogin />} />
-          <Route path="/referral/register" element={<EmployeeReferralRegister />} />
-          <Route path="/referral/dashboard" element={<EmployeeReferralDashboard />} />
+          <Route path="/referral/login" element={<EmployeeReferralLogin/>} />
+          <Route path="/referral/register" element={<EmployeeReferralRegister/>} />
+          <Route path="/referral/dashboard" element={<EmployeeReferralDashboard/>} />
+          <Route path="/employee-login" element={<Navigate to="/referral/login" replace />} />
+          <Route path="/employee-register" element={<Navigate to="/referral/register" replace />} />
+          <Route path="/employee-dashboard" element={<Navigate to="/referral/dashboard" replace />} />
 
           <Route path="/multi-level-select" element={<MultiLevelSelection />} />
           <Route path="/multi-interview" element={<ProctoredInterview />} />

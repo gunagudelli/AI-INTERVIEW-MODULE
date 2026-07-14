@@ -30,6 +30,8 @@ function defaults(): RoundConfig[] {
 export const InterviewConfig: React.FC = () => {
   const [rounds, setRounds]     = useState<RoundConfig[]>([]);
   const [original, setOriginal] = useState<RoundConfig[]>([]);
+  const [copyPasteBlocked, setCopyPasteBlocked]         = useState(true);
+  const [copyPasteBlockedOrig, setCopyPasteBlockedOrig] = useState(true);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
   const [toast, setToast]       = useState<{ ok: boolean; msg: string } | null>(null);
@@ -47,17 +49,21 @@ export const InterviewConfig: React.FC = () => {
       const data = await candidateApi.getInterviewConfig();
       const r = data.rounds?.length ? data.rounds : defaults();
       setRounds(r); setOriginal(JSON.parse(JSON.stringify(r)));
+      const cpb = data.copyPasteBlocked ?? true;
+      setCopyPasteBlocked(cpb); setCopyPasteBlockedOrig(cpb);
     } catch {
       const r = defaults();
       setRounds(r); setOriginal(JSON.parse(JSON.stringify(r)));
+      setCopyPasteBlocked(true); setCopyPasteBlockedOrig(true);
     } finally { setLoading(false); }
   };
 
   const save = async () => {
     setSaving(true);
     try {
-      await candidateApi.updateInterviewConfig(rounds);
+      await candidateApi.updateInterviewConfig(rounds, copyPasteBlocked);
       setOriginal(JSON.parse(JSON.stringify(rounds)));
+      setCopyPasteBlockedOrig(copyPasteBlocked);
       showToast(true, 'Saved successfully');
     } catch { showToast(false, 'Failed to save'); }
     finally { setSaving(false); }
@@ -67,7 +73,7 @@ export const InterviewConfig: React.FC = () => {
     const n = [...rounds]; n[i] = { ...n[i], [f]: v }; setRounds(n);
   };
 
-  const dirty = JSON.stringify(rounds) !== JSON.stringify(original);
+  const dirty = JSON.stringify(rounds) !== JSON.stringify(original) || copyPasteBlocked !== copyPasteBlockedOrig;
   const totalQ = rounds.reduce((s, r) => s + r.questions, 0);
   const totalT = rounds.reduce((s, r) => s + r.questions * r.time_limit, 0);
 
@@ -183,7 +189,40 @@ export const InterviewConfig: React.FC = () => {
       })}
 
       {/* Divider */}
-      <div style={{ height: 1, background: '#E2E8F0', margin: '12px 0 20px' }} />
+      <div style={{ height: 1, background: '#E2E8F0', margin: '20px 0' }} />
+
+      {/* Copy/Paste Protection — admin-only control; candidates can no longer toggle this themselves */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+        padding: '14px 16px', borderRadius: 10,
+        background: copyPasteBlocked ? '#F0FDF4' : '#FFFBEB',
+        border: `1px solid ${copyPasteBlocked ? '#BBF7D0' : '#FDE68A'}`,
+        marginBottom: 24,
+      }}>
+        <div>
+          <p style={{ margin: '0 0 3px', fontSize: 13.5, fontWeight: 600, color: '#0F172A' }}>Copy/Paste Protection</p>
+          <p style={{ margin: 0, fontSize: 12, color: '#64748B', lineHeight: 1.5 }}>
+            When enabled, candidates cannot copy or paste during the exam — this is the only place it can be changed.
+            Turn it off for your own testing, and make sure it's back on before the exam goes live.
+          </p>
+        </div>
+        <button
+          onClick={() => setCopyPasteBlocked(p => !p)}
+          className="ic-btn"
+          style={{
+            flexShrink: 0, width: 46, height: 26, borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: copyPasteBlocked ? '#16A34A' : '#CBD5E1', position: 'relative', transition: 'background .15s',
+          }}
+          aria-pressed={copyPasteBlocked}
+          aria-label="Toggle copy/paste protection"
+        >
+          <span style={{
+            position: 'absolute', top: 3, left: copyPasteBlocked ? 23 : 3,
+            width: 20, height: 20, borderRadius: '50%', background: '#fff',
+            transition: 'left .15s', boxShadow: '0 1px 2px rgba(0,0,0,.2)',
+          }} />
+        </button>
+      </div>
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

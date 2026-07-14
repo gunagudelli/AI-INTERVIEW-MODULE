@@ -41,11 +41,21 @@ export interface Candidate {
   domains: string[];
   experience: number;
   isTechnical: boolean;
-  resumePath?: string;
+  resumeUrl?: string;
+  copyPasteViolations?: number;
   createdAt?: string;
   proctoringSnapshots?: ProctoringSnapshot[];
-  scoringBreakdown: Record<string, { label: string; maxPerAttempt: number }>;
-  summary: {
+  scoringBreakdown?: Record<string, { label: string; maxPerAttempt: number }>;
+  // The list endpoint (GET /api/admin/candidates) returns these flat instead of
+  // nested under `summary` — `summary` below only exists on the single-candidate
+  // detail endpoint's response.
+  bestScore?: string;
+  latestScore?: string;
+  examStatus?: 'selected' | 'completed' | 'in_progress' | string;
+  completedAttempts?: number;
+  maxRound?: number;
+  totalQuestions?: number;
+  summary?: {
     totalAttempts: number;
     completedAttempts: number;
     bestScore: string;

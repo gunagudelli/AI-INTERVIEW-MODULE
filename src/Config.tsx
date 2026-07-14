@@ -6,7 +6,7 @@
 
 // export default BASE_URL;
 
-const userType: string = "local"; // Change to "live" for production
+const userType: string = "live"; // Change to "live" for production
 
 const BASE_URL =
   userType === "live"

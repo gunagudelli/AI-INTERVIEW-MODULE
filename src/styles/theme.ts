@@ -36,6 +36,9 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   hired:                { bg: '#F0FDF4', color: '#16A34A' },
   rejected:             { bg: '#FEF2F2', color: '#DC2626' },
   assessment_pending:   { bg: '#FFF7ED', color: '#C2410C' },
+  assessed:             { bg: '#F5F3FF', color: '#7C3AED' },
+  in_progress:          { bg: '#FFF7ED', color: '#C2410C' },
+  panel_assigned:       { bg: '#F0F9FF', color: '#0369A1' },
 };
 
 export const STATUS_LABEL: Record<string, string> = {
@@ -49,6 +52,9 @@ export const STATUS_LABEL: Record<string, string> = {
   hired:                'Selected',
   rejected:             'Rejected',
   assessment_pending:   'Assessment Pending',
+  assessed:             'Assessed',
+  in_progress:          'In Progress',
+  panel_assigned:       'Panel Assigned',
 };
 
 export const getStatusStyle = (status: string) =>
